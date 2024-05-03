@@ -56,6 +56,22 @@ export default function ClientPage()
           )}
         </ul>
       </div>
+
+      <hr/>
+
+      <div>
+        <h1><strong>!NOSSOS PRODUTOS!</strong></h1>
+
+        <ul>
+          {products.map(product =>
+                <li key={product.idProd}>
+                    <p><strong>{product.nomeProd}</strong></p>
+                    <p>{product.precoProd}</p>
+                </li>
+                          
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
