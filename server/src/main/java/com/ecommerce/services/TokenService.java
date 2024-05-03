@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import com.auth0.jwt.impl.ClaimsHolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

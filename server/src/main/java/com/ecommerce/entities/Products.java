@@ -28,9 +28,10 @@ public class Products {
 	public Products() {
 	}
 
-	public Products(String nomeProd, double precoProd) {
+	public Products(String nomeProd, double precoProd, boolean promoProd) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
+		this.promoProd = promoProd;
 	}
 
 	public String getIdProd() {
@@ -57,4 +58,11 @@ public class Products {
 		this.precoProd = precoProd;
 	}
 
+	public boolean isPromoProd() {
+		return promoProd;
+	}
+
+	public void setPromoProd(boolean promoProd) {
+		this.promoProd = promoProd;
+	}
 }

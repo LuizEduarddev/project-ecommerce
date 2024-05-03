@@ -1,6 +1,13 @@
 package com.ecommerce.services;
 
+import com.auth0.jwt.impl.ClaimsHolder;
 import com.ecommerce.entities.dto.AlterDTO;
+import com.ecommerce.infra.security.SecurityFilter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +35,23 @@ public class AuthenticationService {
 	
 	@Autowired
 	private TokenService tokenService;
+
+	@Autowired
+	private SecurityFilter securityFilter;
 	
 	public ResponseEntity<LoginResponseDTO> loginUser(AuthDTO data)
 	{
-		var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
-		var auth = this.manager.authenticate(usernamePassword);
-		var token = tokenService.generateToken((Users) auth.getPrincipal());
-		
-		return ResponseEntity.ok(new LoginResponseDTO(token));
+		try
+		{
+			var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
+			var auth = this.manager.authenticate(usernamePassword);
+			var token = tokenService.generateToken((Users) auth.getPrincipal());
+			return ResponseEntity.ok(new LoginResponseDTO(token));
+		}
+		catch(Exception e)
+		{
+			throw new RuntimeException("Usuario ou senha incorretos");
+		}
 	}
 	
 	public ResponseEntity<String> registerUser(RegisterDTO data)
@@ -52,6 +68,17 @@ public class AuthenticationService {
     public List<Users> getAllUsers()
 	{
     	return repository.findAll();
+	}
+
+	public ResponseEntity<String> getUserName(String token) {
+		try
+		{
+			return ResponseEntity.ok(tokenService.validateToken(token));
+		}
+		catch(Exception e)
+		{
+			return ResponseEntity.badRequest().body("Problema no token, indo para a pagina de login.\nERRO: " + e);
+		}
 	}
 
 	/*

@@ -2,6 +2,8 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Users;
 import com.ecommerce.entities.dto.AlterDTO;
+import com.google.gson.JsonObject;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +37,7 @@ public class AuthenticationController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponseDTO> login(@RequestBody AuthDTO data)
 	{
+		System.out.println(data);
 		return service.loginUser(data);
 	}
 	
@@ -42,6 +45,13 @@ public class AuthenticationController {
 	public ResponseEntity<String> register(@RequestBody RegisterDTO data)
 	{
 		return service.registerUser(data);
+	}
+
+	@PostMapping("/get-username")
+	public ResponseEntity<String> getName(@RequestBody String token)
+	{
+		System.out.println(token);
+		return service.getUserName(token);
 	}
 
 	@GetMapping("/get-all")
