@@ -44,6 +44,48 @@ public class PedidosService {
                 .orElseThrow(() -> new RuntimeException("Pedido nao encontrado."));
     }
 
+    public ResponseEntity<String> addPedidoDelivery(List<Products> products, String idUser)
+    {
+        List<Products> produtos = new ArrayList<>();
+        products.forEach((prod) -> {
+            produtos.add(productsRepository.findById(prod.getIdProd())
+                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
+        });
+
+        Users user = usersRepository.findById(idUser)
+                .orElseThrow(() -> new RuntimeException("Cliente nao encontrado no sistema.\nFalha para criar pedido"));
+
+        try
+        {
+            LocalTime currentTime = LocalTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            String formattedTime = currentTime.format(formatter);
+            Pedidos pedido = new Pedidos();
+            Date dataAtual = new Date();
+            pedido.setDataPedido(dataAtual);
+
+            pedido.setHoraPedido(formattedTime);
+
+            pedido.setPedidoPago(false);
+            pedido.setPedidoPronto(false);
+
+            double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
+
+            pedido.setTotalPedido(total);
+
+            pedido.setProdutos(produtos);
+            pedido.setUsers(user);
+
+            repository.saveAndFlush(pedido);
+
+            return ResponseEntity.ok("Pedido criado com sucesso");
+        }
+        catch(Exception e)
+        {
+            return ResponseEntity.badRequest().body("Falha ao tentar criar pedido.\nErro: " + e);
+        }
+    }
+
     public ResponseEntity<String> addPedido(List<String> idProdutos, String idUser, String idMesa)
     {
         List<Products> produtos = new ArrayList<>();

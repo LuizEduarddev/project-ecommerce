@@ -39,6 +39,16 @@ public class Pedidos {
 
     public Pedidos(){}
 
+    public Pedidos(Date dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users) {
+        this.dataPedido = dataPedido;
+        this.horaPedido = horaPedido;
+        this.totalPedido = totalPedido;
+        this.pedidoPago = pedidoPago;
+        this.pedidoPronto = pedidoPronto;
+        this.produtos = produtos;
+        this.users = users;
+    }
+
     public Pedidos(Date dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users, Mesa mesa) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;

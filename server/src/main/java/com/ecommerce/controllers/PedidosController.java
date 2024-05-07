@@ -35,6 +35,12 @@ public class PedidosController {
         return service.addPedido(idProdutos, idUser, idMesa);
     }
 
+    @PostMapping("/add/{idUser}")
+    public ResponseEntity<String> addDelivery(@RequestBody List<Products> products, @PathVariable String idUser)
+    {
+        return service.addPedidoDelivery(products, idUser);
+    }
+
     @PostMapping("/set-pr/{idPedido}")
     public ResponseEntity<String> setPronto(@PathVariable String idPedido)
     {
