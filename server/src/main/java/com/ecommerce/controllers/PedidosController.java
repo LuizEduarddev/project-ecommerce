@@ -2,7 +2,6 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Products;
-import com.ecommerce.entities.Users;
 import com.ecommerce.services.PedidosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,10 +34,10 @@ public class PedidosController {
         return service.addPedido(idProdutos, idUser, idMesa);
     }
 
-    @PostMapping("/add/{idUser}")
-    public ResponseEntity<String> addDelivery(@RequestBody List<Products> products, @PathVariable String idUser)
+    @PostMapping("/add/{tokenUser}")
+    public ResponseEntity<String> addDelivery(@RequestBody List<Products> products, @PathVariable String tokenUser)
     {
-        return service.addPedidoDelivery(products, idUser);
+        return service.addPedidoDelivery(products, tokenUser);
     }
 
     @PostMapping("/set-pr/{idPedido}")

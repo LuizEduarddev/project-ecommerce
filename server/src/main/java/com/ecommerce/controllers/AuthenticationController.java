@@ -47,13 +47,6 @@ public class AuthenticationController {
 		return service.registerUser(data);
 	}
 
-	@PostMapping("/get-username")
-	public ResponseEntity<String> getName(@RequestBody String token)
-	{
-		System.out.println(token);
-		return service.getUserName(token);
-	}
-
 	@GetMapping("/get-all")
 	public List<Users> getAll()
 	{

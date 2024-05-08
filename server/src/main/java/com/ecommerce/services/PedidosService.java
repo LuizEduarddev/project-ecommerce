@@ -12,6 +12,7 @@ import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -33,6 +34,9 @@ public class PedidosService {
     @Autowired
     private MesaRepository mesaRepository;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     public List<Pedidos> getAllPedidos()
     {
         return repository.findAll();
@@ -44,7 +48,7 @@ public class PedidosService {
                 .orElseThrow(() -> new RuntimeException("Pedido nao encontrado."));
     }
 
-    public ResponseEntity<String> addPedidoDelivery(List<Products> products, String idUser)
+    public ResponseEntity<String> addPedidoDelivery(List<Products> products, String tokenUser)
     {
         List<Products> produtos = new ArrayList<>();
         products.forEach((prod) -> {
@@ -52,8 +56,11 @@ public class PedidosService {
                     .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
         });
 
-        Users user = usersRepository.findById(idUser)
-                .orElseThrow(() -> new RuntimeException("Cliente nao encontrado no sistema.\nFalha para criar pedido"));
+        UserDetails user = usersRepository.findByLoginUser(authenticationService.getUserName(tokenUser));
+        if (user == null)
+        {
+            throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");
+        }
 
         try
         {

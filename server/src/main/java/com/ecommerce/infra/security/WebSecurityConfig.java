@@ -32,7 +32,7 @@ public class WebSecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-						.requestMatchers(HttpMethod.POST, "/api//register").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/register").permitAll()
 						//.requestMatchers(HttpMethod.POST, "/api/products/add").hasRole("ADMIN")
 						.anyRequest().permitAll())
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

@@ -70,14 +70,14 @@ public class AuthenticationService {
     	return repository.findAll();
 	}
 
-	public ResponseEntity<String> getUserName(String token) {
+	public String getUserName(String token) {
 		try
 		{
-			return ResponseEntity.ok(tokenService.validateToken(token));
+			return tokenService.validateToken(token);
 		}
 		catch(Exception e)
 		{
-			return ResponseEntity.badRequest().body("Problema no token, indo para a pagina de login.\nERRO: " + e);
+			throw new RuntimeException("Erro ao tentar recuperar nome de usuario");
 		}
 	}
 

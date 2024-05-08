@@ -3,6 +3,7 @@ import {useNavigate, Link} from 'react-router-dom';
 import { FaCheck as Check} from "react-icons/fa";
 import { MdOutlinePayments as Cash,  MdOutlineCleaningServices as Clean, MdHome as Home, MdTableBar as Table} from "react-icons/md";
 import api from '../../services/api.js'
+import Cookies from 'universal-cookie';
 
 export default function CartPage()
 {
@@ -11,6 +12,7 @@ export default function CartPage()
     const [total, setTotal] = useState(0);
     const navigate = useNavigate ();
     const pagamento = 1000;
+    const cookies = new Cookies();
 
     useEffect(() => {
         const getCarrinho = localStorage.getItem('cart');
@@ -80,7 +82,15 @@ export default function CartPage()
 
     async function sendOrder()
     {
-        api.post('http://localhost:8080/api/pedidos/add/')
+        const getMesa = localStorage.getItem('mesaToken')
+        if (getMesa)
+        {
+
+        }
+        else
+        {
+            api.post('http://localhost:8080/api/pedidos/add/' + cookies.ge)
+        }
     }
 
     return(
