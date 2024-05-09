@@ -75,6 +75,9 @@ export default function ClientPage()
     {
       getUserData();
     }
+    else{
+      setUsername(null);  
+    }
     
 
     async function getProductsData()
@@ -94,9 +97,21 @@ export default function ClientPage()
 
   return (
     <div>
-      <h1>Bem-vindo, {username}</h1>
+      {
+        username ? (
+          <div>
+            <h1>Bem-vindo, {username}</h1>
+            <hr/>
+          </div>
+        ) : (
+          <div>
+            <h1>
 
-      <hr/>
+            Bem-vindo
+            </h1>
+          </div>
+        )
+      }
         <div>
             <button>
                 <Link to = '/cart'>
@@ -106,6 +121,16 @@ export default function ClientPage()
                     </h3>
                 </Link>
             </button>
+        </div>
+        <div>
+          <button>
+            <Link to = '/pedidos'>
+              <h3>
+
+              Meus pedidos
+              </h3>
+            </Link>
+          </button>
         </div>
       <div>
         <h1><strong>!PROMOCOES DO DIA!</strong></h1>

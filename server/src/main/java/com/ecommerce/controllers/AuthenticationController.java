@@ -40,6 +40,12 @@ public class AuthenticationController {
 		System.out.println(data);
 		return service.loginUser(data);
 	}
+
+	@PostMapping("/get-username")
+	public String getUsername(@RequestBody String token)
+	{
+		return service.getUserName(token);
+	}
 	
 	@PostMapping("/register")
 	public ResponseEntity<String> register(@RequestBody RegisterDTO data)
