@@ -9,11 +9,8 @@ import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -176,6 +173,18 @@ public class PedidosService {
         catch (Exception e)
         {
             return ResponseEntity.badRequest().body("Falha ao tentar mudar o status do pedido para pronto.\nError: "  + e);
+        }
+    }
+
+    public List<Pedidos> getPedidoByUser(String token) {
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        if (user == null)
+        {
+            throw new RuntimeException("Não foi possível localizar o usuário");
+        }
+        else{
+            List<Pedidos> pedidos = repository.findByUsers(user);
+            return pedidos;
         }
     }
 }

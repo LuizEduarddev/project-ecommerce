@@ -1,7 +1,6 @@
 package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Pedidos;
-import com.ecommerce.entities.Products;
 import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.services.PedidosService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,12 @@ public class PedidosController {
     public List<Pedidos> getAll()
     {
         return service.getAllPedidos();
+    }
+
+    @PostMapping("/get-by-user")
+    public List<Pedidos> getByUser(@RequestBody String token)
+    {
+        return service.getPedidoByUser(token);
     }
 
     @PostMapping("/get-by-id/{idPedido}")

@@ -103,6 +103,27 @@ export default function CartPage()
         }
     }
 
+    async function orderDelivery()
+    {
+        const userToken = cookies.get('SessionId');
+        if (userToken)
+        {
+            api.post('http://localhost:8080/api/pedidos/add/' + cookies.get('SessionId'), cart)
+            .then(response => {
+                alert('Pedido criado com sucesso! Redirecionando para a página principal');
+                cleanCart()
+                navigate('/home')
+            })
+            .catch(error => {
+                console.log(error.response.data.message);
+            })
+        }
+        else{
+            alert('Para fazer um pedido é necessário estar logado, redirecionando.')
+            navigate('/login')
+        }
+    }
+
     async function sendOrder()
     {
         const verifyCart = await verifyCartNull()
@@ -115,23 +136,7 @@ export default function CartPage()
             }
             else
             {
-                const userToken = cookies.get('SessionId');
-                if (userToken)
-                {
-                    api.post('http://localhost:8080/api/pedidos/add/' + cookies.get('SessionId'), cart)
-                    .then(response => {
-                        alert('Pedido criado com sucesso! Redirecionando para a página principal');
-                        cleanCart()
-                        navigate('/home')
-                    })
-                    .catch(error => {
-                        console.log(error.response.data.message);
-                    })
-                }
-                else{
-                    alert('Para fazer um pedido é necessário estar logado, redirecionando.')
-                    navigate('/login')
-                }
+                await orderDelivery();
             }
         }
     } 
