@@ -28,7 +28,7 @@ public class Pedidos {
     @Column(name = "pedido_pronto")
     private boolean pedidoPronto;
 
-    @OneToMany
+    @ManyToMany
     private List<Products> produtos;
 
     @ManyToOne

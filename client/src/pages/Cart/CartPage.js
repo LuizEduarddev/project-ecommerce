@@ -15,31 +15,36 @@ export default function CartPage()
     const cookies = new Cookies();
 
     useEffect(() => {
-        const getCarrinho = localStorage.getItem('cart');
-        if (getCarrinho)
+        async function startCart()
         {
-            const savedCart = JSON.parse(getCarrinho);
-            setCart(savedCart);
-            let totalAtualizado = 0;
-            savedCart.map(item => {
-                totalAtualizado += item.valorTotalIten;
-            })
-            if (totalAtualizado <= 0)
+            const getCarrinho = localStorage.getItem('cart');
+            if (getCarrinho)
             {
-                setTotal(0);
+                const savedCart = JSON.parse(getCarrinho);
+                setCart(savedCart);
+                let totalAtualizado = 0;
+                savedCart.map(item => {
+                    totalAtualizado += item.valorTotalIten;
+                })
+                if (totalAtualizado <= 0)
+                {
+                    setTotal(0);
+                }
+                else{
+                    setTotal(totalAtualizado);
+                }
             }
             else{
-                setTotal(totalAtualizado);
+                setTotal(0)
             }
         }
-        else{
-            setTotal(0)
-        }
-    }, [cart])
+
+        startCart()
+    }, [])
 
     const decreaseQuantity = (id) => {
         const updatedCart = cart.map(item => {
-            if (item.idProduto === id && item.quantidade > 1) {
+            if (item.idProd === id && item.quantidade > 1) {
                 let totalItem = item.valorTotalIten - item.valorUnitarioItem; 
                 if (totalItem <= 0)
                 {
@@ -55,7 +60,7 @@ export default function CartPage()
 
     const increaseQuantity = (id) => {
         const updatedCart = cart.map(item => {
-            if (item.idProduto === id) {
+            if (item.idProd === id) {
                 return { ...item, quantidade: item.quantidade + 1, valorTotalIten:  item.valorTotalIten + item.valorUnitarioItem};
             }
             return item;
@@ -67,31 +72,70 @@ export default function CartPage()
     function deleteItenById(id)
     {
         let cartItens = JSON.parse(localStorage.getItem('cart'));
-        cartItens = cartItens.filter(item => item.idProduto !== id);
+        cartItens = cartItens.filter(item => item.idProd !== id);
         localStorage.setItem('cart', JSON.stringify(cartItens));
         setCart([...cartItens]);
     }
 
-    function CleanCart()
+    function cleanCart()
     {
-        const cleanCart = [];
-        localStorage.setItem('cart', cleanCart);
-        setCart([...cleanCart]);
+        const emptyCart = [];
+        localStorage.setItem('cart', emptyCart);
+        setCart([...emptyCart]);
         setTotal(0);
+    }
+
+    function verifyCartNull()
+    {
+        const getCarrinho = localStorage.getItem('cart');
+        if (getCarrinho)
+        {
+            const savedCart = JSON.parse(getCarrinho);
+            const filterIdNull = savedCart.filter(item => item.idProd === null)
+                if (filterIdNull.lenght > 0)
+            {
+                return true;
+            }
+            else{
+                return false;
+            }
+            
+        }
     }
 
     async function sendOrder()
     {
-        const getMesa = localStorage.getItem('mesaToken')
-        if (getMesa)
-        {
-
+        const verifyCart = await verifyCartNull()
+        if (verifyCart === true) {alert("Não é possível fazer um pedido com carrinho vazio.");}
+        else{
+            const getMesa = localStorage.getItem('mesaToken')
+            if (getMesa)
+            {
+    
+            }
+            else
+            {
+                const userToken = cookies.get('SessionId');
+                if (userToken)
+                {
+                    api.post('http://localhost:8080/api/pedidos/add/' + cookies.get('SessionId'), cart)
+                    .then(response => {
+                        alert('Pedido criado com sucesso! Redirecionando para a página principal');
+                        cleanCart()
+                        navigate('/home')
+                    })
+                    .catch(error => {
+                        console.log(error.response.data.message);
+                    })
+                }
+                else{
+                    alert('Para fazer um pedido é necessário estar logado, redirecionando.')
+                    navigate('/login')
+                }
+            }
         }
-        else
-        {
-            api.post('http://localhost:8080/api/pedidos/add/' + cookies.ge)
-        }
-    }
+    } 
+    
 
     return(
         <div>
@@ -103,7 +147,7 @@ export default function CartPage()
                 ) : (
                     <div>
                         <div>
-                            <button onClick={CleanCart}>
+                            <button onClick={cleanCart}>
                                 <h3>
                                     <Clean/>
                                     | Limpar Carrinho
@@ -127,18 +171,18 @@ export default function CartPage()
             </div>
             <ul>
                 {cart.map(item => (
-                        <li key={item.idProduto}>
+                        <li key={item.idProd}>
                             <div>
-                                <h1>{item.nomeProduto}</h1>
+                                <h1>{item.nomeProd}</h1>
                                 <div>
                                     <h1>quantidade: 
-                                        <button onClick={() => decreaseQuantity(item.idProduto)}>-</button> 
+                                        <button onClick={() => decreaseQuantity(item.idProd)}>-</button> 
                                         {item.quantidade} 
-                                        <button onClick={() => increaseQuantity(item.idProduto)}>+</button>
+                                        <button onClick={() => increaseQuantity(item.idProd)}>+</button>
                                     </h1>
                                 </div>
                                 <h1>valor: {item.valorTotalIten.toFixed(2)}</h1>
-                                <button onClick={() => deleteItenById(item.idProduto)}>
+                                <button onClick={() => deleteItenById(item.idProd)}>
                                     <h3>Remover item</h3>
                                 </button>
                             </div>
@@ -157,7 +201,7 @@ export default function CartPage()
                     </div>
                 ) : (
                     <div>
-                        <button onClick={sendOrder}>
+                        <button onClick={() => sendOrder()}>
                             Fazer pedido
                         </button>
                     </div>

@@ -4,6 +4,7 @@ import com.ecommerce.entities.Mesa;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Products;
 import com.ecommerce.entities.Users;
+import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
@@ -48,15 +49,19 @@ public class PedidosService {
                 .orElseThrow(() -> new RuntimeException("Pedido nao encontrado."));
     }
 
-    public ResponseEntity<String> addPedidoDelivery(List<Products> products, String tokenUser)
+    public ResponseEntity<String> addPedidoDelivery(List<ProductsDTO> products, String tokenUser)
     {
+        if (products.isEmpty())
+        {
+            throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
+        }
         List<Products> produtos = new ArrayList<>();
         products.forEach((prod) -> {
-            produtos.add(productsRepository.findById(prod.getIdProd())
+            produtos.add(productsRepository.findById(prod.idProd())
                     .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
         });
 
-        UserDetails user = usersRepository.findByLoginUser(authenticationService.getUserName(tokenUser));
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(tokenUser));
         if (user == null)
         {
             throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");

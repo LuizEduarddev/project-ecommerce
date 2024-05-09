@@ -24,21 +24,20 @@ export default function ClientPage()
     let existCart = localStorage.getItem('cart')
     try{
         let cartItens = JSON.parse(existCart);
-        let produtoExistente = cartItens.find(item => item.idProduto === produto.idProduto);
+        let produtoExistente = cartItens.find(item => item.idProd === produto.idProd);
     
         if (produtoExistente) {
             if (produtoExistente.quantidade !== quantidade) {
                 produtoExistente.quantidade = quantidade;
-                produtoExistente.valorTotalIten = produto.precoProduto * quantidade;
+                produtoExistente.valorTotalIten = produto.precoProd * quantidade;
                 localStorage.setItem('cart', JSON.stringify(cartItens));
                 setCarrinho([...cartItens]);
             }
         } else {
             cartItens.push({
-                nomeProduto: produto.nomeProd,
-                idProduto: produto.idProd,
+                idProd: produto.idProd,
+                nomeProd: produto.nomeProd,
                 quantidade: quantidade,
-                valorUnitarioItem: produto.precoProd,
                 valorTotalIten: produto.precoProd * quantidade
             });
             localStorage.setItem('cart', JSON.stringify(cartItens));
@@ -48,10 +47,9 @@ export default function ClientPage()
     catch(error)
     {
         const cartItens = [{
-          nomeProduto: produto.nomeProd,
-          idProduto: produto.idProd,
+          idProd: produto.idProd,
+          nomeProd: produto.nomeProd,
           quantidade: quantidade,
-          valorUnitarioItem: produto.precoProd,
           valorTotalIten: produto.precoProd * quantidade
         }];
         localStorage.setItem('cart', JSON.stringify(cartItens));
@@ -60,6 +58,7 @@ export default function ClientPage()
 }
 
   useEffect(() => {
+    
     async function getUserData() {
       api.post('http://localhost:8080/api/auth/get-username', cookies.get('SessionId'))
       .then(response => {
@@ -70,6 +69,13 @@ export default function ClientPage()
         console.log(error.response.data);
       })
     }
+
+    const getTokenUser = cookies.get('SessionId');
+    if (getTokenUser)
+    {
+      getUserData();
+    }
+    
 
     async function getProductsData()
     {
@@ -84,7 +90,6 @@ export default function ClientPage()
     }
 
     getProductsData();
-    getUserData();
   }, [])
 
   return (
