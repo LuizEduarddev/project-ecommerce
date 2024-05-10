@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -71,7 +72,9 @@ public class PedidosService {
             String formattedTime = currentTime.format(formatter);
             Pedidos pedido = new Pedidos();
             Date dataAtual = new Date();
-            pedido.setDataPedido(dataAtual);
+            SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
+            String dataFormatada = formatDate.format(dataAtual);
+            pedido.setDataPedido(dataFormatada  );
 
             pedido.setHoraPedido(formattedTime);
 
@@ -116,7 +119,9 @@ public class PedidosService {
             String formattedTime = currentTime.format(formatter);
             Pedidos pedido = new Pedidos();
             Date dataAtual = new Date();
-            pedido.setDataPedido(dataAtual);
+            SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
+            String dataFormatada = formatDate.format(dataAtual);
+            pedido.setDataPedido(dataFormatada);
 
             pedido.setHoraPedido(formattedTime);
 

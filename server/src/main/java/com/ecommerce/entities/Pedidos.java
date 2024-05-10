@@ -14,7 +14,7 @@ public class Pedidos {
     private String idPedido;
 
     @Column(name = "data_pedido")
-    private Date dataPedido;
+    private String dataPedido;
 
     @Column(name = "hora_pedido")
     private String horaPedido;
@@ -39,7 +39,7 @@ public class Pedidos {
 
     public Pedidos(){}
 
-    public Pedidos(Date dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
@@ -49,7 +49,7 @@ public class Pedidos {
         this.users = users;
     }
 
-    public Pedidos(Date dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users, Mesa mesa) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users, Mesa mesa) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
@@ -108,11 +108,11 @@ public class Pedidos {
         this.horaPedido = horaPedido;
     }
 
-    public Date getDataPedido() {
+    public String getDataPedido() {
         return dataPedido;
     }
 
-    public void setDataPedido(Date dataPedido) {
+    public void setDataPedido(String dataPedido) {
         this.dataPedido = dataPedido;
     }
 
