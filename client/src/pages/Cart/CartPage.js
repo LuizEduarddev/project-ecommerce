@@ -92,14 +92,17 @@ export default function CartPage()
         {
             const savedCart = JSON.parse(getCarrinho);
             const filterIdNull = savedCart.filter(item => item.idProd === null)
-                if (filterIdNull.lenght > 0)
+            if (filterIdNull.length > 0)
             {
-                return true;
-            }
-            else{
                 return false;
             }
-            
+            else{
+                return true;
+            }          
+        }
+        else{
+            alert('Erro interno do servidor. Redirecionando para a página princiapal');
+            navigate('/home')
         }
     }
 
@@ -126,7 +129,7 @@ export default function CartPage()
 
     async function sendOrder()
     {
-        const verifyCart = await verifyCartNull()
+        const verifyCart = verifyCartNull();
         if (verifyCart === true) {alert("Não é possível fazer um pedido com carrinho vazio.");}
         else{
             const getMesa = localStorage.getItem('mesaToken')
@@ -136,7 +139,7 @@ export default function CartPage()
             }
             else
             {
-                await orderDelivery();
+                orderDelivery();
             }
         }
     } 

@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {useNavigate, Link} from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import api from "../../../../services/api";
+import { FaArrowLeft as Back } from "react-icons/fa";
 
 export default function ClientOrder()
 {
@@ -35,8 +36,22 @@ export default function ClientOrder()
         getOrdersByUser();
     }, [])
 
+    function getItens(idPedido)
+    {
+        localStorage.setItem('OrderId', idPedido);
+        navigate('/pedidos/itens')
+    }
+
     return (
         <div>
+            <div>
+                <button>
+                    <Link to='/home'>
+                        <Back />
+                        <h3>Voltar para pedidos</h3>
+                    </Link>
+                </button>
+            </div>
             {
                 pedidos.length > 0 ? (
                     <div>
@@ -44,6 +59,7 @@ export default function ClientOrder()
                             {
                                 pedidos.map(pedido => 
                                     <li key={pedido.idPedido}>
+                                        <button onClick={() => getItens(pedido.idPedido)}>
                                         {pedido.dataPedido}
                                         <br></br>
                                         {pedido.horaPedido}
@@ -77,7 +93,7 @@ export default function ClientOrder()
                                             ))}
                                         </ul>
                                         {pedido.totalPedido}
-                                        <hr></hr>
+                                        </button>
                                     </li>
                                 )
                             }

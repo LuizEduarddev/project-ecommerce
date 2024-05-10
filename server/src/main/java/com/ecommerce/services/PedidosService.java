@@ -74,7 +74,7 @@ public class PedidosService {
             Date dataAtual = new Date();
             SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
             String dataFormatada = formatDate.format(dataAtual);
-            pedido.setDataPedido(dataFormatada  );
+            pedido.setDataPedido(dataFormatada);
 
             pedido.setHoraPedido(formattedTime);
 

@@ -28,8 +28,8 @@ public class PedidosController {
         return service.getPedidoByUser(token);
     }
 
-    @PostMapping("/get-by-id/{idPedido}")
-    public Pedidos getById(@PathVariable String idPedido)
+    @PostMapping("/get-by-id")
+    public Pedidos getById(@RequestBody String idPedido)
     {
         return service.getPedidoById(idPedido);
     }
