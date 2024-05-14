@@ -2,7 +2,7 @@ import React, {useState, useEffect} from "react";
 import {useNavigate, Link} from 'react-router-dom';
 import { FaCheck as Check} from "react-icons/fa";
 import { MdOutlinePayments as Cash,  MdOutlineCleaningServices as Clean, MdHome as Home, MdTableBar as Table} from "react-icons/md";
-import api from '../../services/api.js'
+import api from '../../../../services/api.js'
 import Cookies from 'universal-cookie';
 
 export default function CartPage()

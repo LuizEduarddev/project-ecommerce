@@ -32,13 +32,44 @@ function Copyright(props) {
   );
 }
 
+function sendRoute(authority, navigate)
+{
+  
+  if (authority.find(authoritys => authoritys.authority === "ROLE_ADMIN"))
+  {
+    navigate('/dashboard');
+  }
+  else if (authority.find(authoritys => authoritys.authority === "ROLE_USER"))
+  {
+    navigate('/home');
+  }
+  else if(authority.find(authoritys => authoritys.authority === "ROLE_ADMIN"))
+  {
+    navigate('/kitchen');
+  }
+}
+
+async function getAuthority(token, navigate)
+{
+  api.post('http://localhost:8080/api/auth/send-route', token)
+  .then(response => {
+      cookies.set('SessionId', token);
+      sendRoute(response.data, navigate)
+    })
+  .catch(error => {
+    console.log(error.response.data.message);
+  })
+}
+
 async function tryLogin(data, navigate)
 {
   console.log(data);
   api.post('http://localhost:8080/api/auth/login', data)
   .then(response => {
-    cookies.set('SessionId', response.data.token);
+    getAuthority(response.data.token, navigate);
+    /*
     navigate("/home");
+    */
   })
   .catch(error => {
     const errorMessage = error.response.data.message;

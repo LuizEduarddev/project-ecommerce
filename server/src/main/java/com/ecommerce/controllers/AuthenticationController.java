@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import com.ecommerce.entities.dto.AuthDTO;
@@ -16,6 +17,7 @@ import com.ecommerce.repository.UsersRepository;
 import com.ecommerce.services.AuthenticationService;
 import com.ecommerce.services.TokenService;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -37,8 +39,13 @@ public class AuthenticationController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponseDTO> login(@RequestBody AuthDTO data)
 	{
-		System.out.println(data);
 		return service.loginUser(data);
+	}
+
+	@PostMapping("/send-route")
+	public Collection<? extends GrantedAuthority> routesByPermission(@RequestBody String token)
+	{
+		return service.getPermission(token);
 	}
 
 	@PostMapping("/get-username")

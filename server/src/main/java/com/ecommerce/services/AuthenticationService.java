@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import com.ecommerce.entities.dto.LoginResponseDTO;
 import com.ecommerce.entities.dto.RegisterDTO;
 import com.ecommerce.repository.UsersRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -78,6 +80,18 @@ public class AuthenticationService {
 		catch(Exception e)
 		{
 			throw new RuntimeException("Erro ao tentar recuperar nome de usuario");
+		}
+	}
+
+	public Collection<? extends GrantedAuthority> getPermission(String token) {
+		Users user = repository.findByLoginUser(getUserName(token));
+		if (user == null)
+		{
+			throw  new RuntimeException("Usuário não encontrado");
+		}
+		else
+		{
+			return user.getAuthorities();
 		}
 	}
 
