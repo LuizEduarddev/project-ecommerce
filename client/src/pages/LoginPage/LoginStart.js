@@ -43,7 +43,7 @@ function sendRoute(authority, navigate)
   {
     navigate('/home');
   }
-  else if(authority.find(authoritys => authoritys.authority === "ROLE_ADMIN"))
+  else if(authority.find(authoritys => authoritys.authority === "ROLE_COZINHA-CAFE"))
   {
     navigate('/kitchen');
   }

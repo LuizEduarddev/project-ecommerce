@@ -1,9 +1,6 @@
 package com.ecommerce.services;
 
-import com.ecommerce.entities.Mesa;
-import com.ecommerce.entities.Pedidos;
-import com.ecommerce.entities.Products;
-import com.ecommerce.entities.Users;
+import com.ecommerce.entities.*;
 import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
@@ -11,6 +8,7 @@ import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -36,9 +34,22 @@ public class PedidosService {
     @Autowired
     private AuthenticationService authenticationService;
 
-    public List<Pedidos> getAllPedidos()
+    public List<Pedidos> getAllPedidos(String token)
     {
-        return repository.findAll();
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        boolean hasCozinha = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
+        boolean hasAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (hasCozinha|| hasAdmin)
+        {
+            return repository.findAll();
+        }
+        else {
+            throw new RuntimeException("Requerido uma permissão maior.");
+        }
+
     }
 
     public Pedidos getPedidoById(String id)

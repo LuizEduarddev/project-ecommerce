@@ -43,7 +43,8 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/send-route")
-	public Collection<? extends GrantedAuthority> routesByPermission(@RequestBody String token)
+	public Collection<? extends GrantedAuthority>
+	routesByPermission(@RequestBody String token)
 	{
 		return service.getPermission(token);
 	}

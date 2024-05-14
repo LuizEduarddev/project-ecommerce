@@ -2,7 +2,8 @@ package com.ecommerce.entities;
 
 public enum UserRole {
     ADMIN("admin"),
-    USER("user");
+    USER("user"),
+    COZINHACAFE("cozinha-cafe");
 
     private String role;
 

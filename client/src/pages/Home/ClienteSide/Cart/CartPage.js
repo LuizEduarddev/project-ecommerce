@@ -11,7 +11,6 @@ export default function CartPage()
     const [cart, setCart] = useState([]);
     const [total, setTotal] = useState(0);
     const navigate = useNavigate ();
-    const pagamento = 1000;
     const cookies = new Cookies();
 
     useEffect(() => {

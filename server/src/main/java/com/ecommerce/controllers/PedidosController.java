@@ -16,10 +16,10 @@ public class PedidosController {
     @Autowired
     private PedidosService service;
 
-    @GetMapping("/get-all")
-    public List<Pedidos> getAll()
+    @PostMapping("/get-all")
+    public List<Pedidos> getAll(@RequestBody String token)
     {
-        return service.getAllPedidos();
+        return service.getAllPedidos(token);
     }
 
     @PostMapping("/get-by-user")
