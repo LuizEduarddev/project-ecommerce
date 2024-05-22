@@ -67,7 +67,7 @@ public class Users implements UserDetails {
 		if (this.userRole == UserRole.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
 		else if (this.userRole == null) return List.of(new SimpleGrantedAuthority("ROLE_USER"));
 		else if (this.userRole == UserRole.COZINHACAFE) return List.of(new SimpleGrantedAuthority("ROLE_COZINHA-CAFE"));
-		return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+		else return List.of(new SimpleGrantedAuthority("ROLE_USER"));
 	}
 
 	public String getIdUser() {

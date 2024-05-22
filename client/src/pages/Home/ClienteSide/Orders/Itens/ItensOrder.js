@@ -19,6 +19,7 @@ export default function ItensOrder() {
                     if (response.data) {
                         setPedidos(response.data);
                         setIsLoading(false);
+                        localStorage.removeItem('idPedido');
                     } else {
                         setError("Pedido não encontrado.");
                         setIsLoading(false);
@@ -26,10 +27,12 @@ export default function ItensOrder() {
                 } catch (error) {
                     setError("Ocorreu um erro ao buscar o pedido.");
                     setIsLoading(false);
+                    localStorage.removeItem('idPedido');
                 }
             } else {
                 setError("Nenhum ID de pedido encontrado.");
                 setIsLoading(false);
+                localStorage.removeItem('idPedido');
             }
         }
 

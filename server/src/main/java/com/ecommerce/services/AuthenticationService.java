@@ -74,13 +74,14 @@ public class AuthenticationService {
 	}
 
 	public String getUserName(String token) {
-		try
+
+		String getUser = tokenService.validateToken(token);
+		if (getUser != null)
 		{
-			return tokenService.validateToken(token);
+			return getUser;
 		}
-		catch(Exception e)
-		{
-			throw new RuntimeException("Erro ao tentar recuperar nome de usuario");
+		else{
+			throw new RuntimeException("Falha ao tentar recuperar nome de usuário.");
 		}
 	}
 

@@ -91,7 +91,7 @@ export default function CartPage()
         {
             const savedCart = JSON.parse(getCarrinho);
             const filterIdNull = savedCart.filter(item => item.idProd === null)
-            if (filterIdNull.length > 0)
+            if (savedCart.length > 0)
             {
                 return false;
             }
@@ -134,7 +134,7 @@ export default function CartPage()
             const getMesa = localStorage.getItem('mesaToken')
             if (getMesa)
             {
-    
+                console.log('pegou a mesa')
             }
             else
             {

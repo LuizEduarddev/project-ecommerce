@@ -7,6 +7,7 @@ import ClientOrder from "./pages/Home/ClienteSide/Orders/ClientOrder";
 import ItensOrder from "./pages/Home/ClienteSide/Orders/Itens/ItensOrder";
 import KitchenPage from "./pages/Home/KitchenSide/KitchenHome/KitchenPage";
 import DashboardPage from "./pages/Home/AdminSide/Dashboard/DashboardPage";
+import KitchenOrderIndex from "./pages/Home/KitchenSide/KitchenOrder/KitchenOrderIndex";
 
 export default function Rotas(){
     return(
@@ -18,6 +19,7 @@ export default function Rotas(){
                 <Route path="/pedidos" Component={ClientOrder} />
                 <Route path="/pedidos/itens" Component={ItensOrder} />
                 <Route path="/kitchen" Component={KitchenPage} />
+                <Route path="/kitchen/pedido" Component={KitchenOrderIndex} />
                 <Route path="/dashboard" Component={DashboardPage} />
             </Routes>
         </Router>

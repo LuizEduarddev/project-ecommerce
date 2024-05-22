@@ -7,9 +7,11 @@ import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -44,6 +46,7 @@ public class PedidosService {
 
         if (hasCozinha|| hasAdmin)
         {
+            System.out.println("Usuario: " + authenticationService.getUserName(token) + " tem autorizacao");
             return repository.findAll();
         }
         else {
@@ -52,10 +55,13 @@ public class PedidosService {
 
     }
 
-    public Pedidos getPedidoById(String id)
+    public Pedidos getPedidoById(String id, String token)
     {
-        return repository.findById(id)
+        if (checkUserAuthority(token) == HttpStatus.ACCEPTED) return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido nao encontrado."));
+        else{
+            throw new RuntimeException("É necessária uma permissao maior para esta acao.");
+        }
     }
 
     public ResponseEntity<String> addPedidoDelivery(List<ProductsDTO> products, String tokenUser)
@@ -158,16 +164,39 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPronto(String idPedido)
+    private HttpStatus checkUserAuthority(String token)
+    {
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        if (user != null)
+        {
+            boolean hasCozinha = user.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
+            if (hasCozinha) return HttpStatus.ACCEPTED;
+            else {
+                return HttpStatus.FAILED_DEPENDENCY;
+            }
+        }
+        else{
+            throw new RuntimeException("Houve um erro ao tentar buscar o usuário.");
+        }
+    }
+
+    public ResponseEntity<String> setPedidoPronto(String idPedido, String token)
     {
         try
         {
             Pedidos pedido = repository.findById(idPedido)
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
-            pedido.setPedidoPronto(true);
-            repository.saveAndFlush(pedido);
-            return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            if (checkUserAuthority(token) == HttpStatus.ACCEPTED)
+            {
+                pedido.setPedidoPronto(true);
+                repository.saveAndFlush(pedido);
+                return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            }
+            else{
+                throw new RuntimeException("É necessário uma autoridade maior para executar esta acao");
+            }
         }
         catch (Exception e)
         {
