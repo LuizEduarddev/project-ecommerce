@@ -6,6 +6,7 @@ import { FaArrowLeft as Back } from "react-icons/fa";
 
 export default function KitchenOrderIndex() {
     const [pedidos, setPedidos] = useState(null);
+    const [session, setSession] = useState();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function KitchenOrderIndex() {
                     } else {
                         setError("Pedido não encontrado.");
                         setIsLoading(false);
+                        localStorage.removeItem('idPedido');
                     }
                 } catch (error) {
                     setError("Ocorreu um erro ao buscar o pedido.");
@@ -59,6 +61,7 @@ export default function KitchenOrderIndex() {
         .then(response => {
             const cozinhaLogin = response.data.filter(permissions => permissions.authority === "ROLE_COZINHA-CAFE");
             if (cozinhaLogin !== null) {
+                setSession(token);
                 return;
             }
             else{
@@ -99,7 +102,19 @@ export default function KitchenOrderIndex() {
 
     function pedidoPronto(idPedido)
     {
-        api.post('http://localhost:8080/api/pedido')
+        const dataSend = {
+            idPedido: pedidos.idPedido,
+            token: session
+        }
+
+        api.post('http://localhost:8080/api/pedidos/set-pr', dataSend)
+        .then(response =>{
+            alert('Pedido alterado com sucesso, retornando para a página inicial.');
+            navigate('/kitchen');
+        })
+        .catch(error => {
+            alert(error.response.data.message);
+        })
     }
 
     return (

@@ -32,7 +32,7 @@ export default function KitchenPage() {
                 setPedidoCarregado(true);
             }
         }
-    }, []);
+    },[pedidos]);
 
     function pedidoNull() {
         return (
@@ -46,65 +46,110 @@ export default function KitchenPage() {
     {
         localStorage.setItem('idPedido', idPedido);
         navigate('pedido')
+    }   
+
+    function printPedido(pedido)
+    {
+        return (
+            <div>
+                <h2>
+                    <button onClick ={() => getPedido(pedido.idPedido)} >
+                        <li key={pedido.idPedido}>
+                            <Box>
+                                {pedido.users.username}
+                                <br/>
+                                {pedido.dataPedido}
+                                <br />
+                                {pedido.horaPedido}
+                                <br />
+                                <ul>
+                                    {pedido.produtos.map(produto => (
+                                        <li key={produto.idProd}>
+                                            {produto.nomeProd}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Box>
+                        </li>
+                    </button>
+                </h2>
+            </div>
+        );
+    }
+
+    function pedidoPendente()
+    {
+        const pedidosPendentes = pedidos.filter(pedido => pedido.pedidoPronto === false)
+        if (pedidosPendentes.length > 0)
+        {
+            return (
+                <div>
+                    <h1>Pedidos pendentes</h1>
+                            {
+                                pedidos.map(pedido => (
+                                    pedido.pedidoPronto === false ?
+                                    (
+                                        printPedido(pedido)
+                                    )                 
+                                    :
+                                    (
+                                        null
+                                    )
+                                ))                 
+                            }
+                </div>
+            );
+        }
+        else{
+            return(
+                null
+            );
+        }
+    }
+
+    function pedidoPronto()
+    {
+        const pedidosAnteriores = pedidos.filter(pedido => pedido.pedidoPronto === true)
+        if (pedidosAnteriores.length > 0)
+        {
+            return (
+                <div>
+                    <h1>Pedidos anteriores</h1>
+                            {
+                                pedidos.map(pedido => (
+                                    pedido.pedidoPronto === true ?
+                                    (
+                                        printPedido(pedido)
+                                    )                 
+                                    :
+                                    (
+                                        null
+                                    )
+                                ))                 
+                            }
+                </div>
+            );
+        }
+        else{
+            return(
+                null
+            );
+        }
     }
 
     function pedidosMap() {
         return (
-            <div>
+            <div>     
+                <div>
                 {
-                    pedidos.map(pedido => (
-                        pedido.pedidoPronto === false ?
-                        (
-                            <div>
-                                <h1>Pedidos pendentes</h1>
-                                <h2>
-                                    <button onClick ={() => getPedido(pedido.idPedido)} >
-                                        <li key={pedido.idPedido}>
-                                            <Box>
-                                                {pedido.dataPedido}
-                                                <br />
-                                                {pedido.horaPedido}
-                                                <br />
-                                                <ul>
-                                                    {pedido.produtos.map(produto => (
-                                                        <li key={produto.idProd}>
-                                                            {produto.nomeProd}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </Box>
-                                        </li>
-                                    </button>
-                                </h2>
-                            </div>
-                        )
-                        :
-                        (
-                            <div>
-                            <h1>Pedidos anteriores</h1>
-                            <h2>
-                                <button onClick ={() => getPedido(pedido.idPedido)} >
-                                    <li key={pedido.idPedido}>
-                                        <Box>
-                                            {pedido.dataPedido}
-                                            <br />
-                                            {pedido.horaPedido}
-                                            <br />
-                                            <ul>
-                                                {pedido.produtos.map(produto => (
-                                                    <li key={produto.idProd}>
-                                                        {produto.nomeProd}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </Box>
-                                    </li>
-                                </button>
-                            </h2>
-                        </div>
-                        )
-                    ))
+                    pedidoPendente()
                 }
+                </div>
+                <div>
+                {
+                    pedidoPronto()
+                }
+                </div>
             </div>
         );
     }

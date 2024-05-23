@@ -48,9 +48,9 @@ public class PedidosController {
     }
 
     @PostMapping("/set-pr")
-    public ResponseEntity<String> setPronto(@RequestBody String idPedido, @RequestBody String token)
+    public ResponseEntity<String> setPronto(@RequestBody PedidoAuthorityDTO data)
     {
-        return service.setPedidoPronto(idPedido, token);
+        return service.setPedidoPronto(data.idPedido(), data.token());
     }
 
     @PostMapping("/set-pa/{idPedido}")

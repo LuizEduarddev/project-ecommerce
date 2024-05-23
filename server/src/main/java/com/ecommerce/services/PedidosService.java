@@ -46,7 +46,6 @@ public class PedidosService {
 
         if (hasCozinha|| hasAdmin)
         {
-            System.out.println("Usuario: " + authenticationService.getUserName(token) + " tem autorizacao");
             return repository.findAll();
         }
         else {
