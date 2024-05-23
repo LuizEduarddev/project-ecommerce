@@ -30,6 +30,7 @@ export default function ClientPage()
             if (produtoExistente.quantidade !== quantidade) {
                 produtoExistente.quantidade = quantidade;
                 produtoExistente.valorTotalIten = produto.precoProd * quantidade;
+                produtoExistente.valorUnitarioItem = produto.precoProd
                 localStorage.setItem('cart', JSON.stringify(cartItens));
                 setCarrinho([...cartItens]);
             }
@@ -38,7 +39,8 @@ export default function ClientPage()
                 idProd: produto.idProd,
                 nomeProd: produto.nomeProd,
                 quantidade: quantidade,
-                valorTotalIten: produto.precoProd * quantidade
+                valorTotalIten: produto.precoProd * quantidade,
+                valorUnitarioItem: produto.precoProd
             });
             localStorage.setItem('cart', JSON.stringify(cartItens));
             setCarrinho([...cartItens]);
@@ -50,7 +52,8 @@ export default function ClientPage()
           idProd: produto.idProd,
           nomeProd: produto.nomeProd,
           quantidade: quantidade,
-          valorTotalIten: produto.precoProd * quantidade
+          valorTotalIten: produto.precoProd * quantidade,
+          valorUnitarioItem: produto.precoProd
         }];
         localStorage.setItem('cart', JSON.stringify(cartItens));
         setCarrinho([...cartItens]);
