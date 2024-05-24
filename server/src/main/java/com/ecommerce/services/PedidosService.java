@@ -163,6 +163,23 @@ public class PedidosService {
         }
     }
 
+    private HttpStatus checkUserAuthorityAdmin(String token)
+    {
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        if (user != null)
+        {
+            boolean hasAdmin = user.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (hasAdmin) return HttpStatus.ACCEPTED;
+            else {
+                return HttpStatus.FAILED_DEPENDENCY;
+            }
+        }
+        else{
+            throw new RuntimeException("Houve um erro ao tentar buscar o usuário.");
+        }
+    }
+
     private HttpStatus checkUserAuthority(String token)
     {
         Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
@@ -229,6 +246,18 @@ public class PedidosService {
         else{
             List<Pedidos> pedidos = repository.findByUsers(user);
             return pedidos;
+        }
+    }
+
+    public PedidosAdminDTO getAllPedidosAdmin(String token) {
+        if (checkUserAuthorityAdmin(token) == HttpStatus.ACCEPTED)
+        {
+            List<Pedidos> pedidosList = repository.findAll();
+            double total = pedidosList.stream().mapToDouble(Pedidos::getTotalPedido).sum();
+            return new PedidosAdminDTO(pedidosList, total);
+        }
+        else{
+            throw new RuntimeException("É necessária uma hierarquia maior para acessar esta página.");
         }
     }
 }

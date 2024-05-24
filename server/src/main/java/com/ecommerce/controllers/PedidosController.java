@@ -3,6 +3,7 @@ package com.ecommerce.controllers;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.dto.PedidoAuthorityDTO;
 import com.ecommerce.entities.dto.ProductsDTO;
+import com.ecommerce.services.PedidosAdminDTO;
 import com.ecommerce.services.PedidosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,12 @@ public class PedidosController {
     public List<Pedidos> getAll(@RequestBody String token)
     {
         return service.getAllPedidos(token);
+    }
+
+    @PostMapping("/get-all-admin")
+    public PedidosAdminDTO getAllAdmin(@RequestBody String token)
+    {
+        return service.getAllPedidosAdmin(token);
     }
 
     @PostMapping("/get-by-user")

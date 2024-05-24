@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useEffect, useState} from "react";
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -21,13 +21,17 @@ import { mainListItems, secondaryListItems } from './ListItems';
 import Chart from './Chart';
 import Deposits from './Deposits';
 import Orders from './Orders';
+import Cookies from 'universal-cookie';
+import { useNavigate } from 'react-router-dom';
+import api from '../../../../services/api';
+
 
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        Maria Amélia Doces 2016
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -85,10 +89,42 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const defaultTheme = createTheme();
 
 export default function DashBoardPage() {
+
+  const cookie = new Cookies;
+  const navigate = useNavigate();
+  const [session, setSession] = useState();
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
+  useEffect(() => {
+    const session = cookie.get('SessionId');
+    if (session)
+    {
+      checkAutority(session);
+    }
+    else{
+        alert('É ncessário estar logado para acessar está página.');
+        navigate('/login');
+    }
+  }, [])
+
+  function checkAutority(token)
+  {
+      api.post('http://localhost:8080/api/auth/send-route', token)
+      .then(response => {
+          const adminLogin = response.data.filter(permissions => permissions.authority === "ROLE_ADMIN");
+          if (adminLogin !== null) {
+              setSession(token);
+              return;
+          }
+      })
+      .catch(error => {
+          alert('É necessária uma hierarquia maior para acessar esta página.');
+          navigate('/login');
+      })
+  }
 
   return (
     <ThemeProvider theme={defaultTheme}>
