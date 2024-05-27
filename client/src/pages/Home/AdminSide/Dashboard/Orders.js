@@ -15,53 +15,101 @@ export default function Orders() {
   const cookie = new Cookies();
   const navigate = useNavigate();
   const [allOrders, setAllOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const session = cookie.get('SessionId');
 
-  async function getData(token)
+  if (session === null)
   {
-    api.post('http://localhost:8080/api/pedidos/get-all-admin', token)
+    alert('Um erro ocorreu ao tentar pegar o usuário.');
+    navigate('/login');
+  }
+
+  useEffect(() => {
+
+    async function getData(token)
+    {
+      api.post('http://localhost:8080/api/pedidos/get-all-admin', token)
+      .then(response => {
+        const payment = response.data.pedidosList.filter(prod => prod.pedidoPago === true);
+        console.log(payment);  
+        setAllOrders(payment);
+        setLoading(false);
+      })
+      .catch(error => {
+        alert(error.response.data.message);
+        navigate('/login');
+      })
+    }
+  
+    getData(session);
+  }, [])
+
+  if (loading)
+  {
+    return (
+      <div>
+        Carregando.....
+      </div>
+    ); 
+  }
+
+  async function getUser(idUser)
+  {
+    const data = {
+      id: idUser,
+      token: session
+    }
+    api.post('http://localhost:8080/api/auth/get-by-id', data)
     .then(response => {
-        return response.data.pedidosList;
+      console.log(response);
+      return "João"
     })
     .catch(error => {
-      alert(error.response.data.message);
-      navigate('/login');
+      console.log(error.response.data.message);
+      return "null";
     })
   }
 
-  getData(session);
+  function transformMoeda(valor)
+  {
+      const formattedTotal = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(valor);
+
+      return formattedTotal;
+  }
 
   function preventDefault(event) {
     event.preventDefault();
   }
+
   return (
     <React.Fragment>
-      <Title>Recent Orders</Title>
+      <Title>Pedidos recentes</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Date</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Ship To</TableCell>
-            <TableCell>Payment Method</TableCell>
-            <TableCell align="right">Sale Amount</TableCell>
+            <TableCell>Data</TableCell>
+            <TableCell>Hora do pedido</TableCell>
+            <TableCell>Cliente</TableCell>
+            <TableCell align="right">Total pedido</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.date}</TableCell>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.shipTo}</TableCell>
-              <TableCell>{row.paymentMethod}</TableCell>
-              <TableCell align="right">{`$${row.amount}`}</TableCell>
+          {allOrders.map((order) => (
+            <TableRow key={order.idPedido}>
+              <TableCell>{order.dataPedido}</TableCell>
+              <TableCell>{order.horaPedido}</TableCell>
+              <TableCell>{getUser(order.users.idUser)}</TableCell>
+              <TableCell align="right">{`${transformMoeda(order.totalPedido)}`}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <Link color="primary" href="#" onClick={preventDefault} sx={{ mt: 3 }}>
-        See more orders
+        Ver mais pedidos
       </Link>
     </React.Fragment>
   );

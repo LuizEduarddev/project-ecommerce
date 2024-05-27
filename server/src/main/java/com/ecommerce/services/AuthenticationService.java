@@ -26,6 +26,7 @@ import com.ecommerce.repository.UsersRepository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthenticationService {
@@ -97,13 +98,22 @@ public class AuthenticationService {
 		}
 	}
 
-	/*
-    public ResponseEntity<String> alter(AlterDTO data, String id) {
-		Users user = repository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Usuario nao encontrado no sistema"));
-
-		repository.saveAndFlush()
+	public ResponseEntity<String> getById(String id, String token) {
+		Users user = repository.findByLoginUser(getUserName(token));
+		if (user != null)
+		{
+			boolean hasAdmin = user.getAuthorities().stream()
+					.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+			if(hasAdmin)
+			{
+				return ResponseEntity.ok(user.getUserFullName());
+			}
+			else{
+				throw new RuntimeException("É necessária uma hierárquia maior.");
+			}
+		}
+		else{
+			throw new RuntimeException("Ocorreu um erro ao tentar buscar o usuário.");
+		}
 	}
-	*/
-
 }

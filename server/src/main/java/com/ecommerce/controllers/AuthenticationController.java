@@ -1,7 +1,7 @@
 package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Users;
-import com.ecommerce.entities.dto.AlterDTO;
+import com.ecommerce.entities.dto.*;
 import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,15 +10,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import com.ecommerce.entities.dto.AuthDTO;
-import com.ecommerce.entities.dto.LoginResponseDTO;
-import com.ecommerce.entities.dto.RegisterDTO;
 import com.ecommerce.repository.UsersRepository;
 import com.ecommerce.services.AuthenticationService;
 import com.ecommerce.services.TokenService;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,6 +38,12 @@ public class AuthenticationController {
 	public ResponseEntity<LoginResponseDTO> login(@RequestBody AuthDTO data)
 	{
 		return service.loginUser(data);
+	}
+
+	@PostMapping("/get-by-id")
+	public ResponseEntity<String> getById(@RequestBody GetUserDTO dto)
+	{
+		return service.getById(dto.id(), dto.token());
 	}
 
 	@PostMapping("/send-route")
