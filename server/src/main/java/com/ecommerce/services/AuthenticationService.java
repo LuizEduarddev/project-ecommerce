@@ -1,20 +1,13 @@
 package com.ecommerce.services;
 
-import com.auth0.jwt.impl.ClaimsHolder;
-import com.ecommerce.entities.dto.AlterDTO;
 import com.ecommerce.infra.security.SecurityFilter;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +19,6 @@ import com.ecommerce.repository.UsersRepository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AuthenticationService {
@@ -42,6 +34,10 @@ public class AuthenticationService {
 
 	@Autowired
 	private SecurityFilter securityFilter;
+
+	@Autowired
+	@Lazy
+	private PedidosService pedidosService;
 	
 	public ResponseEntity<LoginResponseDTO> loginUser(AuthDTO data)
 	{
@@ -98,7 +94,7 @@ public class AuthenticationService {
 		}
 	}
 
-	public ResponseEntity<String> getById(String id, String token) {
+	public String getById(String id, String token) {
 		Users user = repository.findByLoginUser(getUserName(token));
 		if (user != null)
 		{
@@ -106,7 +102,9 @@ public class AuthenticationService {
 					.anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 			if(hasAdmin)
 			{
-				return ResponseEntity.ok(user.getUserFullName());
+				Users nomeCliente = repository.findById(id)
+						.orElseThrow(() -> new RuntimeException("Cliente não encontrado."));
+				return nomeCliente.getUsername();
 			}
 			else{
 				throw new RuntimeException("É necessária uma hierárquia maior.");

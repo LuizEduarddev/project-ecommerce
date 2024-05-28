@@ -41,7 +41,7 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/get-by-id")
-	public ResponseEntity<String> getById(@RequestBody GetUserDTO dto)
+	public String getById(@RequestBody GetUserDTO dto)
 	{
 		return service.getById(dto.id(), dto.token());
 	}
