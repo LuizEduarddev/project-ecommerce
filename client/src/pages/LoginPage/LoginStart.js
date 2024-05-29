@@ -57,7 +57,7 @@ async function getAuthority(token, navigate)
       sendRoute(response.data, navigate)
     })
   .catch(error => {
-    console.log(error.response.data.message);
+    alert(error.response.data.message);
   })
 }
 

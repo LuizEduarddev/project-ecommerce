@@ -6,13 +6,13 @@ import api from '../../../../services/api';
 import Cookies from 'universal-cookie';
 import { CiShoppingCart as Carrinho} from "react-icons/ci";
 import {useNavigate} from 'react-router-dom';
+import { PaymentRounded } from '@mui/icons-material';
 
 export default function Deposits()
 {
   const cookie = new Cookies();
   const navigate = useNavigate();
   const [totalOrder, setTotalOrder] = useState();
-  const [allOrders, setAllOrders] = useState([]);
   const [session, setSession] = useState();
 
   useEffect(() => {
@@ -23,18 +23,25 @@ export default function Deposits()
     {
       api.post('http://localhost:8080/api/pedidos/get-all-admin', token)
       .then(response => {
-          const total = response.data.total
+          let total = 0;
+          const payed = response.data.pedidosList.filter(item => item.pedidoPago === true);
+          const totalPedido = payed.map(pago => total += pago.totalPedido)
           const formattedTotal = new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
           }).format(total);
   
-          setAllOrders(response.data.pedidosList);
           setTotalOrder(formattedTotal);
       })
       .catch(error => {
-        alert(error.response.data.message);
-        navigate('/login');
+        try{
+          alert(error.response.data.message);
+          navigate('/login');
+        }
+        catch{
+          alert(error);
+          navigate('/login');
+        }
       })
     }
 

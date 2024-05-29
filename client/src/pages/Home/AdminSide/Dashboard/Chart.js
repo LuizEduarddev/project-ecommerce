@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { LineChart, axisClasses } from '@mui/x-charts';
-
+import api from '../../../../services/api';
+import React, {useEffect, useState} from "react";
 import Title from './Title';
+import Cookies from 'universal-cookie';
+import {useNavigate} from 'react-router-dom';
 
 // Generate Sales Data
 function createData(time, amount) {
@@ -10,19 +13,71 @@ function createData(time, amount) {
 }
 
 const data = [
-  createData('00:00', 0),
-  createData('03:00', 300),
-  createData('06:00', 600),
-  createData('09:00', 800),
-  createData('12:00', 1500),
-  createData('15:00', 2000),
-  createData('18:00', 2400),
-  createData('21:00', 2400),
-  createData('24:00'),
-];
+  createData('10', 3000);
+]
+
+function setData(pedidos)
+{
+  try
+  {
+    pedidos.map(pedido => {
+      createData(pedido.horaPedido, pedido.totalPedido);
+    })
+  }
+  catch(error) 
+  {
+    alert(error);
+  }
+}
+
+function formattNumberInReal(total)
+{
+  const formattedTotal = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(total);
+  return formattedTotal;
+}
 
 export default function Chart() {
   const theme = useTheme();
+  const cookie = new Cookies();
+  const navigate = useNavigate();
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+
+    const session = cookie.get('SessionId');
+
+    async function getData(token)
+    {
+      api.post('http://localhost:8080/api/pedidos/get-all-admin', token)
+      .then(response => {
+          let total = 0;
+          const payed = response.data.pedidosList.filter(item => item.pedidoPago === true);
+          const totalPedido = payed.map(pedidoPago => {
+            total += pedidoPago.totalPedido
+            let valorPedido = formattNumberInReal(pedidoPago.totalPedido);
+            createData(pedidoPago.horaPedido, valorPedido);
+          })
+          formattNumberInReal(total);
+  
+          setTotalOrder(formattedTotal);
+      })
+      .catch(error => {
+        try{
+          alert(error.response.data.message);
+          navigate('/login');
+        }
+        catch{
+          alert(error);
+          navigate('/login');
+        }
+      })
+    }
+
+    getData(session);
+  }, [])
 
   return (
     <React.Fragment>
