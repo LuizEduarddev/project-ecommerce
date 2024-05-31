@@ -2,9 +2,11 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Users;
 import com.ecommerce.entities.dto.*;
+import com.ecommerce.services.MesaService;
 import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,11 +35,17 @@ public class AuthenticationController {
 	
 	@Autowired
 	private AuthenticationService service;
+
+	@Autowired
+	@Lazy
+	private MesaService mesaService;
 	
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponseDTO> login(@RequestBody AuthDTO data)
 	{
-		return service.loginUser(data);
+		String token = service.loginUser(data);
+		Optional<Integer> numeroMesa = mesaService.addClienteMesa(data.mesaId(), token);
+		return ResponseEntity.ok(new LoginResponseDTO(token, numeroMesa));
 	}
 
 	@PostMapping("/get-by-id")

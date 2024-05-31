@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/mesa")
@@ -21,6 +22,12 @@ public class MesaController {
         return service.getAllMesa();
     }
 
+    @PostMapping("/get-by-id")
+    public Optional<Mesa> getAll(@RequestBody String token)
+    {
+        return service.getMesaById(token);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<String> add(@RequestBody Mesa mesa)
     {
@@ -28,9 +35,10 @@ public class MesaController {
     }
 
     @PutMapping("/add-cliente/{idMesa}/{idCliente}")
-    public ResponseEntity<String> addCliente(@PathVariable String idMesa, @PathVariable String idCliente)
+    public ResponseEntity<Optional<Integer>> addCliente(@PathVariable String idMesa, @PathVariable String idCliente)
     {
-        return service.addClienteMesa(idMesa, idCliente);
+        Optional<Integer> numeroMesa = service.addClienteMesa(idMesa, idCliente);
+        return ResponseEntity.ok(numeroMesa);
     }
 
     @DeleteMapping("/delete-user/{idMesa}/{idCliente}")

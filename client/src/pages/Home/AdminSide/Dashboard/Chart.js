@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { LineChart, axisClasses } from '@mui/x-charts';
 import api from '../../../../services/api';
@@ -7,27 +6,8 @@ import Title from './Title';
 import Cookies from 'universal-cookie';
 import {useNavigate} from 'react-router-dom';
 
-// Generate Sales Data
 function createData(time, amount) {
   return { time, amount: amount ?? null };
-}
-
-const data = [
-  createData('10', 3000);
-]
-
-function setData(pedidos)
-{
-  try
-  {
-    pedidos.map(pedido => {
-      createData(pedido.horaPedido, pedido.totalPedido);
-    })
-  }
-  catch(error) 
-  {
-    alert(error);
-  }
 }
 
 function formattNumberInReal(total)
@@ -45,6 +25,36 @@ export default function Chart() {
   const navigate = useNavigate();
   const [data, setData] = useState({});
 
+  function instaciateData(pedido)
+  {
+    try{
+      createData(pedido.horaPedido, pedido.totalPedido);
+      if (data.length <= 0)
+      {
+        setData({});
+        let datas = {
+          horaPedido: pedido.horaPedido,
+          totalPedido: pedido.totalPedido
+        }
+        setData([...datas]);
+        console.log(data);
+      }
+      else{
+        let datas = {
+          horaPedido: pedido.horaPedido,
+          totalPedido: pedido.totalPedido
+        }
+        setData([...datas]);
+        console.log(data);
+      }
+    }
+    catch(error)
+    {
+      alert('Falha ao tentar instanciar o gráfico de pedidos.');
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
 
     const session = cookie.get('SessionId');
@@ -58,7 +68,7 @@ export default function Chart() {
           const totalPedido = payed.map(pedidoPago => {
             total += pedidoPago.totalPedido
             let valorPedido = formattNumberInReal(pedidoPago.totalPedido);
-            createData(pedidoPago.horaPedido, valorPedido);
+            instaciateData(pedidoPago.horaPedido, valorPedido);
           })
           formattNumberInReal(total);
   

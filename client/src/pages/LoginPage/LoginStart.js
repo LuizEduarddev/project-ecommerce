@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useEffect, useState} from "react";
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,7 +16,7 @@ import imageMA from './templates/maimage.jpg'
 import api from '../../services/api'
 import Cookies from 'universal-cookie';
 import { Alert } from '@mui/material';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams, useLocation} from 'react-router-dom';
 
 
 const cookies = new Cookies();
@@ -32,12 +32,25 @@ function Copyright(props) {
   );
 }
 
+/*
+function loadingCallBack()
+{
+  return (
+
+  );
+}
+*/
+
 function sendRoute(authority, navigate)
 {
   
   if (authority.find(authoritys => authoritys.authority === "ROLE_ADMIN"))
   {
     navigate('/dashboard');
+  }
+  else if (authority.find(authoritys => authoritys.authority === "ROLE_GARCOM"))
+  {
+    navigate('/customer/home');
   }
   else if (authority.find(authoritys => authoritys.authority === "ROLE_USER"))
   {
@@ -61,19 +74,25 @@ async function getAuthority(token, navigate)
   })
 }
 
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 async function tryLogin(data, navigate)
 {
-  console.log(data);
   api.post('http://localhost:8080/api/auth/login', data)
   .then(response => {
     getAuthority(response.data.token, navigate);
-    /*
-    navigate("/home");
-    */
   })
   .catch(error => {
-    const errorMessage = error.response.data.message;
-    alert(errorMessage);
+    try{
+      const errorMessage = error.response.data.message;
+      alert(errorMessage);
+    }
+    catch(error)
+    {
+      alert(error);
+    }
   })
 }
 
@@ -81,14 +100,20 @@ const defaultTheme = createTheme();
 
 export default function LoginStart() {
   const navigate = useNavigate ();
+  const [loading, setLoading] = useState(false);
+  let query = useQuery();
+  const idMesa = query.get("id");
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const itens = new FormData(event.currentTarget);
     const data = {
       "login": itens.get('email'),
-      "password": itens.get('password')
+      "password": itens.get('password'),
+      "mesaId": idMesa
     }
-    tryLogin(data, navigate)
+    console.log(data);
+    tryLogin(data, navigate);
   };
 
   return (

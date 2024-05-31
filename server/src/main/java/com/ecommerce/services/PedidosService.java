@@ -7,6 +7,7 @@ import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -43,8 +44,10 @@ public class PedidosService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
         boolean hasAdmin = user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean hasGarcom = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_GARCOM"));
 
-        if (hasCozinha|| hasAdmin)
+        if (hasCozinha|| hasAdmin || hasGarcom)
         {
             return repository.findAll();
         }
@@ -187,7 +190,9 @@ public class PedidosService {
         {
             boolean hasCozinha = user.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
-            if (hasCozinha) return HttpStatus.ACCEPTED;
+            boolean hasGarcom = user.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_GARCOM"));
+            if (hasCozinha || hasGarcom) return HttpStatus.ACCEPTED;
             else {
                 return HttpStatus.FAILED_DEPENDENCY;
             }

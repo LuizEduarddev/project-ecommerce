@@ -39,17 +39,15 @@ public class AuthenticationService {
 	@Lazy
 	private PedidosService pedidosService;
 	
-	public ResponseEntity<LoginResponseDTO> loginUser(AuthDTO data)
+	public String loginUser(AuthDTO data)
 	{
 		try
 		{
 			var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
 			var auth = this.manager.authenticate(usernamePassword);
-			var token = tokenService.generateToken((Users) auth.getPrincipal());
-			return ResponseEntity.ok(new LoginResponseDTO(token));
+            return tokenService.generateToken((Users) auth.getPrincipal());
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			throw new RuntimeException("Usuario ou senha incorretos");
 		}
 	}

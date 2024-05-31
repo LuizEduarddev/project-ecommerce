@@ -82,7 +82,6 @@ export default function ClientPage()
       setUsername(null);  
     }
     
-
     async function getProductsData()
     {
       api.get('http://localhost:8080/api/products/get-all')
@@ -115,6 +114,7 @@ export default function ClientPage()
           </div>
         )
       }
+      <div>
         <div>
             <button>
                 <Link to = '/cart'>
@@ -135,6 +135,17 @@ export default function ClientPage()
             </Link>
           </button>
         </div>
+        <div>
+          <button>
+            <Link to = '/mesa'>
+              <h3>
+                Mesa
+              </h3>
+            </Link>
+          </button>
+        </div>
+      </div>
+
       <div>
         <h1><strong>!PROMOCOES DO DIA!</strong></h1>
         <ul>

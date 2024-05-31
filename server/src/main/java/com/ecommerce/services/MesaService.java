@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MesaService {
@@ -21,6 +22,9 @@ public class MesaService {
     @Autowired
     private UsersRepository usersRepository;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     public List<Mesa> getAllMesa()
     {
         return repository.findAll();
@@ -30,8 +34,8 @@ public class MesaService {
     {
         try
         {
-            List<Users> users = new ArrayList<>();
-            mesa.setIdUsers(users);
+            mesa.setEmUso(false);
+            mesa.setMesaSuja(false);
             repository.saveAndFlush(mesa);
             return ResponseEntity.ok("Mesa criada com sucesso.");
         }
@@ -41,33 +45,46 @@ public class MesaService {
         }
     }
 
-    public ResponseEntity<String> addClienteMesa(String idMesa, String idCliente)
+    public Optional<Integer> addClienteMesa(String idMesa, String token)
     {
         try
         {
             Mesa mesa = repository.findById(idMesa)
                     .orElseThrow(() -> new RuntimeException("Mesa nao encontrada em 'addClienteMesa'"));
 
-            Users user = usersRepository.findById(idCliente)
-                    .orElseThrow(() -> new RuntimeException("Cliente nao encontrado em 'addClienteMesa'"));
+            Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
 
-            if (!mesa.getIdUsers().isEmpty())
+            Optional<Mesa> isInMesa = repository.findMesaByUsers(user);
+
+            if (isInMesa.isPresent())
             {
-                mesa.setEmUso(true);
+                return Optional.empty();
             }
+            else{
+                if (!mesa.isEmUso())
+                {
+                    mesa.setEmUso(true);
+                }
 
-            List<Users> usersList = mesa.getIdUsers();
-            usersList.add(user);
+                if (mesa.getIdUsers().isEmpty()) {
+                    List<Users> usersList = new ArrayList<>();
+                    usersList.add(user);
+                    mesa.setIdUsers(usersList);
+                    repository.saveAndFlush(mesa);
+                }
+                else{
+                    List<Users> usersList = mesa.getIdUsers();
+                    usersList.add(user);
+                    mesa.setIdUsers(usersList);
+                    repository.saveAndFlush(mesa);
+                }
 
-            mesa.setIdUsers(usersList);
-            repository.saveAndFlush(mesa);
-
-            return ResponseEntity.ok("Bem-vindo a mesa '" + mesa.getNumeroMesa() + "', " + user.getUsername());
-
+                return Optional.of(mesa.getNumeroMesa());
+            }
         }
         catch(Exception e)
         {
-            return ResponseEntity.badRequest().body("Falha ao tentar cadastrar o usuario na mesa.");
+            return Optional.empty();
         }
     }
 
@@ -121,5 +138,10 @@ public class MesaService {
         {
             return ResponseEntity.badRequest().body("Um erro ocorreu ao tentar finalizar a mesa.\nError: " + e);
         }
+    }
+
+    public Optional<Mesa> getMesaById(String token) {
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        return repository.findMesaByUsers(user);
     }
 }
