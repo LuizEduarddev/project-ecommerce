@@ -2,6 +2,7 @@ package com.ecommerce.services;
 
 import com.ecommerce.entities.Mesa;
 import com.ecommerce.entities.Users;
+import com.ecommerce.entities.dto.MesaDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.UsersRepository;
 import org.apache.catalina.User;
@@ -24,6 +25,9 @@ public class MesaService {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private PedidosService pedidosService;
 
     public List<Mesa> getAllMesa()
     {
@@ -140,8 +144,24 @@ public class MesaService {
         }
     }
 
-    public Optional<Mesa> getMesaById(String token) {
-        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
-        return repository.findMesaByUsers(user);
+    public ResponseEntity<?> getMesaById(String token) {
+        try
+        {
+            Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+            Optional<Mesa> mesa = repository.findMesaByUsers(user);
+            if (mesa.isPresent())
+            {
+                List<String> nomeClientes = new ArrayList<>();
+                mesa.get().getIdUsers().forEach(usuario -> nomeClientes.add(usuario.getUsername()));
+                return ResponseEntity.ok(new MesaDTO(mesa.get().getNumeroMesa(), nomeClientes, pedidosService.getPedidoByMesa(mesa.get())));
+            }
+            else{
+                return ResponseEntity.notFound().build();
+            }
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Ocorreu um erro ao tentar buscar a mesa.\n" + e);
+        }
     }
 }

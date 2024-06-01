@@ -57,6 +57,18 @@ public class PedidosService {
 
     }
 
+    public List<Pedidos> getPedidoByMesa(Mesa mesa)
+    {
+        try
+        {
+            return repository.findByMesa(mesa);
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Um erro ocorreu ao tentar buscar os pedidos pela mesa.\n" + e);
+        }
+    }
+
     public Pedidos getPedidoById(String id, String token)
     {
         if (checkUserAuthority(token) == HttpStatus.ACCEPTED) return repository.findById(id)

@@ -23,7 +23,7 @@ public class MesaController {
     }
 
     @PostMapping("/get-by-id")
-    public Optional<Mesa> getAll(@RequestBody String token)
+    public ResponseEntity<?> getById(@RequestBody String token)
     {
         return service.getMesaById(token);
     }
