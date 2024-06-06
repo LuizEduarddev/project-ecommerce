@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import api from "../../../../services/api";
 import Cookies from 'universal-cookie';
 import {useNavigate, Link} from 'react-router-dom';
+import './Styles.css';
 
 export default function ClienteMesa()
 {

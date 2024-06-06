@@ -3,6 +3,7 @@ import api from '../../../../services/api'
 import Cookies from 'universal-cookie';
 import { CiShoppingCart as Carrinho} from "react-icons/ci";
 import {useNavigate, Link} from 'react-router-dom';
+import './Styles.css';
 
 export default function ClientPage()
 {
@@ -96,56 +97,79 @@ export default function ClientPage()
 
     getProductsData();
   }, [])
+  
+  function topBar()
+  {
+    if (username)
+    {
+      return (
+        <div id="top-bar">
+          <div id="botoes-link">
+            <button id="botao-carrinho">
+                Ir para o carrinho
+            </button>
 
-  return (
-    <div>
-      {
-        username ? (
-          <div>
-            <h1>Bem-vindo, {username}</h1>
-            <hr/>
-          </div>
-        ) : (
-          <div>
-            <h1>
+            <button id="botao-pedidos">
+              Meus pedidos
+            </button>
 
-            Bem-vindo
-            </h1>
-          </div>
-        )
-      }
-      <div>
+            <button id="botao-mesa">
+              Mesa
+            </button>
+          </div>    
+
+          <h3 id="username-logado">{username}</h3>
+      </div>
+      );
+    }
+    else{
+      return (
         <div>
-            <button>
-                <Link to = '/cart'>
-                    <h3>
-                        <Carrinho/>
-                        | Ir para o carrinho
-                    </h3>
+
+          <div id="botoes-login">
+            <button id="botao-login">
+              <h3>Login</h3>
+            </button>
+            <button id="botao-registrar">
+              <h3>Registrar-se</h3>
+            </button>
+          </div>
+
+          <div id="botoes-link">
+              <button>
+                  <Link to = '/cart'>
+                      <h3>
+                          <Carrinho/>
+                          | Ir para o carrinho
+                      </h3>
+                  </Link>
+              </button>
+
+              <button>
+                <Link to = '/pedidos'>
+                  <h3>
+                    Meus pedidos
+                  </h3>
                 </Link>
             </button>
-        </div>
-        <div>
-          <button>
-            <Link to = '/pedidos'>
-              <h3>
 
-              Meus pedidos
-              </h3>
-            </Link>
-          </button>
-        </div>
-        <div>
-          <button>
-            <Link to = '/cliente/mesa'>
-              <h3>
-                Mesa
-              </h3>
-            </Link>
-          </button>
-        </div>
-      </div>
+            <button>
+                <Link to = '/cliente/mesa'>
+                  <h3>
+                    Mesa
+                  </h3>
+                </Link>
+            </button>
+          </div>    
 
+        </div>
+      );
+    }
+  }
+
+  function promocoes()
+  {
+    return(
       <div>
         <h1><strong>!PROMOCOES DO DIA!</strong></h1>
         <ul>
@@ -159,9 +183,12 @@ export default function ClientPage()
           )}
         </ul>
       </div>
+    );
+  }
 
-      <hr/>
-
+  function produtosPrincipais()
+  {
+    return(
       <div>
         <h1><strong>!NOSSOS PRODUTOS!</strong></h1>
 
@@ -187,6 +214,16 @@ export default function ClientPage()
           )}
         </ul>
       </div>
+    );
+  }
+
+  return (
+    <div>
+        {topBar()}
+        
+        {promocoes()}
+      
+        {produtosPrincipais()}
     </div>
   );
 }
