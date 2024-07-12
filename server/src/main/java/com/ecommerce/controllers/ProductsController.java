@@ -28,7 +28,13 @@ public class ProductsController {
 	{
 		return service.getAllProducts();
 	}
-	
+
+	@GetMapping("/get-promotion")
+	public List<Products> getPromotion()
+	{
+		return service.getProductsPromotion();
+	}
+
 	@PostMapping("/get-by-id-{id}")
 	public Products getById(@PathVariable String id) throws Exception
 	{

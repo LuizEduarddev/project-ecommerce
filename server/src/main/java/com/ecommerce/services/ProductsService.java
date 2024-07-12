@@ -1,6 +1,7 @@
 package com.ecommerce.services;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,4 +77,15 @@ public class ProductsService {
 		repository.deleteById(id);
 		return new ResponseEntity<>("Produto '" + nomeProduto + "' deletado com sucesso.", HttpStatus.ACCEPTED);
 	}
+
+    public List<Products> getProductsPromotion() {
+		List<Products> products = repository.findAll();
+		List<Products> promocao = new ArrayList<>();
+        for (Products produto : products) {
+            if (produto.isPromoProd()) {
+                promocao.add(produto);
+            }
+        }
+        return promocao;
+    }
 }
