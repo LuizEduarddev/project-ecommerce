@@ -14,7 +14,12 @@ export default function Login({navigation})
     {
         try
         {
-            await AsyncStorage.setItem('userToken', token);
+            const username = await axios.post('http://192.168.0.111:8080/api/auth/get-username', token)
+            if (username != null)
+            {
+                await AsyncStorage.setItem('username', username.data);
+            }
+            await AsyncStorage.setItem('session-token', token);
             navigation.navigate('Home');
         }
         catch(error)

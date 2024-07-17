@@ -25,13 +25,21 @@ public class Products {
 	@Column(name = "promo_prod")
 	private boolean promoProd;
 
+	@Column(name = "categoria_prod")
+	private String categoriaProd;
+
+	@Column(name = "preco_promocao")
+	private String precoPromocao;
+
 	public Products() {
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd, String precoPromocao) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
+		this.categoriaProd = categoriaProd;
+		this.precoPromocao = precoPromocao;
 	}
 
 	public String getIdProd() {
@@ -64,5 +72,21 @@ public class Products {
 
 	public void setPromoProd(boolean promoProd) {
 		this.promoProd = promoProd;
+	}
+
+	public String getCategoriaProd() {
+		return categoriaProd;
+	}
+
+	public void setCategoriaProd(String categoriaProd) {
+		this.categoriaProd = categoriaProd;
+	}
+
+	public String getPrecoPromocao() {
+		return precoPromocao;
+	}
+
+	public void setPrecoPromocao(String precoPromocao) {
+		this.precoPromocao = precoPromocao;
 	}
 }
