@@ -11,8 +11,27 @@ type Item  = {
     promoProd: boolean
 }
 
-const RenderPromocoes = ({ item }: { item: Item }) => {
-    
+type Carrinho = {
+    idProd: string,
+    nomeProd: string,
+    precoProd: number,
+    valorTotalCarrinho: number
+}
+
+const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item: Item) => void }) => {
+    return(
+        <View>
+            <Text>{item.nomeProd}</Text>
+            <Text>{item.precoProd}</Text>
+            <Button
+                title="Adicionar ao carrinho"
+                onPress={() => onAddToCart(item)}
+            />
+        </View>
+    );
+}
+
+const RenderPromocoes = ({ item}: { item: Item}) => {
     return(
         <View>
             <Text>{item.nomeProd}</Text>
@@ -21,38 +40,41 @@ const RenderPromocoes = ({ item }: { item: Item }) => {
     );
 }
 
-const PromotionsScreen = ({item}: {item: Item[] | null}) => {
-    if (item != null)
-    {
+
+
+const ProductsScreen = ({ item, onAddToCart }: { item: Item[] | null, onAddToCart: (item: Item) => void }) => {
+    if (item != null) {
         return(
             <View>
-                <Text>Promocoes do dia</Text>
+                <Text>Nossos produtos</Text>
                 <FlatList
                     data={item}
-                    renderItem={({item}) => <RenderPromocoes item={item}/>}
+                    renderItem={({ item }) => <RenderProdutos item={item} onAddToCart={onAddToCart} />}
                 />
             </View>
         );
-    }
-    else{
-        return(null);
+    } else {
+        return(
+            <Text>Os produtos não estão disponíveis no momento</Text>
+        );
     }    
 }
-const ProductsScreen = ({item}: {item: Item[] | null}) => {
-    if (item != null)
-    {
+
+const PromocoesScreen = ({ item}: { item: Item[] | null}) => {
+    if (item != null) {
         return(
             <View>
-                <Text>Promocoes do dia</Text>
+                <Text>Promoções do dia</Text>
                 <FlatList
                     data={item}
-                    renderItem={({item}) => <RenderPromocoes item={item}/>}
+                    renderItem={({ item }) => <RenderPromocoes item={item}/>}
                 />
             </View>
         );
-    }
-    else{
-        return(null);
+    } else {
+        return(
+            <Text>As promoções não estão disponíveis no momento</Text>
+        );
     }    
 }
 
@@ -62,14 +84,11 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const fetchUsername = async () => {
-            try
-            {
+            try {
                 const promise = await AsyncStorage.getItem('username');
                 setUsername(promise);
                 setLoading(false);
-            }
-            catch(error)
-            {
+            } catch(error) {
                 Alert.alert('Falha ao tentar pegar o nome do usuário');
             }
         }
@@ -77,15 +96,11 @@ const HomeScreen = () => {
         fetchUsername();
     }, [])
 
-    if (loading)
-    {
+    if (loading) {
         return(
             <View>
                 <View>
-                    <Text>Carregando informacoes de perfil.</Text>
-                    <Image
-                    src={require('./assets/yasuo.png')}
-                    />
+                    <Text>Carregando informações de perfil.</Text>
                 </View>
             </View>
         );
@@ -95,45 +110,63 @@ const HomeScreen = () => {
         <View>
             <View>
                 <Text>Olá, {username}</Text>
+                <Image
+                    source={require('./assets/yasuo.png')}
+                />
             </View>
         </View>
     );
-
 }
 
-async function testeLogin(navigation)
-{
+async function testeLogin(navigation) {
     const sessionToken = await AsyncStorage.getItem('session-token');
-    if (sessionToken == null)
-    {
+    if (sessionToken == null) {
         Alert.alert('Parece que houve um erro ao tentar buscar o usuário.');
         navigation.navigate('Login');
     }
 }
 
-export default function Home({navigation})
-{
+export default function Home({ navigation }) {
     const [promocoes, setPromocoes] = useState<Item[] | null>(null);
     const [produtos, setProdutos] = useState<Item[] | null>(null);
 
-    useEffect(() => {
-        
-        testeLogin(navigation);
-
-        axios.get('http://192.168.0.111:8080/api/products/get-promotion')
+    async function getPromocoes() {
+        axios.get('http://192.168.0.112:8080/api/products/get-promotion')
         .then(response => {
             setPromocoes(response.data);
         })
         .catch(error => {
-            Alert.alert('Ocorreu um erro ao tentar buscar as promocoes.');
+            Alert.alert('Ocorreu um erro ao tentar buscar as promoções.');
         })
+    }
 
+    async function getProdutos() {
+        axios.get('http://192.168.0.112:8080/api/products/get-all')
+        .then(response => {
+            setProdutos(response.data);
+        })
+        .catch(error => {
+            Alert.alert('Ocorreu um erro ao tentar buscar os produtos.');
+        })
+    }
+
+    function buttonAdicionarCarrinho(item: Item) {
+        // Adicione sua lógica para adicionar ao carrinho aqui
+    }
+
+    useEffect(() => {
+        testeLogin(navigation);
+
+        getPromocoes();
+        getProdutos();
     }, [])
     
     return(
         <SafeAreaView>
-            <HomeScreen/>
-            <PromotionsScreen item={promocoes}/>
+            <HomeScreen />
+
+            <PromocoesScreen item={promocoes} onAddToCart={buttonAdicionarCarrinho} />
+            <ProductsScreen item={produtos} onAddToCart={buttonAdicionarCarrinho} />
         </SafeAreaView>
     );
 }

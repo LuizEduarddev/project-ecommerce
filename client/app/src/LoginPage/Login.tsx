@@ -10,14 +10,14 @@ export default function Login({navigation})
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     
-    async function storeData(token: any)
+    async function storeData(token)
     {
         try
         {
-            const username = await axios.post('http://192.168.0.111:8080/api/auth/get-username', token)
-            if (username != null)
+            const response = await axios.post('http://192.168.0.112:8080/api/auth/get-username', token)
+            if (response != null)
             {
-                await AsyncStorage.setItem('username', username.data);
+                await AsyncStorage.setItem('username', response.data);
             }
             await AsyncStorage.setItem('session-token', token);
             navigation.navigate('Home');
@@ -30,17 +30,17 @@ export default function Login({navigation})
 
     async function tryLogin()
     {
-        const data = {
+        const dataLogin = {
             login: username,
             password: password
         }
 
-        axios.post('http://192.168.0.111:8080/api/auth/login', data)
+        axios.post('http://192.168.0.112:8080/api/auth/login', dataLogin)
         .then(response => {
             storeData(response.data.token)
         })
         .catch(error => {
-            Alert.alert(error);
+            console.log(error);
         })
     }
 
