@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Alert, Button, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 type Item  = {
     idProd: string,
@@ -12,10 +13,12 @@ type Item  = {
 }
 
 type Carrinho = {
-    idProd: string,
-    nomeProd: string,
-    precoProd: number,
+    itens: Item[],
     valorTotalCarrinho: number
+}
+
+type HomeScreenProps = {
+    quantidadeCarrinho: number
 }
 
 const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item: Item) => void }) => {
@@ -78,7 +81,7 @@ const PromocoesScreen = ({ item}: { item: Item[] | null}) => {
     }    
 }
 
-const HomeScreen = () => {
+const HomeScreen = ({quantidadeCarrinho}: HomeScreenProps) => {
     const [username, setUsername] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -113,6 +116,12 @@ const HomeScreen = () => {
                 <Image
                     source={require('./assets/yasuo.png')}
                 />
+                <Icon.Button name="shopping-cart">
+                    <Text>
+                        Carrinho 
+                        <Text> {quantidadeCarrinho}</Text>
+                    </Text>
+                </Icon.Button>
             </View>
         </View>
     );
@@ -129,6 +138,23 @@ async function testeLogin(navigation) {
 export default function Home({ navigation }) {
     const [promocoes, setPromocoes] = useState<Item[] | null>(null);
     const [produtos, setProdutos] = useState<Item[] | null>(null);
+    const [itensCarrinho, setItensCarrinho] = useState<number>(0);
+
+    async function getItensCarrinho()
+    {
+        let storedCart = await AsyncStorage.getItem('user-cart');
+        let carrinho: Carrinho = storedCart ? JSON.parse(storedCart) : { itens: [], valorTotalCarrinho: 0 };
+
+        if (carrinho != null)
+        {
+            let number = 0;
+            carrinho.itens.forEach(item => number += 1);
+            setItensCarrinho(number);
+        }
+        else{
+            setItensCarrinho(0);
+        }
+    }
 
     async function getPromocoes() {
         axios.get('http://192.168.0.112:8080/api/products/get-promotion')
@@ -150,8 +176,29 @@ export default function Home({ navigation }) {
         })
     }
 
-    function buttonAdicionarCarrinho(item: Item) {
-        // Adicione sua lógica para adicionar ao carrinho aqui
+    async function buttonAdicionarCarrinho(item: Item) {
+        try{
+            let storedCart = await AsyncStorage.getItem('user-cart');
+            let carrinho: Carrinho = storedCart ? JSON.parse(storedCart) : { itens: [], valorTotalCarrinho: 0 };
+            
+            const newItens = [...carrinho.itens, item];
+            const newTotalValue = carrinho.valorTotalCarrinho + item.precoProd;
+            
+            const updatedCart: Carrinho = {
+            itens: newItens,
+            valorTotalCarrinho: newTotalValue
+            };
+            
+            setItensCarrinho(prevCount => prevCount + 1);
+
+            await AsyncStorage.setItem('user-cart', JSON.stringify(updatedCart));
+            Alert.alert('Produto salvo no carrinho');
+        }
+        catch(error)
+        {
+            Alert.alert('Falha ao tentar recuperar o carrinho.', error as string);
+        }
+        
     }
 
     useEffect(() => {
@@ -159,13 +206,14 @@ export default function Home({ navigation }) {
 
         getPromocoes();
         getProdutos();
+        getItensCarrinho();
     }, [])
     
     return(
         <SafeAreaView>
-            <HomeScreen />
+            <HomeScreen quantidadeCarrinho={itensCarrinho}/>
 
-            <PromocoesScreen item={promocoes} onAddToCart={buttonAdicionarCarrinho} />
+            <PromocoesScreen item={promocoes} />
             <ProductsScreen item={produtos} onAddToCart={buttonAdicionarCarrinho} />
         </SafeAreaView>
     );
