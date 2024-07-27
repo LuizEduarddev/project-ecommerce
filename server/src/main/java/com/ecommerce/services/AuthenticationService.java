@@ -1,5 +1,6 @@
 package com.ecommerce.services;
 
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.infra.security.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -12,9 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.entities.Users;
-import com.ecommerce.entities.dto.AuthDTO;
-import com.ecommerce.entities.dto.LoginResponseDTO;
-import com.ecommerce.entities.dto.RegisterDTO;
 import com.ecommerce.repository.UsersRepository;
 
 import java.util.Collection;
@@ -110,6 +108,55 @@ public class AuthenticationService {
 		}
 		else{
 			throw new RuntimeException("Ocorreu um erro ao tentar buscar o usuário.");
+		}
+	}
+
+	public UserProfileDTO getUserData(String token) {
+		Users user = repository.findByLoginUser(getUserName(token));
+		if (user != null)
+		{
+            return new UserProfileDTO(user.getUsername(),user.getUserFullName(), user.getUserTelefone(), user.getUserCpf(), user.getUserEndereco(), user.getUserEmail());
+		}
+		else{
+			throw new RuntimeException("Ocorreu um erro ao tentar buscar as informações do usuário.");
+		}
+	}
+
+	public ResponseEntity<String> alterProfileData(UpdateProfileDTO updateProfileDTO) {
+		try
+		{
+			Users user = repository.findByLoginUser(getUserName(updateProfileDTO.getToken()));
+			if (user == null)
+			{
+				throw new RuntimeException("Usuário não encontrado");
+			}
+			if (updateProfileDTO.getCpf() != null)
+			{
+				user.setUserCpf(updateProfileDTO.getCpf());
+			}
+			if (updateProfileDTO.getEmail() != null)
+			{
+				user.setUserEmail(updateProfileDTO.getEmail());
+			}
+			if (updateProfileDTO.getEndereco() != null)
+			{
+				user.setUserEndereco(updateProfileDTO.getEndereco());
+			}
+			if (updateProfileDTO.getNomeCompleto() != null)
+			{
+				user.setUserFullName(updateProfileDTO.getNomeCompleto());
+			}
+			if (updateProfileDTO.getTelefone() != null)
+			{
+				user.setUserTelefone(updateProfileDTO.getTelefone());
+			}
+
+			repository.saveAndFlush(user);
+			return ResponseEntity.ok("Usuário alterado com sucesso.");
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Erro encontrado: " + e);
 		}
 	}
 }

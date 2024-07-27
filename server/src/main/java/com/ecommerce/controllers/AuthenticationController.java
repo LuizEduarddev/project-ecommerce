@@ -73,6 +73,18 @@ public class AuthenticationController {
 		return service.registerUser(data);
 	}
 
+	@PostMapping("/profile")
+	public UserProfileDTO getProfileData(@RequestBody String token)
+	{
+		return service.getUserData(token);
+	}
+
+	@PostMapping("/alter-profile")
+	public ResponseEntity<String> alterProfile(@RequestBody UpdateProfileDTO dto)
+	{
+		return service.alterProfileData(dto);
+	}
+
 	@GetMapping("/get-all")
 	public List<Users> getAll()
 	{

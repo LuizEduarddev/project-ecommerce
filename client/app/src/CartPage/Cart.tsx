@@ -110,15 +110,13 @@ const MainView = ({ carrinho, setCarrinho }: { carrinho: Carrinho | null, setCar
                     keyExtractor={(item) => item.idProd}
                 />
                 <Text>Total do carrinho: {formatToReais(carrinho.valorTotalCarrinho)}</Text>
-                <Button title='Realize pedido'  onPress={() => enviarPedido(carrinho)}>
-                </Button>
+                <Button title='Realize pedido' onPress={() => enviarPedido(carrinho, setCarrinho)} />
             </View>
         );
     }
 }
 
-async function enviarPedido(carrinho: Carrinho)
-{
+async function enviarPedido(carrinho: Carrinho, setCarrinho: React.Dispatch<React.SetStateAction<Carrinho | null>>) {
     const sessionToken = await AsyncStorage.getItem('session-token');
     const dataToSend: DataSend[] = carrinho.itens.map(itemCarrinho => ({
         idProd: itemCarrinho.idProd,
@@ -134,6 +132,7 @@ async function enviarPedido(carrinho: Carrinho)
         Alert.alert('Pedido realizado com sucesso.');
         const newCart = {itens: [], valorTotalCarrinho: 0 }
         await AsyncStorage.setItem('user-cart', JSON.stringify(newCart));
+        setCarrinho(newCart); // Update the state here
     })
     .catch(error => {
         Alert.alert(error as string);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Button, FlatList, Image, Text, View } from "react-native";
+import { Alert, Button, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from 'react-native-vector-icons/FontAwesome';   
@@ -111,9 +111,11 @@ const HomeScreen = ({ navigation, quantidadeCarrinho }: HomeScreenProps & { quan
         <View>
             <View>
                 <Text>Olá, {username}</Text>
-                <Image
-                    source={require('./assets/yasuo.png')}
-                />
+                <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+                    <Image
+                            source={require('./assets/yasuo.png')}
+                        />
+                </TouchableOpacity>
                 <Icon.Button name="shopping-cart" onPress={() => navigation.navigate('Cart')}>
                     <Text>
                         Carrinho 
