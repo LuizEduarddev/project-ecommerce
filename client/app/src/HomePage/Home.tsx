@@ -1,15 +1,17 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, Button, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome';   
+import { useIsFocused } from "@react-navigation/native";
+import axios from "axios";
 
 type Item  = {
     idProd: string,
     nomeProd: string,
     precoProd: number,
-    promoProd: boolean
+    promoProd: boolean,
+    quantidade: number
 }
 
 type Carrinho = {
@@ -18,8 +20,8 @@ type Carrinho = {
 }
 
 type HomeScreenProps = {
-    quantidadeCarrinho: number
-}
+    navigation: any
+} 
 
 const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item: Item) => void }) => {
     return(
@@ -34,7 +36,7 @@ const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item:
     );
 }
 
-const RenderPromocoes = ({ item}: { item: Item}) => {
+const RenderPromocoes = ({ item }: { item: Item }) => {
     return(
         <View>
             <Text>{item.nomeProd}</Text>
@@ -42,8 +44,6 @@ const RenderPromocoes = ({ item}: { item: Item}) => {
         </View>
     );
 }
-
-
 
 const ProductsScreen = ({ item, onAddToCart }: { item: Item[] | null, onAddToCart: (item: Item) => void }) => {
     if (item != null) {
@@ -63,7 +63,7 @@ const ProductsScreen = ({ item, onAddToCart }: { item: Item[] | null, onAddToCar
     }    
 }
 
-const PromocoesScreen = ({ item}: { item: Item[] | null}) => {
+const PromocoesScreen = ({ item }: { item: Item[] | null }) => {
     if (item != null) {
         return(
             <View>
@@ -81,7 +81,7 @@ const PromocoesScreen = ({ item}: { item: Item[] | null}) => {
     }    
 }
 
-const HomeScreen = ({quantidadeCarrinho}: HomeScreenProps) => {
+const HomeScreen = ({ navigation, quantidadeCarrinho }: HomeScreenProps & { quantidadeCarrinho: number }) => {
     const [username, setUsername] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -94,17 +94,15 @@ const HomeScreen = ({quantidadeCarrinho}: HomeScreenProps) => {
             } catch(error) {
                 Alert.alert('Falha ao tentar pegar o nome do usuário');
             }
-        }
+        };
 
         fetchUsername();
-    }, [])
+    }, []);
 
     if (loading) {
         return(
             <View>
-                <View>
-                    <Text>Carregando informações de perfil.</Text>
-                </View>
+                <Text>Carregando informações de perfil.</Text>
             </View>
         );
     }
@@ -116,7 +114,7 @@ const HomeScreen = ({quantidadeCarrinho}: HomeScreenProps) => {
                 <Image
                     source={require('./assets/yasuo.png')}
                 />
-                <Icon.Button name="shopping-cart">
+                <Icon.Button name="shopping-cart" onPress={() => navigation.navigate('Cart')}>
                     <Text>
                         Carrinho 
                         <Text> {quantidadeCarrinho}</Text>
@@ -136,83 +134,85 @@ async function testeLogin(navigation) {
 }
 
 export default function Home({ navigation }) {
+    const isFocused = useIsFocused();
     const [promocoes, setPromocoes] = useState<Item[] | null>(null);
     const [produtos, setProdutos] = useState<Item[] | null>(null);
-    const [itensCarrinho, setItensCarrinho] = useState<number>(0);
-
-    async function getItensCarrinho()
-    {
-        let storedCart = await AsyncStorage.getItem('user-cart');
-        let carrinho: Carrinho = storedCart ? JSON.parse(storedCart) : { itens: [], valorTotalCarrinho: 0 };
-
-        if (carrinho != null)
-        {
-            let number = 0;
-            carrinho.itens.forEach(item => number += 1);
-            setItensCarrinho(number);
-        }
-        else{
-            setItensCarrinho(0);
-        }
-    }
+    const [quantidadeCarrinho, setQuantidadeCarrinho] = useState<number>(0);
 
     async function getPromocoes() {
-        axios.get('http://192.168.0.112:8080/api/products/get-promotion')
+        axios.get('http://192.168.105.26:8080/api/products/get-promotion')
         .then(response => {
             setPromocoes(response.data);
         })
         .catch(error => {
             Alert.alert('Ocorreu um erro ao tentar buscar as promoções.');
-        })
+        });
     }
 
     async function getProdutos() {
-        axios.get('http://192.168.0.112:8080/api/products/get-all')
+        axios.get('http://192.168.105.26:8080/api/products/get-all')
         .then(response => {
             setProdutos(response.data);
         })
         .catch(error => {
             Alert.alert('Ocorreu um erro ao tentar buscar os produtos.');
-        })
+        });
     }
 
     async function buttonAdicionarCarrinho(item: Item) {
         try{
+            item.quantidade = 1;
             let storedCart = await AsyncStorage.getItem('user-cart');
             let carrinho: Carrinho = storedCart ? JSON.parse(storedCart) : { itens: [], valorTotalCarrinho: 0 };
             
-            const newItens = [...carrinho.itens, item];
-            const newTotalValue = carrinho.valorTotalCarrinho + item.precoProd;
-            
-            const updatedCart: Carrinho = {
-            itens: newItens,
-            valorTotalCarrinho: newTotalValue
-            };
-            
-            setItensCarrinho(prevCount => prevCount + 1);
+            const newKey = item.idProd;
+            if (carrinho.itens.find(carrinhoItem => carrinhoItem.idProd === newKey))
+            {
+                Alert.alert(item.nomeProd + ' já está no carrinho.');
+            }
+            else{
+                const newItens = [...carrinho.itens, item];
+                const newTotalValue = carrinho.valorTotalCarrinho + item.precoProd;
+                
+                const updatedCart: Carrinho = {
+                    itens: newItens,
+                    valorTotalCarrinho: newTotalValue
+                };
 
-            await AsyncStorage.setItem('user-cart', JSON.stringify(updatedCart));
-            Alert.alert('Produto salvo no carrinho');
+                await AsyncStorage.setItem('user-cart', JSON.stringify(updatedCart));
+                Alert.alert('Produto salvo no carrinho');
+                getQuantidadeCarrinho();
+            }          
         }
         catch(error)
         {
             Alert.alert('Falha ao tentar recuperar o carrinho.', error as string);
         }
-        
+    }
+
+    async function getQuantidadeCarrinho() {
+        let storedCart = await AsyncStorage.getItem('user-cart');
+        let carrinho: Carrinho = storedCart ? JSON.parse(storedCart) : null;
+        if (carrinho) {
+            setQuantidadeCarrinho(carrinho.itens.length);
+        } else {
+            setQuantidadeCarrinho(0);
+        }
     }
 
     useEffect(() => {
-        testeLogin(navigation);
+        if (isFocused) {
+            getQuantidadeCarrinho();
+            testeLogin(navigation);
 
-        getPromocoes();
-        getProdutos();
-        getItensCarrinho();
-    }, [])
-    
-    return(
+            getPromocoes();
+            getProdutos();
+        }
+    }, [isFocused]);
+
+    return (
         <SafeAreaView>
-            <HomeScreen quantidadeCarrinho={itensCarrinho}/>
-
+            <HomeScreen navigation={navigation} quantidadeCarrinho={quantidadeCarrinho} />
             <PromocoesScreen item={promocoes} />
             <ProductsScreen item={produtos} onAddToCart={buttonAdicionarCarrinho} />
         </SafeAreaView>

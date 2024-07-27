@@ -14,7 +14,7 @@ export default function Login({navigation})
     {
         try
         {
-            const response = await axios.post('http://192.168.0.112:8080/api/auth/get-username', token)
+            const response = await axios.post('http://192.168.105.26:8080/api/auth/get-username', token)
             if (response != null)
             {
                 await AsyncStorage.setItem('username', response.data);
@@ -35,7 +35,7 @@ export default function Login({navigation})
             password: password
         }
 
-        axios.post('http://192.168.0.112:8080/api/auth/login', dataLogin)
+        axios.post('http://192.168.105.26:8080/api/auth/login', dataLogin)
         .then(response => {
             storeData(response.data.token)
         })
