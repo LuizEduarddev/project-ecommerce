@@ -1,7 +1,9 @@
 package com.ecommerce.services;
 
 import com.ecommerce.entities.*;
+import com.ecommerce.entities.dto.PedidosClienteDTO;
 import com.ecommerce.entities.dto.ProductsDTO;
+import com.ecommerce.entities.dto.ProductsOrderedDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
@@ -18,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PedidosService {
@@ -254,16 +257,37 @@ public class PedidosService {
         }
     }
 
-    public List<Pedidos> getPedidoByUser(String token) {
+    public List<PedidosClienteDTO> getPedidoByUser(String token) {
         Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
-        if (user == null)
-        {
+        if (user == null) {
             throw new RuntimeException("Não foi possível localizar o usuário");
-        }
-        else{
+        } else {
             List<Pedidos> pedidos = repository.findByUsers(user);
-            return pedidos;
+            if (!pedidos.isEmpty()) {
+                return pedidos.stream().map(this::convertToDTO).collect(Collectors.toList());
+            } else {
+                return new ArrayList<>();
+            }
         }
+    }
+
+    private PedidosClienteDTO convertToDTO(Pedidos pedido) {
+        List<ProductsOrderedDTO> productsDTOList = pedido.getProdutos().stream()
+                .map(product -> new ProductsOrderedDTO(
+                        product.getIdProd(),
+                        product.getNomeProd(),
+                        product.getPrecoProd()
+                ))
+                .collect(Collectors.toList());
+
+        return new PedidosClienteDTO(
+                pedido.getIdPedido(),
+                pedido.getDataPedido(),
+                pedido.getHoraPedido(),
+                pedido.getTotalPedido(),
+                pedido.isPedidoPago(),
+                productsDTOList
+        );
     }
 
     public PedidosAdminDTO getAllPedidosAdmin(String token) {

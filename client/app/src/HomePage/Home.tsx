@@ -111,7 +111,7 @@ const HomeScreen = ({ navigation, quantidadeCarrinho }: HomeScreenProps & { quan
         <View>
             <View>
                 <Text>Olá, {username}</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+                <TouchableOpacity onPress={() => navigation.navigate('MenuProfile')}>
                     <Image
                             source={require('./assets/yasuo.png')}
                         />

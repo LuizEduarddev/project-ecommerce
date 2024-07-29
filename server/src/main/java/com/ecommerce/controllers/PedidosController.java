@@ -2,6 +2,7 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.dto.PedidoAuthorityDTO;
+import com.ecommerce.entities.dto.PedidosClienteDTO;
 import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.entities.dto.deliveryDTO;
 import com.ecommerce.services.PedidosAdminDTO;
@@ -32,7 +33,7 @@ public class PedidosController {
     }
 
     @PostMapping("/get-by-user")
-    public List<Pedidos> getByUser(@RequestBody String token)
+    public List<PedidosClienteDTO> getByUser(@RequestBody String token)
     {
         return service.getPedidoByUser(token);
     }

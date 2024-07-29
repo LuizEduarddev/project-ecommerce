@@ -4,6 +4,8 @@ import Login from "./app/src/LoginPage/Login";
 import Home from "./app/src/HomePage/Home";
 import Cart from "./app/src/CartPage/Cart";
 import Profile from "./app/src/ProfilePage/Profile";
+import Menu from "./app/src/HomePage/MenuBarHome/MenuHome";
+import PedidosCli from "./app/src/ProfilePage/PedidosCliente/PedidosCli";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +18,8 @@ export default function App()
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
+        <Stack.Screen name="MenuProfile" component={Menu} options={{ headerShown: false }} />
+        <Stack.Screen name="PedidosCliente" component={PedidosCli} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
