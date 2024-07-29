@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Button, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Button, FlatList, Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from 'react-native-vector-icons/FontAwesome';   
@@ -36,14 +36,14 @@ const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item:
     );
 }
 
-const RenderPromocoes = ({ item }: { item: Item }) => {
-    return(
-        <View>
-            <Text>{item.nomeProd}</Text>
-            <Text>{item.precoProd}</Text>
-        </View>
-    );
-}
+const RenderPromocoes = ({ item }: { item: Item }) => (
+    <View>
+        <Text>{item.nomeProd}</Text>
+        <Text>{item.precoProd}</Text>
+        <Text>{item.promoProd ? "Em promoção" : "Preço normal"}</Text>
+        <Text>Quantidade: {item.quantidade}</Text>
+    </View>
+);
 
 const ProductsScreen = ({ item, onAddToCart }: { item: Item[] | null, onAddToCart: (item: Item) => void }) => {
     if (item != null) {
@@ -108,21 +108,20 @@ const HomeScreen = ({ navigation, quantidadeCarrinho }: HomeScreenProps & { quan
     }
 
     return(
-        <View>
-            <View>
-                <Text>Olá, {username}</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('MenuProfile')}>
-                    <Image
-                            source={require('./assets/yasuo.png')}
-                        />
-                </TouchableOpacity>
-                <Icon.Button name="shopping-cart" onPress={() => navigation.navigate('Cart')}>
-                    <Text>
-                        Carrinho 
-                        <Text> {quantidadeCarrinho}</Text>
-                    </Text>
-                </Icon.Button>
-            </View>
+        <View style={styles.boxProfile}>
+            <Text style={styles.greetingText}>Olá, {username}</Text>
+            <Icon.Button style={styles.buttonCarrinho} name="shopping-cart" onPress={() => navigation.navigate('Cart')}>
+                <Text>
+                    Carrinho
+                </Text>
+                <Text style={styles.quantidadeCarrinho}> {quantidadeCarrinho}</Text>
+            </Icon.Button>
+            <TouchableOpacity onPress={() => navigation.navigate('MenuProfile')}>
+                <Image
+                    style={styles.profileImage}
+                    source={require('./assets/yasuo.png')}
+                />
+            </TouchableOpacity>
         </View>
     );
 }
@@ -220,3 +219,46 @@ export default function Home({ navigation }) {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    boxProfile: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    greetingText: {
+        marginRight: 10, // Adjust margin as needed
+    },
+    profileImage: {
+        width: 50,
+        height: 50,
+        marginHorizontal: 10,
+        borderRadius: 50,
+    },
+    buttonCarrinho: {
+        width: 150,
+        height: 50,
+    },
+    quantidadeCarrinho: {
+        width: 24, // Adjust size as needed to make it a circle
+        height: 24, // Adjust size as needed to make it a circle
+        borderRadius: 12, // Half of the width/height to make it a circle
+        borderWidth: 2, // Adjust the thickness of the border as needed
+        borderColor: 'black', // Change the color of the border
+        backgroundColor: 'white',
+        color: 'black',
+        textAlign: 'center',
+        textAlignVertical: 'center', // For Android, use 'center' for iOS
+        lineHeight: 24, // Same as height for vertical alignment
+    },
+    boxPromocoes:{
+        alignItems:'center',
+        display:"flex",
+        borderColor: 'black',
+        justifyContent:"space-between", 
+        width: 250,
+        borderWidth: 2,
+        margin: 'auto',
+        padding:5
+    }
+});
