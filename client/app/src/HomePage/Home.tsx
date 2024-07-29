@@ -5,6 +5,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from 'react-native-vector-icons/FontAwesome';   
 import { useIsFocused } from "@react-navigation/native";
 import axios from "axios";
+import { Dimensions } from "react-native";
+
+const { width } = Dimensions.get('window');
+
 
 type Item  = {
     idProd: string,
@@ -36,12 +40,12 @@ const RenderProdutos = ({ item, onAddToCart }: { item: Item, onAddToCart: (item:
     );
 }
 
-const RenderPromocoes = ({ item }: { item: Item }) => (
-    <View>
-        <Text>{item.nomeProd}</Text>
-        <Text>{item.precoProd}</Text>
-        <Text>{item.promoProd ? "Em promoção" : "Preço normal"}</Text>
-        <Text>Quantidade: {item.quantidade}</Text>
+const RenderPromocoes = ({ item, index }: { item: Item, index: number }) => (
+    <View style={[styles.itemContainer, index === 1 ? styles.middleItem : null]}>
+        <Text style={styles.productName}>{item.nomeProd}</Text>
+        <Text style={styles.productPrice}>{item.precoProd}</Text>
+        <Text style={styles.productPromo}>{item.promoProd ? "Em promoção" : "Preço normal"}</Text>
+        <Text style={styles.productQuantity}>Quantidade: {item.quantidade}</Text>
     </View>
 );
 
@@ -65,21 +69,25 @@ const ProductsScreen = ({ item, onAddToCart }: { item: Item[] | null, onAddToCar
 
 const PromocoesScreen = ({ item }: { item: Item[] | null }) => {
     if (item != null) {
-        return(
+        return (
             <View>
-                <Text>Promoções do dia</Text>
+                <Text style={styles.title}>Promoções do dia</Text>
                 <FlatList
                     data={item}
-                    renderItem={({ item }) => <RenderPromocoes item={item}/>}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.idProd}
+                    renderItem={({ item, index }) => <RenderPromocoes item={item} index={index} />}
                 />
             </View>
         );
     } else {
-        return(
-            <Text>As promoções não estão disponíveis no momento</Text>
+        return (
+            <Text style={styles.noPromotions}>As promoções não estão disponíveis no momento</Text>
         );
-    }    
-}
+    }
+};
 
 const HomeScreen = ({ navigation, quantidadeCarrinho }: HomeScreenProps & { quantidadeCarrinho: number }) => {
     const [username, setUsername] = useState<string | null>(null);
@@ -221,6 +229,48 @@ export default function Home({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+    title: {
+        fontSize: 24,
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    noPromotions: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    itemContainer: {
+        width: width * 0.8,
+        marginHorizontal: width * 0.1,
+        padding: 10,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    middleItem: {
+        transform: [{ scale: 1.1 }],
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+    },
+    productName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    productPrice: {
+        fontSize: 16,
+        color: 'green',
+    },
+    productPromo: {
+        fontSize: 14,
+        color: 'red',
+    },
+    productQuantity: {
+        fontSize: 14,
+        color: 'blue',
+    },
     boxProfile: {
         flexDirection: 'row',
         alignItems: 'center',
