@@ -2,8 +2,8 @@ import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import axios from 'axios'
 import { useIsFocused } from '@react-navigation/native'
+import api from '../../ApiConfigs/ApiRoute'
 
 type ProfileData = {
     loginUser: string |null
@@ -17,7 +17,7 @@ type ProfileData = {
 async function profileRequires(setProfileData: React.Dispatch<React.SetStateAction<ProfileData | null>>)
 {
     const sessionToken = await AsyncStorage.getItem('session-token');
-    axios.post('http://192.168.105.26:8080/api/auth/profile', sessionToken)
+    api.post('api/auth/profile', sessionToken)
     .then(response => {
         setProfileData(response.data);
     })
@@ -86,7 +86,7 @@ async function alterarPerfil(profileData: ProfileData | null) {
             token: sessionToken
         };
 
-        axios.post('http://192.168.105.26:8080/api/auth/alter-profile', alterProfileData)
+        api.post('api/auth/alter-profile', alterProfileData)
         .then(response => {
             Alert.alert(response.data);
         })

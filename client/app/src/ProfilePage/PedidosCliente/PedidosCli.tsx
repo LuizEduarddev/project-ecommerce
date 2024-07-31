@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useIsFocused } from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import axios from 'axios'
+import api from '../../../ApiConfigs/ApiRoute'
 
 type Produtos = {
     idProd: string,
@@ -77,7 +77,7 @@ async function getPedidosAnteriores(setPedidos: React.Dispatch<React.SetStateAct
     const sessionToken = await AsyncStorage.getItem('session-token');
     if (sessionToken)
     {
-        axios.post('http://192.168.105.26:8080/api/pedidos/get-by-user', sessionToken)
+        api.post('api/pedidos/get-by-user', sessionToken)
         .then(response => {
             setPedidos(response.data);
         })

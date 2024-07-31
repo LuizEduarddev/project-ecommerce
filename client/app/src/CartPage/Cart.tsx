@@ -1,10 +1,10 @@
 import { Alert, Button, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useIsFocused } from '@react-navigation/native';
+import api from '../../ApiConfigs/ApiRoute';
 
 type Item  = {
     idProd: string,
@@ -127,7 +127,7 @@ async function enviarPedido(carrinho: Carrinho, setCarrinho: React.Dispatch<Reac
         produtos: dataToSend,
         token: sessionToken
     }
-    axios.post('http://192.168.105.26:8080/api/pedidos/add', dataPost)
+    api.post('api/pedidos/add', dataPost)
     .then(async response => {
         Alert.alert('Pedido realizado com sucesso.');
         const newCart = {itens: [], valorTotalCarrinho: 0 }

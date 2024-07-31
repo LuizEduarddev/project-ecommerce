@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 @Entity(name = "products")
@@ -31,16 +32,23 @@ public class Products {
 	@Column(name = "preco_promocao")
 	private String precoPromocao;
 
+	@Lob
+	@Column(name = "imagem_produto")
+	private String imagemProduto;
+
 	public Products() {
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd, String precoPromocao) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd, String precoPromocao, String imageData) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
 		this.categoriaProd = categoriaProd;
 		this.precoPromocao = precoPromocao;
+		this.imagemProduto = imageData;
 	}
+
+	// Getters and setters for all fields
 
 	public String getIdProd() {
 		return idProd;
@@ -88,5 +96,13 @@ public class Products {
 
 	public void setPrecoPromocao(String precoPromocao) {
 		this.precoPromocao = precoPromocao;
+	}
+
+	public String getImagemProduto() {
+		return imagemProduto;
+	}
+
+	public void setImagemProduto(String imagemProduto) {
+		this.imagemProduto = imagemProduto;
 	}
 }

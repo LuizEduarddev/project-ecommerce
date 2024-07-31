@@ -1,7 +1,7 @@
-import { Text, TextInput, View, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { Text, TextInput, View, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from "react-native";
 import { useState } from "react";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../../ApiConfigs/ApiRoute";
 
 export default function Login({ navigation }) {
     const [username, setUsername] = useState('');
@@ -9,7 +9,7 @@ export default function Login({ navigation }) {
 
     async function storeData(token) {
         try {
-            const response = await axios.post('http://192.168.105.26:8080/api/auth/get-username', token);
+            const response = await api.post('api/auth/get-username', token);
             if (response != null) {
                 await AsyncStorage.setItem('username', response.data);
             }
@@ -26,13 +26,20 @@ export default function Login({ navigation }) {
             password: password
         };
 
-        axios.post('http://192.168.105.26:8080/api/auth/login', dataLogin)
+        try
+        {
+            api.post('/api/auth/login', dataLogin)
             .then(response => {
                 storeData(response.data.token);
             })
             .catch(error => {
-                console.log(error);
+                Alert.alert('Falha ao tentar se conectar com o servidor.');
             });
+        }
+        catch(error)
+        {
+            Alert.alert('Falha ao tentar se conectar com o servidor.');
+        }
     }
 
     return (

@@ -2,8 +2,11 @@ package com.ecommerce.services;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
+import com.ecommerce.entities.dto.CreateProductDTO;
+import com.ecommerce.entities.dto.ProductsBased64DTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.ecommerce.entities.Products;
 import com.ecommerce.repository.ProductsRepository;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ProductsService {
@@ -28,17 +32,18 @@ public class ProductsService {
 		return repository.findById(id)
 				.orElseThrow(() -> new Exception("Produto com id '" + id + "' nao encontrado"));
 	}
-	
-	public ResponseEntity<String> addProduct(Products novoProduto)
-	{
-		try
-		{			
-			repository.saveAndFlush(novoProduto);
-			
+
+	public ResponseEntity<String> addProduct(CreateProductDTO novoProduto) {
+		try {
+			MultipartFile file = novoProduto.getFile();
+			byte[] imageData = file.getBytes();
+			String base64Image = Base64.getEncoder().encodeToString(imageData);
+			Products product = new Products(novoProduto.getNomeProd(), novoProduto.getPrecoProd(),
+					novoProduto.isPromoProd(), novoProduto.getCategoriaProd(),
+					novoProduto.getPrecoPromocao(), base64Image);
+			repository.saveAndFlush(product);
 			return new ResponseEntity<>("Produto cadastrado com sucesso.", HttpStatus.CREATED);
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			return new ResponseEntity<>("Falha ao tentar cadastrar o produto.\nERROR: " + e, HttpStatus.BAD_REQUEST);
 		}
 	}
