@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useIsFocused } from '@react-navigation/native';
 import { useKeenSliderNative } from 'keen-slider/react-native';
 import api from '../../ApiConfigs/ApiRoute';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -72,53 +73,44 @@ const RenderProdutos = ({ item, onAddToCart }: { item: Item; onAddToCart: (item:
   );
 };
 
-const RenderPromocoes = ({ item}: { item: Item}) => (
-    <View style={stylesPromocoes.boxPromocoes}>
-        <Image
-            source={{ uri: `data:image/png;base64,${item.imagemProduto}` }}
-            onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
-            />
-        <View>
-            <Text >{item.nomeProd}</Text>
-            <Text >{item.precoProd}</Text>
-            <Text >{item.precoPromocao}</Text>
-        </View>
-    </View>
-);
-
-const PromocoesScreen = ({ item }: { item: Item[] | null }) => {
-    if (item != null) {
-        return (
-            <View>
-                <Text>Promoções do dia</Text>
-                <FlatList
-                    data={item}
-                    horizontal={true}
-                    keyExtractor={(item) => item.idProd}
-                    renderItem={({ item, index }) => (
-                        <RenderPromocoes
-                            item={item}
-                        />
-                    )}
-                />
-            </View>
-        );
-    } else {
-        return (
-            <Text>As promoções não estão disponíveis no momento</Text>
-        );
-    }
+const PromocoesScreen: React.FC = () => {
+  return(
+    <LinearGradient
+      colors={["#146C94", "#19A7CE", "#AFD3E2"]}
+      style={stylesPromocao.boxPromocao}
+      start={{x:0, y:0}}
+    >
+        <TouchableOpacity >
+            <Text style={stylesPromocao.text1}>50% OFF!</Text>
+            <Text style={stylesPromocao.text2}>PRODUTOS EM ATÉ 50%</Text>
+            <TouchableOpacity >
+                <Text style={stylesPromocao.button}>PEÇA AGORA!</Text>
+            </TouchableOpacity>
+        </TouchableOpacity>
+      </LinearGradient>
+  );
 };
+
+const RenderCategoria = ({categoria}: {categoria:Categorias}) => {
+  
+}
 
 const CategoriaScreen: React.FC = () => {
     return (
         <View>
             {Categorias.map((categoria, index) => (
-                <View key={index}>
+                <View key={index} style={stylesCategorias.listCategorias}>
                     <Text>{categoria}</Text>
                 </View>
             ))}
         </View>
+    );
+    return(
+      <FlatList
+        data={Categorias}
+        keyExtractor={(categoria) => categoria}
+        renderItem={({categoria}) => <RenderCategoria}
+      />
     );
 };
 
@@ -173,20 +165,8 @@ async function testeLogin(navigation) {
 
 export default function Home({ navigation }) {
   const isFocused = useIsFocused();
-  const [promocoes, setPromocoes] = useState<Item[] | null>(null);
   const [produtos, setProdutos] = useState<Item[] | null>(null);
   const [quantidadeCarrinho, setQuantidadeCarrinho] = useState<number>(0);
-
-  async function getPromocoes() {
-    api
-      .get('api/products/get-promotion')
-      .then((response) => {
-        setPromocoes(response.data);
-      })
-      .catch((error) => {
-        Alert.alert('Ocorreu um erro ao tentar buscar as promoções.');
-      });
-  }
 
   async function getProdutos() {
     api     
@@ -240,8 +220,6 @@ export default function Home({ navigation }) {
     if (isFocused) {
       getQuantidadeCarrinho();
       testeLogin(navigation);
-
-      getPromocoes();
       getProdutos();
     }
   }, [isFocused]);
@@ -249,33 +227,66 @@ export default function Home({ navigation }) {
   return (
     <SafeAreaView>
       <HomeScreen navigation={navigation} quantidadeCarrinho={quantidadeCarrinho} />
-      <PromocoesScreen item={promocoes} />
+      <PromocoesScreen/>
       <CategoriaScreen/>
       <ProductsScreen item={produtos} onAddToCart={buttonAdicionarCarrinho} />
     </SafeAreaView>
   );
 }
 
-const stylesPromocoes = StyleSheet.create({
-    boxPromocoes:{
-        borderWidth: 5,
-        borderColor:'black',
-        padding: 10,
-        width: 200,
-        height: 200
-    }
-});
+const stylesCategorias = StyleSheet.create({
+  listCategorias:{
+  }
+})
+
+const stylesPromocao = StyleSheet.create({
+  boxPromocao: {
+    width: width * 0.95,
+    marginTop: '30%',
+    borderRadius: 20,
+    height: 195,
+    alignSelf:'center',
+    backgroundColor:'#19A7CE'
+  },
+  text1:{
+    marginTop:'5%',
+    fontSize: 50,
+    color:'#F6F1F1',
+    fontWeight:'bold',
+    marginLeft:'2%'
+  },
+  text2:{
+    fontSize: 15,
+    fontWeight:'bold',
+    color:'#F6F1F1',
+    marginLeft:'2%'
+  },
+  button:{
+    marginTop:'2%',
+    fontSize: 20,
+    color:'#146C94',
+    backgroundColor:'#F6F1F1',
+    borderRadius:5,
+    textAlign:'center',
+    textAlignVertical:'center',
+    width:'50%',
+    marginLeft:'2%',
+    padding:5
+  },
+ 
+})
 
 const stylesProfile = StyleSheet.create({
     title: {
-        fontSize: 24,
-        textAlign: 'center',
-        marginVertical: 10,
+      fontSize: 24,
+      textAlign: 'center',
+      marginVertical: 10,
     },
     boxProfile: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+      marginTop:'5%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
     },
     profileImage: {
         width: 50,
