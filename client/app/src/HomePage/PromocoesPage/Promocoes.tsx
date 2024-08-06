@@ -1,91 +1,85 @@
 import { Alert, Dimensions, FlatList, Image, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
-import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-type Item = {
-    idProd: string;
-    nomeProd: string;
-    precoProd: number;
-    promoProd: boolean;
-    categoriaProd: string;
-    precoPromocao: number;
-    imagemProduto: string;
-    quantidade: number;
-  };
-
-async function getPromocoes(setPromocoes: React.Dispatch<React.SetStateAction<Item[] | null>>) {
-    api.get('api/products/get-promotion')
-    .then((response) => {
-    setPromocoes(response.data);
-    })
-    .catch((error) => {
-    Alert.alert('Ocorreu um erro ao tentar buscar as promoções.');
-    });
+type Promocoes = {
+  idProd: string,
+  nomeProd: string,
+  precoProd: number,
+  promoProd: boolean,
+  categoriaProd: string,
+  precoPromocao: number,
+  imagemProduto: string
 }
 
-const RenderPromocoes = ({ item}: { item: Item}) => {
+const renderPromocoes = ({item}: {item: Promocoes}) => {
+  return(
+    <View style={stylesPromocao.boxFilhoPromocoes}>
+      <Text>{item.nomeProd}</Text>
+      <Text>{item.precoProd}</Text>
+      <Text>{item.precoPromocao}</Text>
+      <Image
+          source={{ uri: `data:image/png;base64,${item.imagemProduto}` }}
+          onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
+        />
+    </View>
+  );
+}
+
+const PromocoesScreen = ({promocoes}:{promocoes: Promocoes[] | null}) => {
+  if (promocoes != null)
+  {
     return(
-        <View>
-            <Image
-                source={{ uri: `data:image/png;base64,${item.imagemProduto}` }}
-                onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
-            />
-            <View>
-                <Text >{item.nomeProd}</Text>
-                <Text >{item.precoProd}</Text>
-                <Text >{item.precoPromocao}</Text>
-            </View>
-        </View>
+      <View style={stylesPromocao.boxPaiPromocoes}>
+        <Text>Promocoes do dia!</Text>
+        <FlatList
+          data={promocoes}
+          renderItem={renderPromocoes}
+          keyExtractor={(item) => item.idProd}
+        />
+      </View>
     );
-};
+  }
+  else{
+    return(
+      <View></View>
+    );
+  }
+}
 
-const Promocoes = () => {
-    const isFocused = useIsFocused();
-    const [promocoes, setPromocoes] = useState<Item[] | null>(null);
+const Promocoes: React.FC = () => {
+  
+  const [promocoes, setPromocoes] = useState<Promocoes[] | null>(null);
 
-    useEffect(() => {
-        if (isFocused) {
-    
-          getPromocoes(setPromocoes);
-        }
-      }, [isFocused]);
-    
-    if (promocoes != null) {
-        return (
-            <View style={stylesPromocoes.promocaoScreen}>
-                <Text>Promoções do dia</Text>
-                <View style={stylesPromocoes.listPromocoesBox}>
-                  <FlatList
-                      data={promocoes}
-                      keyExtractor={(item) => item.idProd}
-                      renderItem={({ item, index }) => (
-                          <RenderPromocoes
-                              item={item}
-                          />
-                      )}
-                  />
-                </View>
-            </View>
-        );
-    } else {
-        return (
-            <Text>As promoções não estão disponíveis no momento</Text>
-        );
-    }
-};
+  useEffect(() => {
+    api.get('/api/products/get-promotion')
+    .then(response => {
+      setPromocoes(response.data);
+    })
+    .catch(error => {
+      Alert.alert('Erro ao tentar buscar as promocoes');
+    })
+  })
+  
+  return(
+      <View>
+        <PromocoesScreen promocoes={promocoes}/>
+      </View>
+    );
+  };
 
 export default Promocoes
 
-const stylesPromocoes = StyleSheet.create({
-    listPromocoesBox: {
-    },
-    promocaoScreen: {
-    },
-    boxPromocoes: {
-    },
-    imagemPromocoes: {
-    },
-  });
+
+const stylesPromocao = StyleSheet.create({
+  boxPaiPromocoes:{
+    borderWidth:5,
+    borderColor:'black'
+  },
+  boxFilhoPromocoes:{
+    borderWidth: 5,
+    borderColor:'green'
+  }
+  })
