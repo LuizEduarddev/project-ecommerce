@@ -2,6 +2,7 @@ package com.ecommerce.services;
 
 import com.ecommerce.entities.dto.*;
 import com.ecommerce.infra.security.SecurityFilter;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import com.ecommerce.entities.Users;
 import com.ecommerce.repository.UsersRepository;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,7 +39,8 @@ public class AuthenticationService {
 	@Autowired
 	@Lazy
 	private PedidosService pedidosService;
-	
+
+	@Transactional
 	public String loginUser(AuthDTO data)
 	{
 		try
@@ -46,21 +50,44 @@ public class AuthenticationService {
             return tokenService.generateToken((Users) auth.getPrincipal());
 		}
 		catch(Exception e) {
-			throw new RuntimeException("Usuario ou senha incorretos");
+			throw new RuntimeException(e);
 		}
 	}
 	
 	public ResponseEntity<String> registerUser(RegisterDTO data)
 	{
 		if (this.repository.findByLoginUser(data.login()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);
-		
-		String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
-		Users newUser = new Users(data.login(), encryptPassword, data.role());
-		newUser.setPontosCupcake(0);
-		this.repository.saveAndFlush(newUser);
-		
-		return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
-	}
+		if (data.file().isPresent())
+		{
+			addUserFoto(data);
+			return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
+		}
+		else{
+			String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
+			Users newUser = new Users(data.login(), encryptPassword, data.role());
+			newUser.setPontosCupcake(0);
+			this.repository.saveAndFlush(newUser);
+			return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
+		}
+    }
+
+	private void addUserFoto(RegisterDTO data)
+	{
+		try
+		{
+			MultipartFile file = data.file().get();
+			byte[] imageData = file.getBytes();
+			String base64Image = Base64.getEncoder().encodeToString(imageData);
+			String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
+			Users newUser = new Users(data.login(), encryptPassword, data.role(), base64Image);
+			newUser.setPontosCupcake(0);
+			this.repository.saveAndFlush(newUser);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Erro ao tentar inserir a foto");
+		}
+    }
 
     public List<Users> getAllUsers()
 	{

@@ -68,7 +68,7 @@ public class AuthenticationController {
 	}
 	
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody RegisterDTO data)
+	public ResponseEntity<String> register(@ModelAttribute RegisterDTO data)
 	{
 		return service.registerUser(data);
 	}

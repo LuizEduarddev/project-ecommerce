@@ -45,6 +45,10 @@ public class Users implements UserDetails {
 	@Column(name = "pontos_cupcake")
 	private int pontosCupcake;
 
+	@Lob
+	@Column(name = "imagem_usuario")
+	private String imagemUsuario;
+
 	public Users() {
 	}
 
@@ -54,7 +58,14 @@ public class Users implements UserDetails {
 		this.userRole = userRole;
 	}
 
-	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake) {
+	public Users(String loginUser, String passwordUser, UserRole userRole, String imagemUsuario) {
+		this.loginUser = loginUser;
+		this.passwordUser = passwordUser;
+		this.userRole = userRole;
+		this.imagemUsuario = imagemUsuario;
+	}
+
+	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake, String imagemUsuario) {
 		this.loginUser = loginUser;
 		this.passwordUser = passwordUser;
 		this.userRole = userRole;
@@ -64,6 +75,7 @@ public class Users implements UserDetails {
 		this.userEndereco = userEndereco;
 		this.userEmail = userEmail;
 		this.pontosCupcake = pontosCupcake;
+		this.imagemUsuario = imagemUsuario;
 	}
 
 	@Override
@@ -162,5 +174,13 @@ public class Users implements UserDetails {
 
 	public void setPontosCupcake(int pontosCupcake) {
 		this.pontosCupcake = pontosCupcake;
+	}
+
+	public String getImagemUsuario() {
+		return imagemUsuario;
+	}
+
+	public void setImagemUsuario(String imagemUsuario) {
+		this.imagemUsuario = imagemUsuario;
 	}
 }
