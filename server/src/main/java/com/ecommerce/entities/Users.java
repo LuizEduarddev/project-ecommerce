@@ -41,6 +41,10 @@ public class Users implements UserDetails {
 
 	@Column(name = "user_email", nullable = true)
 	private String userEmail;
+
+	@Column(name = "pontos_cupcake")
+	private int pontosCupcake;
+
 	public Users() {
 	}
 
@@ -50,7 +54,7 @@ public class Users implements UserDetails {
 		this.userRole = userRole;
 	}
 
-	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail) {
+	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake) {
 		this.loginUser = loginUser;
 		this.passwordUser = passwordUser;
 		this.userRole = userRole;
@@ -59,6 +63,7 @@ public class Users implements UserDetails {
 		this.userCpf = userCpf;
 		this.userEndereco = userEndereco;
 		this.userEmail = userEmail;
+		this.pontosCupcake = pontosCupcake;
 	}
 
 	@Override
@@ -149,5 +154,13 @@ public class Users implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public int getPontosCupcake() {
+		return pontosCupcake;
+	}
+
+	public void setPontosCupcake(int pontosCupcake) {
+		this.pontosCupcake = pontosCupcake;
 	}
 }

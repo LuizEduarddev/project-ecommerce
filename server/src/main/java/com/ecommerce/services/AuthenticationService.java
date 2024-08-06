@@ -56,6 +56,7 @@ public class AuthenticationService {
 		
 		String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
 		Users newUser = new Users(data.login(), encryptPassword, data.role());
+		newUser.setPontosCupcake(0);
 		this.repository.saveAndFlush(newUser);
 		
 		return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);

@@ -248,12 +248,30 @@ public class PedidosService {
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
             pedido.setPedidoPago(true);
+            calculatePontosCupcake(pedido, pedido.getUsers());
             repository.saveAndFlush(pedido);
             return ResponseEntity.ok("Pedido foi alterado para pronto.");
         }
         catch (Exception e)
         {
             return ResponseEntity.badRequest().body("Falha ao tentar mudar o status do pedido para pronto.\nError: "  + e);
+        }
+    }
+
+    private void calculatePontosCupcake(Pedidos pedido, Users u)
+    {
+        try
+        {
+            Users user = usersRepository.findByLoginUser(u.getUsername());
+            if (user != null)
+            {
+                int pontos = (int) pedido.getTotalPedido();
+                user.setPontosCupcake(pontos);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Erro ao tentar registrar os pontos. " + e);
         }
     }
 
