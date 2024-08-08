@@ -6,6 +6,7 @@ import Cart from "./app/src/CartPage/Cart";
 import Profile from "./app/src/ProfilePage/Profile";
 import Menu from "./app/src/HomePage/MenuBarHome/MenuHome";
 import PedidosCli from "./app/src/ProfilePage/PedidosCliente/PedidosCli";
+import SearchBar from "./app/src/HomePage/BarraPesquisa/SearchBar";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,7 @@ export default function App()
         <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
         <Stack.Screen name="MenuProfile" component={Menu} options={{ headerShown: false }} />
         <Stack.Screen name="PedidosCliente" component={PedidosCli} options={{ headerShown: false }} />
+        <Stack.Screen name="barra_de_pesquisa" component={SearchBar} options={{ headerShown: true }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

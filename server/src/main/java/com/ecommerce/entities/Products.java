@@ -1,12 +1,6 @@
 package com.ecommerce.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity(name = "products")
 @Table(name = "products")
@@ -34,22 +28,28 @@ public class Products {
 
 	@Lob
 	@Column(name = "imagem_produto")
-	private String imagemProduto;
+	private byte[] imagemProduto;
 
+	@Column(name = "visible")
+	private boolean visible;
+
+	// Default constructor
 	public Products() {
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd, String precoPromocao, String imageData) {
+	// Parameterized constructor
+	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd,
+					String precoPromocao, byte[] imagemProduto, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
 		this.categoriaProd = categoriaProd;
 		this.precoPromocao = precoPromocao;
-		this.imagemProduto = imageData;
+		this.imagemProduto = imagemProduto;
+		this.visible = visible;
 	}
 
-	// Getters and setters for all fields
-
+	// Getters and Setters
 	public String getIdProd() {
 		return idProd;
 	}
@@ -98,11 +98,19 @@ public class Products {
 		this.precoPromocao = precoPromocao;
 	}
 
-	public String getImagemProduto() {
+	public byte[] getImagemProduto() {
 		return imagemProduto;
 	}
 
-	public void setImagemProduto(String imagemProduto) {
+	public void setImagemProduto(byte[] imagemProduto) {
 		this.imagemProduto = imagemProduto;
+	}
+
+	public boolean isVisible() {
+		return visible;
+	}
+
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 }

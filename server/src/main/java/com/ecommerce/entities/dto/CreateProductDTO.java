@@ -9,19 +9,21 @@ public class CreateProductDTO {
     private String categoriaProd;
     private String precoPromocao;
     private MultipartFile file;
+    private boolean visible;
 
     // Default constructor
     public CreateProductDTO() {}
 
     // Parameterized constructor
     public CreateProductDTO(String nomeProd, double precoProd, boolean promoProd,
-                            String categoriaProd, String precoPromocao, MultipartFile file) {
+                            String categoriaProd, String precoPromocao, MultipartFile file, boolean visible) {
         this.nomeProd = nomeProd;
         this.precoProd = precoProd;
         this.promoProd = promoProd;
         this.categoriaProd = categoriaProd;
         this.precoPromocao = precoPromocao;
         this.file = file;
+        this.visible = visible;
     }
 
     // Getters and Setters
@@ -71,5 +73,13 @@ public class CreateProductDTO {
 
     public void setFile(MultipartFile file) {
         this.file = file;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

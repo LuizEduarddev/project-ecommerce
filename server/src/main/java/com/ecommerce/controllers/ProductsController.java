@@ -1,6 +1,7 @@
 package com.ecommerce.controllers;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.ecommerce.entities.dto.CreateProductDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,11 @@ public class ProductsController {
 	public List<Products> getPromotion()
 	{
 		return service.getProductsPromotion();
+	}
+
+	@PostMapping("/search")
+	public List<Products> search(@RequestBody String pesquisa){
+		return service.searchProduct(pesquisa);
 	}
 
 	@PostMapping("/get-by-id-{id}")

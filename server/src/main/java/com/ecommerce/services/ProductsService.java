@@ -1,12 +1,11 @@
 package com.ecommerce.services;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 import com.ecommerce.entities.dto.CreateProductDTO;
 import com.ecommerce.entities.dto.ProductsBased64DTO;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +36,15 @@ public class ProductsService {
 		try {
 			MultipartFile file = novoProduto.getFile();
 			byte[] imageData = file.getBytes();
-			String base64Image = Base64.getEncoder().encodeToString(imageData);
-			Products product = new Products(novoProduto.getNomeProd(), novoProduto.getPrecoProd(),
-					novoProduto.isPromoProd(), novoProduto.getCategoriaProd(),
-					novoProduto.getPrecoPromocao(), base64Image);
+			Products product = new Products(
+					novoProduto.getNomeProd(),
+					novoProduto.getPrecoProd(),
+					novoProduto.isPromoProd(),
+					novoProduto.getCategoriaProd(),
+					novoProduto.getPrecoPromocao(),
+					imageData,
+					novoProduto.isVisible()
+			);
 			repository.saveAndFlush(product);
 			return new ResponseEntity<>("Produto cadastrado com sucesso.", HttpStatus.CREATED);
 		} catch (Exception e) {
@@ -93,4 +97,21 @@ public class ProductsService {
         }
         return promocao;
     }
+
+	@Transactional
+	public List<Products> searchProduct(String pesquisa) {
+		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa);
+		List<Products> produtosReturn = new ArrayList<>();
+		for (Products produto : produtosList) {
+			if (produto.isVisible()) {
+				produtosReturn.add(produto);
+			}
+		}
+
+		if (produtosReturn.isEmpty()) {
+			return null;
+		}
+
+		return produtosReturn;
+	}
 }
