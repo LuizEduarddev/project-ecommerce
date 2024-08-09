@@ -132,7 +132,7 @@ async function enviarPedido(carrinho: Carrinho, setCarrinho: React.Dispatch<Reac
         Alert.alert('Pedido realizado com sucesso.');
         const newCart = {itens: [], valorTotalCarrinho: 0 }
         await AsyncStorage.setItem('user-cart', JSON.stringify(newCart));
-        setCarrinho(newCart); // Update the state here
+        setCarrinho(newCart); 
     })
     .catch(error => {
         Alert.alert(error as string);

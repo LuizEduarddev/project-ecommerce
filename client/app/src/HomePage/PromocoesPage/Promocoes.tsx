@@ -23,7 +23,7 @@ const renderPromocoes = ({item}: {item: Promocoes}) => {
       <Image
           source={{ uri: `data:image/png;base64,${item.imagemProduto}` }}
           onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
-        />
+      />
     </View>
   );
 }

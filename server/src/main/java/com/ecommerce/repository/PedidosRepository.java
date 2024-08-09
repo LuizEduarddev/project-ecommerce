@@ -6,8 +6,10 @@ import com.ecommerce.entities.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByUsers(Users token);
     List<Pedidos> findByMesa(Mesa mesa);
+    Optional<List<Pedidos>> findByUsersAndPedidoPagoFalse(Users user);
 }

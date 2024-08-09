@@ -8,6 +8,7 @@ import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -72,6 +73,7 @@ public class PedidosService {
         }
     }
 
+    @Transactional
     public Pedidos getPedidoById(String id, String token)
     {
         if (checkUserAuthority(token) == HttpStatus.ACCEPTED) return repository.findById(id)
@@ -81,6 +83,7 @@ public class PedidosService {
         }
     }
 
+    @Transactional
     public ResponseEntity<String> addPedidoDelivery(List<ProductsDTO> products, String tokenUser)
     {
         if (products.isEmpty())
@@ -275,6 +278,7 @@ public class PedidosService {
         }
     }
 
+    @Transactional
     public List<PedidosClienteDTO> getPedidoByUser(String token) {
         Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
         if (user == null) {
@@ -317,6 +321,22 @@ public class PedidosService {
         }
         else{
             throw new RuntimeException("É necessária uma hierarquia maior para acessar esta página.");
+        }
+    }
+
+    @Transactional
+    public List<PedidosClienteDTO> getPedidosPendentes(String token) {
+        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
+        if (user != null) {
+            Optional<List<Pedidos>> pedidosOptional = repository.findByUsersAndPedidoPagoFalse(user);
+
+            return pedidosOptional
+                    .map(pedidos -> pedidos.stream()
+                            .map(this::convertToDTO)
+                            .collect(Collectors.toList()))
+                    .orElseGet(Collections::emptyList);
+        } else {
+            throw new RuntimeException("Usuario nao encontrado");
         }
     }
 }

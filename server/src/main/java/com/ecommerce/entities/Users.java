@@ -47,7 +47,7 @@ public class Users implements UserDetails {
 
 	@Lob
 	@Column(name = "imagem_usuario")
-	private String imagemUsuario;
+	private byte[] imagemUsuario;
 
 	public Users() {
 	}
@@ -58,14 +58,14 @@ public class Users implements UserDetails {
 		this.userRole = userRole;
 	}
 
-	public Users(String loginUser, String passwordUser, UserRole userRole, String imagemUsuario) {
+	public Users(String loginUser, String passwordUser, UserRole userRole, byte[] imagemUsuario) {
 		this.loginUser = loginUser;
 		this.passwordUser = passwordUser;
 		this.userRole = userRole;
 		this.imagemUsuario = imagemUsuario;
 	}
 
-	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake, String imagemUsuario) {
+	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake, byte[] imagemUsuario) {
 		this.loginUser = loginUser;
 		this.passwordUser = passwordUser;
 		this.userRole = userRole;
@@ -176,11 +176,11 @@ public class Users implements UserDetails {
 		this.pontosCupcake = pontosCupcake;
 	}
 
-	public String getImagemUsuario() {
+	public byte[] getImagemUsuario() {
 		return imagemUsuario;
 	}
 
-	public void setImagemUsuario(String imagemUsuario) {
+	public void setImagemUsuario(byte[] imagemUsuario) {
 		this.imagemUsuario = imagemUsuario;
 	}
 }

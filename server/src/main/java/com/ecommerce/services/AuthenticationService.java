@@ -77,9 +77,8 @@ public class AuthenticationService {
 		{
 			MultipartFile file = data.file().get();
 			byte[] imageData = file.getBytes();
-			String base64Image = Base64.getEncoder().encodeToString(imageData);
 			String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
-			Users newUser = new Users(data.login(), encryptPassword, data.role(), base64Image);
+			Users newUser = new Users(data.login(), encryptPassword, data.role(), imageData);
 			newUser.setPontosCupcake(0);
 			this.repository.saveAndFlush(newUser);
 		}
@@ -139,11 +138,12 @@ public class AuthenticationService {
 		}
 	}
 
+	@Transactional
 	public UserProfileDTO getUserData(String token) {
 		Users user = repository.findByLoginUser(getUserName(token));
 		if (user != null)
 		{
-            return new UserProfileDTO(user.getUsername(),user.getUserFullName(), user.getUserTelefone(), user.getUserCpf(), user.getUserEndereco(), user.getUserEmail());
+            return new UserProfileDTO(user.getUsername(),user.getUserFullName(), user.getUserTelefone(), user.getUserCpf(), user.getUserEndereco(), user.getUserEmail(), user.getImagemUsuario(), user.getPontosCupcake());
 		}
 		else{
 			throw new RuntimeException("Ocorreu um erro ao tentar buscar as informações do usuário.");

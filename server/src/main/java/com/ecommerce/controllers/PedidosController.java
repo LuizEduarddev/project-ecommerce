@@ -26,6 +26,12 @@ public class PedidosController {
         return service.getAllPedidos(token);
     }
 
+    @PostMapping("/pendencias")
+    public List<PedidosClienteDTO> pendentes(@RequestBody String token)
+    {
+        return service.getPedidosPendentes(token);
+    }
+
     @PostMapping("/get-all-admin")
     public PedidosAdminDTO getAllAdmin(@RequestBody String token)
     {
