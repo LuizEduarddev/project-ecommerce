@@ -19,6 +19,7 @@ type Pedidos = {
     produtos: Produtos[]
 }
 
+
 const renderProdutos = ({ item }: { item: Produtos }) => {
     return (
         <View>
@@ -28,7 +29,7 @@ const renderProdutos = ({ item }: { item: Produtos }) => {
     );
 }
 
-const renderPedidos = ({navigation}) => ({ item }: { item: Pedidos }) => {
+const RenderPedidos = ({ item, navigation }: { item: Pedidos, navigation}) => {
     return (
         <View>
             <Text>{item.dataPedido}</Text>
@@ -57,7 +58,7 @@ const Pendencias = ({ navigation }) => {
     async function getPedidos() {
         const token = await AsyncStorage.getItem('session-token');
         if (token) {
-            api.post('api/pedidos/pendencias', token )
+            api.post('api/pedidos/pendencias', token)
             .then(response => {
                 setPedidosPendentes(response.data);
                 console.log(response.data);
@@ -74,11 +75,11 @@ const Pendencias = ({ navigation }) => {
                 {pedidosPendentes.length > 0 ? (
                     <FlatList
                         data={pedidosPendentes}
-                        renderItem={renderPedidos(navigation)}
+                        renderItem={({item}) => <RenderPedidos navigation={navigation} item={item} />}
                         keyExtractor={(pedido) => pedido.idPedido}
                     />
                 ) : (
-                    <Text>Voce nao possui pendencias</Text>
+                    <Text>Você não possui pendências</Text>
                 )}
             </View>
         </SafeAreaView>
@@ -87,3 +88,4 @@ const Pendencias = ({ navigation }) => {
 
 export default Pendencias;
 
+const styles = StyleSheet.create({});
