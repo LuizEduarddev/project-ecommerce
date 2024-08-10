@@ -1,12 +1,11 @@
 package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Pedidos;
-import com.ecommerce.entities.dto.PedidoAuthorityDTO;
-import com.ecommerce.entities.dto.PedidosClienteDTO;
-import com.ecommerce.entities.dto.ProductsDTO;
-import com.ecommerce.entities.dto.deliveryDTO;
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.services.PedidosAdminDTO;
 import com.ecommerce.services.PedidosService;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,15 +61,8 @@ public class PedidosController {
         return service.addPedidoDelivery(dto.produtos(), dto.token());
     }
 
-    @PostMapping("/set-pr")
-    public ResponseEntity<String> setPronto(@RequestBody PedidoAuthorityDTO data)
-    {
-        return service.setPedidoPronto(data.idPedido(), data.token());
-    }
-
-    @PostMapping("/set-pa/{idPedido}")
-    public ResponseEntity<String> setPago(@PathVariable String idPedido)
-    {
-        return service.setPedidoPago(idPedido);
+    @PostMapping("/pagamento")
+    public Object pagamento(@RequestBody pagamentoDTO dto) throws MPException, MPApiException {
+        return service.pagamentoPedido(dto);
     }
 }

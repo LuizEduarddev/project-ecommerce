@@ -4,10 +4,20 @@ import com.ecommerce.entities.*;
 import com.ecommerce.entities.dto.PedidosClienteDTO;
 import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.entities.dto.ProductsOrderedDTO;
+import com.ecommerce.entities.dto.pagamentoDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
+import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
+import com.mercadopago.core.MPRequestOptions;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.net.MPResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -15,10 +25,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -337,6 +353,54 @@ public class PedidosService {
                     .orElseGet(Collections::emptyList);
         } else {
             throw new RuntimeException("Usuario nao encontrado");
+        }
+    }
+
+    public Object pagamentoPedido(pagamentoDTO dto) {
+        try
+        {
+            MercadoPagoConfig.setAccessToken("APP_USR-4129274862422289-080918-960547adee80eba3e345da9eb2f51feb-1940516742");
+
+            // Set custom headers
+            Map<String, String> customHeaders = new HashMap<>();
+            customHeaders.put("x-idempotency-key", dto.idPedido());
+
+            MPRequestOptions requestOptions = MPRequestOptions.builder()
+                    .customHeaders(customHeaders)
+                    .build();
+
+            // Create a PaymentClient instance
+            PaymentClient client = new PaymentClient();
+
+            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+            OffsetDateTime expirationDate = now.plus(Duration.ofMinutes(5));
+
+            // Create a PaymentCreateRequest object
+            PaymentCreateRequest paymentCreateRequest =
+                    PaymentCreateRequest.builder()
+                            .transactionAmount(BigDecimal.valueOf(dto.totalPedido())) // Amount to be paid
+                            .description("Pagamento maria amelia") // Description of the payment
+                            .paymentMethodId("pix") // Payment method ID for Pix
+                            //.dateOfExpiration(expirationDate) // Expiration date
+                            .payer(
+                                    PaymentPayerRequest.builder()
+                                            .email(dto.userEmail())
+                                            .firstName(dto.userEmail())
+                                            .identification(
+                                                    IdentificationRequest.builder().type("CPF").number(dto.cpf()).build()) // Payer's identification
+                                            .build())
+                            .build();
+            return client.create(paymentCreateRequest, requestOptions);
+        } catch (MPApiException e) {
+            MPResponse response = e.getApiResponse();
+            if (response != null) {
+                throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
+            }
+            throw new RuntimeException("API error: " + e.getMessage());
+        } catch (MPException e) {
+            throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException("General exception: " + e.getMessage());
         }
     }
 }
