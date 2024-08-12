@@ -53,6 +53,18 @@ public class AuthenticationService {
 			throw new RuntimeException(e);
 		}
 	}
+
+	@Transactional
+	public Users getUser(String token)
+	{
+		Users user = repository.findByLoginUser(getUserName(token));
+		if (user != null) {
+			return user;
+		}
+		else{
+			return null;
+		}
+	}
 	
 	public ResponseEntity<String> registerUser(RegisterDTO data)
 	{
@@ -185,6 +197,20 @@ public class AuthenticationService {
 		catch (Exception e)
 		{
 			throw new RuntimeException("Erro encontrado: " + e);
+		}
+	}
+
+	public void updatePontosCupcake(Users user, int pontos) {
+		try
+		{
+			final int pontosAntigos = user.getPontosCupcake();
+			final int pontosNovos = pontosAntigos + pontos;
+			user.setPontosCupcake(pontosNovos);
+			repository.saveAndFlush(user);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Falha ao tentar inserir os pontos cupcake.\n" + e);
 		}
 	}
 }

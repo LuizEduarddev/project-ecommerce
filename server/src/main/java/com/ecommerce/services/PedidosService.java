@@ -18,6 +18,7 @@ import com.mercadopago.core.MPRequestOptions;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.net.MPResponse;
+import com.mercadopago.resources.payment.Payment;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -56,6 +57,9 @@ public class PedidosService {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private PagamentoService pagamentoService;
 
     public List<Pedidos> getAllPedidos(String token)
     {
@@ -259,40 +263,7 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPago(String idPedido)
-    {
-        try
-        {
-            Pedidos pedido = repository.findById(idPedido)
-                    .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
-            pedido.setPedidoPago(true);
-            calculatePontosCupcake(pedido, pedido.getUsers());
-            repository.saveAndFlush(pedido);
-            return ResponseEntity.ok("Pedido foi alterado para pronto.");
-        }
-        catch (Exception e)
-        {
-            return ResponseEntity.badRequest().body("Falha ao tentar mudar o status do pedido para pronto.\nError: "  + e);
-        }
-    }
-
-    private void calculatePontosCupcake(Pedidos pedido, Users u)
-    {
-        try
-        {
-            Users user = usersRepository.findByLoginUser(u.getUsername());
-            if (user != null)
-            {
-                int pontos = (int) pedido.getTotalPedido();
-                user.setPontosCupcake(pontos);
-            }
-        }
-        catch(Exception e)
-        {
-            throw new RuntimeException("Erro ao tentar registrar os pontos. " + e);
-        }
-    }
 
     @Transactional
     public List<PedidosClienteDTO> getPedidoByUser(String token) {
@@ -391,7 +362,6 @@ public class PedidosService {
                                                     IdentificationRequest.builder().type("CPF").number(dto.cpf()).build()) // Payer's identification
                                             .build())
                             .build();
-            functionGetPaymenteAprovved(dto.idPedido(), "APP_USR-4129274862422289-080918-960547adee80eba3e345da9eb2f51feb-1940516742", expirationDate);
             return client.create(paymentCreateRequest, requestOptions);
         } catch (MPApiException e) {
             MPResponse response = e.getApiResponse();
@@ -406,7 +376,27 @@ public class PedidosService {
         }
     }
 
-    private void functionGetPaymenteAprovved(String idPedido, String acessToken, OffsetDateTime expirationDate) {
-
+    private void functionGetPaymenteAprovved(String idPedido, String acessToken, OffsetDateTime expirationDate, String token) {
+        try
+        {
+            Users user = authenticationService.getUser(token);
+            if (user != null)
+            {
+                MercadoPagoConfig.setAccessToken(acessToken);
+                PaymentClient client = new PaymentClient();
+                Payment response = client.capture(Long.valueOf(idPedido));
+                if (response.getStatus().equals("approved"))
+                {
+                    pagamentoService.insertPagamento(response, user, idPedido);
+                }
+            }
+            else{
+                throw new RuntimeException("Falha ao tentar buscar o usuario");
+            }
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Falha ao tentar capturar o pagamento.\n" + e);
+        }
     }
 }
