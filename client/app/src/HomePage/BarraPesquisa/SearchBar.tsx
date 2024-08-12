@@ -10,7 +10,7 @@ interface Product {
 }
 
 const SearchBar = () => {
-  const [pesquisa, setPesquisa] = useState<string>(''); // Initialize as an empty string
+  const [pesquisa, setPesquisa] = useState<string>(''); 
   const [produtos, setProdutos] = useState<Product[]>([]);
 
   const renderPesquisa = () => {

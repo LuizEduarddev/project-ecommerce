@@ -45,7 +45,6 @@ const Menu = ({navigation}) => {
       api.post('api/auth/profile', token)
       .then(response => {
         setPerfil(response.data);
-        console.log(response.data);
       })
       .catch(error => {
         Alert.alert('Falha ao tentar buscar o perfil do usuario.', error);

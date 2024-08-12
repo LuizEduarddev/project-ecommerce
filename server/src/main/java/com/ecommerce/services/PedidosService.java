@@ -359,6 +359,7 @@ public class PedidosService {
     public Object pagamentoPedido(pagamentoDTO dto) {
         try
         {
+
             MercadoPagoConfig.setAccessToken("APP_USR-4129274862422289-080918-960547adee80eba3e345da9eb2f51feb-1940516742");
 
             // Set custom headers
@@ -378,10 +379,10 @@ public class PedidosService {
             // Create a PaymentCreateRequest object
             PaymentCreateRequest paymentCreateRequest =
                     PaymentCreateRequest.builder()
-                            .transactionAmount(BigDecimal.valueOf(dto.totalPedido())) // Amount to be paid
+                            .transactionAmount(dto.totalPedido()) // Amount to be paid
                             .description("Pagamento maria amelia") // Description of the payment
                             .paymentMethodId("pix") // Payment method ID for Pix
-                            //.dateOfExpiration(expirationDate) // Expiration date
+                            .dateOfExpiration(expirationDate) // Expiration date
                             .payer(
                                     PaymentPayerRequest.builder()
                                             .email(dto.userEmail())
@@ -390,6 +391,7 @@ public class PedidosService {
                                                     IdentificationRequest.builder().type("CPF").number(dto.cpf()).build()) // Payer's identification
                                             .build())
                             .build();
+            functionGetPaymenteAprovved(dto.idPedido(), "APP_USR-4129274862422289-080918-960547adee80eba3e345da9eb2f51feb-1940516742", expirationDate);
             return client.create(paymentCreateRequest, requestOptions);
         } catch (MPApiException e) {
             MPResponse response = e.getApiResponse();
@@ -402,5 +404,9 @@ public class PedidosService {
         } catch (Exception e) {
             throw new RuntimeException("General exception: " + e.getMessage());
         }
+    }
+
+    private void functionGetPaymenteAprovved(String idPedido, String acessToken, OffsetDateTime expirationDate) {
+
     }
 }
