@@ -33,57 +33,79 @@ const Pendencias = ({ navigation }) => {
     const [pedidosPendentes, setPedidosPendentes] = useState<Pedidos[]>([]);
     const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [tokenCliente, setTokenCliente] = useState<string>();
+    const [ultimoPagamento, setUltimoPagamento] = useState<Pedidos | null>(null);
+    const [checkTime, setCheckTimes] = useState<number>(0);
 
     useEffect(() => {
         getPedidos();
     }, []);
 
     const RenderPedidos = ({ item }: { item: Pedidos }) => {
-        return (
-            <View>
-                <Text>{item.dataPedido}</Text>
-                <Text>{item.horaPedido}</Text>
-                <Text>{item.totalPedido}</Text>
-                <FlatList
-                    data={item.produtos}
-                    renderItem={renderProdutos}
-                    keyExtractor={(produto) => produto.idProd}
-                />
-                <Button
-                    title='Efetuar pagamento'
-                    onPress={() => efetuarPagamento(item)}
-                />
-            </View>
-        );
+        if (item.pedidoPago === false)
+        {
+            return (
+                <View>
+                    <Text>{item.dataPedido}</Text>
+                    <Text>{item.horaPedido}</Text>
+                    <Text>{item.totalPedido}</Text>
+                    <FlatList
+                        data={item.produtos}
+                        renderItem={renderProdutos}
+                        keyExtractor={(produto) => produto.idProd}
+                    />
+                    <Button
+                        title='Efetuar pagamento'
+                        onPress={() => efetuarPagamento(item)}
+                    />
+                </View>
+            );
+        }
+        else{
+            return (
+                <View>
+                    <Text>Pedido</Text>
+                    <Text>{item.dataPedido}</Text>
+                    <Text>{item.horaPedido}</Text>
+                    <Text>{item.totalPedido}</Text>
+                    <FlatList
+                        data={item.produtos}
+                        renderItem={renderProdutos}
+                        keyExtractor={(produto) => produto.idProd}
+                    />
+                </View>
+            );
+        }
+        
     }
 
     async function efetuarPagamento(item: Pedidos) {
-        try {
-            const dataToSend = {
-                idPedido: item.idPedido,
-                totalPedido: 98,
-                userEmail: "luiz.dias@perpetuo.g12.br",
-                userFullName: "Luiz Eduardo Campos Dias",
-                cpf: "03083697180"
-            };
+        setUltimoPagamento(item);
+        const dataToSend = {
+            idPedido: item.idPedido,
+            token: tokenCliente
+        };
 
-            const response = await api.post('api/pedidos/pagamento', dataToSend);
+        api.post('api/pagamentos/pagamento', dataToSend)
+        .then(response => {
             const linkPagamento = response.data.pointOfInteraction.transactionData.ticketUrl;
-
             if (linkPagamento) {
                 setPaymentUrl(linkPagamento);
                 setModalVisible(true);
+                checkPaymentStatus(item.idPedido); 
             } else {
                 Alert.alert("Invalid payment link.");
             }
-        } catch (error) {
-            Alert.alert('Falha ao tentar efetuar o pagamento, por favor, tente novamente.\n' + (error as string));
-        }
+        })
+        .catch(error => {
+            Alert.alert(error as string);
+        })
     }
 
     async function getPedidos() {
         const token = await AsyncStorage.getItem('session-token');
         if (token) {
+            setTokenCliente(token);
             api.post('api/pedidos/pendencias', token)
             .then(response => {
                 setPedidosPendentes(response.data);
@@ -92,6 +114,23 @@ const Pendencias = ({ navigation }) => {
                 Alert.alert(error as string);
             });
         }
+    }
+
+    async function checkPaymentStatus(idPedido) {
+        const dataToSend = {
+            idPedido: idPedido,
+            token: tokenCliente
+        };
+        api.post('api/pagamentos/check', dataToSend)
+        .then(response =>{
+            console.log(response.data);
+            setModalVisible(false); 
+        })
+        .catch(error => 
+        {
+            Alert.alert(error as string);
+        }
+        )
     }
 
     return (

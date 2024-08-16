@@ -65,7 +65,13 @@ public class AuthenticationService {
 			return null;
 		}
 	}
-	
+
+	public Users getUserById(String idUser)
+	{
+		return repository.findById(idUser)
+				.orElseThrow();
+	}
+
 	public ResponseEntity<String> registerUser(RegisterDTO data)
 	{
 		if (this.repository.findByLoginUser(data.login()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);

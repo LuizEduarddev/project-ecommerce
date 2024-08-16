@@ -1,4 +1,4 @@
-package com.ecommerce.services;
+package com.ecommerce.entities.dto;
 
 import com.ecommerce.entities.Pedidos;
 

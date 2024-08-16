@@ -11,5 +11,4 @@ import java.util.Optional;
 public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByUsers(Users token);
     List<Pedidos> findByMesa(Mesa mesa);
-    Optional<List<Pedidos>> findByUsersAndPedidoPagoFalse(Users user);
 }

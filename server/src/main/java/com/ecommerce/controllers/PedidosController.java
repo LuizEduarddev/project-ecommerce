@@ -2,10 +2,8 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.dto.*;
-import com.ecommerce.services.PedidosAdminDTO;
+import com.ecommerce.entities.dto.PedidosAdminDTO;
 import com.ecommerce.services.PedidosService;
-import com.mercadopago.exceptions.MPApiException;
-import com.mercadopago.exceptions.MPException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +44,7 @@ public class PedidosController {
     @PostMapping("/get-by-id")
     public Pedidos getById(@RequestBody PedidoAuthorityDTO data)
     {
-        return service.getPedidoById(data.idPedido(), data.token());
+        return service.getPedidoById(data.idPedido());
     }
 
     @PostMapping("/add/{idUser}/{idMesa}")
@@ -61,8 +59,4 @@ public class PedidosController {
         return service.addPedidoDelivery(dto.produtos(), dto.token());
     }
 
-    @PostMapping("/pagamento")
-    public Object pagamento(@RequestBody pagamentoDTO dto) throws MPException, MPApiException {
-        return service.pagamentoPedido(dto);
-    }
 }

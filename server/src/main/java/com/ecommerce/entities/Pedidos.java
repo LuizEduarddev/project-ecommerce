@@ -2,7 +2,7 @@ package com.ecommerce.entities;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Table(name = "pedidos")

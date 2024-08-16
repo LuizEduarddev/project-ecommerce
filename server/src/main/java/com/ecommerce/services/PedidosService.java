@@ -1,41 +1,19 @@
 package com.ecommerce.services;
 
 import com.ecommerce.entities.*;
-import com.ecommerce.entities.dto.PedidosClienteDTO;
-import com.ecommerce.entities.dto.ProductsDTO;
-import com.ecommerce.entities.dto.ProductsOrderedDTO;
-import com.ecommerce.entities.dto.pagamentoDTO;
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.ProductsRepository;
 import com.ecommerce.repository.UsersRepository;
-import com.mercadopago.MercadoPagoConfig;
-import com.mercadopago.client.common.IdentificationRequest;
-import com.mercadopago.client.payment.PaymentClient;
-import com.mercadopago.client.payment.PaymentCreateRequest;
-import com.mercadopago.client.payment.PaymentPayerRequest;
-import com.mercadopago.core.MPRequestOptions;
-import com.mercadopago.exceptions.MPApiException;
-import com.mercadopago.exceptions.MPException;
-import com.mercadopago.net.MPResponse;
-import com.mercadopago.resources.payment.Payment;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,6 +38,8 @@ public class PedidosService {
 
     @Autowired
     private PagamentoService pagamentoService;
+
+    final String acessToken = "";
 
     public List<Pedidos> getAllPedidos(String token)
     {
@@ -94,13 +74,10 @@ public class PedidosService {
     }
 
     @Transactional
-    public Pedidos getPedidoById(String id, String token)
+    public Pedidos getPedidoById(String id)
     {
-        if (checkUserAuthority(token) == HttpStatus.ACCEPTED) return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido nao encontrado."));
-        else{
-            throw new RuntimeException("É necessária uma permissao maior para esta acao.");
-        }
+        return repository.findById(id)
+                .orElseThrow();
     }
 
     @Transactional
@@ -135,7 +112,6 @@ public class PedidosService {
 
             pedido.setHoraPedido(formattedTime);
 
-            pedido.setPedidoPago(false);
             pedido.setPedidoPronto(false);
 
             double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
@@ -182,7 +158,6 @@ public class PedidosService {
 
             pedido.setHoraPedido(formattedTime);
 
-            pedido.setPedidoPago(false);
             pedido.setPedidoPronto(false);
 
             double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
@@ -315,88 +290,24 @@ public class PedidosService {
     public List<PedidosClienteDTO> getPedidosPendentes(String token) {
         Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
         if (user != null) {
-            Optional<List<Pedidos>> pedidosOptional = repository.findByUsersAndPedidoPagoFalse(user);
+            List<Pedidos> pedidosList = repository.findByUsers(user);
 
-            return pedidosOptional
-                    .map(pedidos -> pedidos.stream()
-                            .map(this::convertToDTO)
-                            .collect(Collectors.toList()))
-                    .orElseGet(Collections::emptyList);
+            return pedidosList.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         } else {
             throw new RuntimeException("Usuario nao encontrado");
         }
     }
 
-    public Object pagamentoPedido(pagamentoDTO dto) {
-        try
-        {
-
-            MercadoPagoConfig.setAccessToken("APP_USR-4129274862422289-080918-960547adee80eba3e345da9eb2f51feb-1940516742");
-
-            // Set custom headers
-            Map<String, String> customHeaders = new HashMap<>();
-            customHeaders.put("x-idempotency-key", dto.idPedido());
-
-            MPRequestOptions requestOptions = MPRequestOptions.builder()
-                    .customHeaders(customHeaders)
-                    .build();
-
-            // Create a PaymentClient instance
-            PaymentClient client = new PaymentClient();
-
-            OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-            OffsetDateTime expirationDate = now.plus(Duration.ofMinutes(5));
-
-            // Create a PaymentCreateRequest object
-            PaymentCreateRequest paymentCreateRequest =
-                    PaymentCreateRequest.builder()
-                            .transactionAmount(dto.totalPedido()) // Amount to be paid
-                            .description("Pagamento maria amelia") // Description of the payment
-                            .paymentMethodId("pix") // Payment method ID for Pix
-                            .dateOfExpiration(expirationDate) // Expiration date
-                            .payer(
-                                    PaymentPayerRequest.builder()
-                                            .email(dto.userEmail())
-                                            .firstName(dto.userEmail())
-                                            .identification(
-                                                    IdentificationRequest.builder().type("CPF").number(dto.cpf()).build()) // Payer's identification
-                                            .build())
-                            .build();
-            return client.create(paymentCreateRequest, requestOptions);
-        } catch (MPApiException e) {
-            MPResponse response = e.getApiResponse();
-            if (response != null) {
-                throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
-            }
-            throw new RuntimeException("API error: " + e.getMessage());
-        } catch (MPException e) {
-            throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("General exception: " + e.getMessage());
-        }
-    }
-
-    private void functionGetPaymenteAprovved(String idPedido, String acessToken, OffsetDateTime expirationDate, String token) {
-        try
-        {
-            Users user = authenticationService.getUser(token);
-            if (user != null)
-            {
-                MercadoPagoConfig.setAccessToken(acessToken);
-                PaymentClient client = new PaymentClient();
-                Payment response = client.capture(Long.valueOf(idPedido));
-                if (response.getStatus().equals("approved"))
-                {
-                    pagamentoService.insertPagamento(response, user, idPedido);
-                }
-            }
-            else{
-                throw new RuntimeException("Falha ao tentar buscar o usuario");
-            }
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Falha ao tentar capturar o pagamento.\n" + e);
+    public ResponseEntity<String> setPedidoPago(String token, String idPedido) {
+        Pedidos pedido = repository.findById(idPedido)
+                .orElseThrow();
+        if (pedido.getUsers() == authenticationService.getUser(token)) {
+            pedido.setPedidoPago(true);
+            return ResponseEntity.ok("Pagamento efetuado com sucesso");
+        } else {
+           return ResponseEntity.badRequest().body("Impossível alterar o pedido");
         }
     }
 }
