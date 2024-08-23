@@ -1,6 +1,7 @@
 package com.ecommerce.controllers;
 
 import com.ecommerce.entities.Mesa;
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.services.MesaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,34 +18,33 @@ public class MesaController {
     private MesaService service;
 
     @GetMapping("/get-all")
-    public List<Mesa> getAll()
+    public List<MesaBalcaoDTO> getAll(@RequestBody String token)
     {
-        return service.getAllMesa();
+        return service.getAllMesa(token);
     }
 
     @PostMapping("/get-by-id")
-    public ResponseEntity<?> getById(@RequestBody String token)
+    public MesaDTO getById(@RequestBody deleteMesaDTO dto)
     {
-        return service.getMesaById(token);
+        return service.getMesaById(dto.idMesa(), dto.token());
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> add(@RequestBody Mesa mesa)
+    public ResponseEntity<String> add(@RequestBody addMesaDTO dto)
     {
-        return service.addMesa(mesa);
+        return service.addMesa(dto.numeroMesa(), dto.token());
     }
 
-    @PutMapping("/add-cliente/{idMesa}/{idCliente}")
-    public ResponseEntity<Optional<Integer>> addCliente(@PathVariable String idMesa, @PathVariable String idCliente)
+    @PutMapping("/add/cliente")
+    public ResponseEntity<String> addCliente(@RequestBody addClienteDTO dto)
     {
-        Optional<Integer> numeroMesa = service.addClienteMesa(idMesa, idCliente);
-        return ResponseEntity.ok(numeroMesa);
+        return service.addClienteMesa(dto.idMesa(), dto.token());
     }
 
-    @DeleteMapping("/delete-user/{idMesa}/{idCliente}")
-    public ResponseEntity<String> deleteCliente(@PathVariable String idMesa, @PathVariable String idCliente)
+    @DeleteMapping("/cliente/delete")
+    public ResponseEntity<String> deleteCliente(@RequestBody deleteMesaDTO dto)
     {
-        return service.deleteUser(idMesa, idCliente);
+        return service.deleteUser(dto.idMesa(), dto.token());
     }
 
     @DeleteMapping("/delete-all-user/{idMesa}")

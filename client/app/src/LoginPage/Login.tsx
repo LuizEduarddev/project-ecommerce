@@ -66,6 +66,13 @@ export default function Login({ navigation }) {
                     >
                         <Text style={styles.textButtonLogin}>Entrar</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate("MenuMesa")}
+                    >
+                        <Text>Balcao</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
             <View style={styles.bottomWhite} />

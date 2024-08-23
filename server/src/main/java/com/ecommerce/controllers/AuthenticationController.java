@@ -41,11 +41,12 @@ public class AuthenticationController {
 	private MesaService mesaService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<LoginResponseDTO> login(@RequestBody AuthDTO data)
+	public ResponseEntity<String> login(@RequestBody AuthDTO data)
 	{
 		String token = service.loginUser(data);
-		Optional<Integer> numeroMesa = mesaService.addClienteMesa(data.mesaId(), token);
-		return ResponseEntity.ok(new LoginResponseDTO(token, numeroMesa));
+		//Optional<Integer> numeroMesa = mesaService.addClienteMesa(data.mesaId(), token);
+		//return ResponseEntity.ok(new LoginResponseDTO(token, numeroMesa));
+		return ResponseEntity.ok(token);
 	}
 
 	@PostMapping("/get-by-id")

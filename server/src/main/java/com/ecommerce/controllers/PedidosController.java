@@ -56,7 +56,7 @@ public class PedidosController {
     @PostMapping("/add")
     public ResponseEntity<String> addDelivery(@RequestBody deliveryDTO dto)
     {
-        return service.addPedidoDelivery(dto.produtos(), dto.token());
+        return service.addPedidoDelivery(dto);
     }
 
 }
