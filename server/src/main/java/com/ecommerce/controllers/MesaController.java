@@ -17,7 +17,7 @@ public class MesaController {
     @Autowired
     private MesaService service;
 
-    @GetMapping("/get-all")
+    @PostMapping("/get-all")
     public List<MesaBalcaoDTO> getAll(@RequestBody String token)
     {
         return service.getAllMesa(token);

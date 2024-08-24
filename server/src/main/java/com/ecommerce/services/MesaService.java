@@ -46,8 +46,9 @@ public class MesaService {
             }
         }
         throw new RuntimeException("Necessária uma permissão maior.");
-        return repository.findAll();
+        return repository.findAll();Starting pgAdmin 4...
          */
+        System.out.println("entrou aqui");
         List<MesaBalcaoDTO> mesaDTO = new ArrayList<>();
         List<Mesa> mesaList = repository.findAll();
 
@@ -60,7 +61,7 @@ public class MesaService {
             );
             mesaDTO.add(dto);
         });
-
+        System.out.println("quantidade de mesas" + mesaDTO.size());
         return mesaDTO;
 
     }
