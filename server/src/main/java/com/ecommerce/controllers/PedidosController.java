@@ -47,16 +47,16 @@ public class PedidosController {
         return service.getPedidoById(data.idPedido());
     }
 
-    @PostMapping("/add/{idUser}/{idMesa}")
-    public ResponseEntity<String> add(@RequestBody List<String> idProdutos, @PathVariable String idUser, @PathVariable String idMesa)
+    @PostMapping("/get-by-mesa")
+    public MesaDTO getByMesa(@RequestBody GetPedidoDTO dto)
     {
-        return service.addPedido(idProdutos, idUser, idMesa);
+        return service.getPedidoByMesaDTO(dto);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> addDelivery(@RequestBody deliveryDTO dto)
+    public ResponseEntity<String> add(@RequestBody addPedidoDTO dto)
     {
-        return service.addPedidoDelivery(dto);
+        return service.addPedido(dto);
     }
 
 }

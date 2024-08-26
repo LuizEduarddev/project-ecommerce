@@ -1,9 +1,11 @@
 package com.ecommerce.services;
 
 import com.ecommerce.entities.Mesa;
+import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Users;
 import com.ecommerce.entities.dto.MesaBalcaoDTO;
 import com.ecommerce.entities.dto.MesaDTO;
+import com.ecommerce.entities.dto.PedidosMesaDTO;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.UsersRepository;
 import jakarta.transaction.Transactional;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MesaService {
@@ -48,7 +51,6 @@ public class MesaService {
         throw new RuntimeException("Necessária uma permissão maior.");
         return repository.findAll();Starting pgAdmin 4...
          */
-        System.out.println("entrou aqui");
         List<MesaBalcaoDTO> mesaDTO = new ArrayList<>();
         List<Mesa> mesaList = repository.findAll();
 
@@ -61,7 +63,6 @@ public class MesaService {
             );
             mesaDTO.add(dto);
         });
-        System.out.println("quantidade de mesas" + mesaDTO.size());
         return mesaDTO;
 
     }
@@ -211,7 +212,10 @@ public class MesaService {
         }
     }
 
+    /*
     public MesaDTO getMesaById(String token, String idMesa) {
+        //AUTENTICACAO FUNCIONANDO
+        /*
         try
         {
             Users user = authenticationService.getUser(token);
@@ -230,5 +234,30 @@ public class MesaService {
         {
             throw new RuntimeException("Ocorreu um erro ao tentar buscar a mesa.\n" + e);
         }
-    }
+         */
+        /*
+        try {
+            Optional<Mesa> mesa = repository.findById(idMesa);
+            return mesa.map(mesaPresent -> {
+                List<Pedidos> pedidos = pedidosService.getPedidoByMesa(mesaPresent);
+
+                List<PedidosMesaDTO> pedidosMesaDTOs = pedidos.stream()
+                        .flatMap(pedido -> pedido.getProdutos().stream()
+                                .map(produto -> new PedidosMesaDTO(
+                                        produto.getIdProd(),
+                                        produto.getPrecoProd(),
+                                        produto.getNomeProd())))
+                        .collect(Collectors.toList());
+
+                double valorTotal = pedidosMesaDTOs.stream()
+                        .mapToDouble(PedidosMesaDTO::valorProduto)
+                        .sum();
+
+                return new MesaDTO(mesaPresent.getNumeroMesa(), pedidosMesaDTOs, valorTotal);
+            }).orElse(null);
+        } catch (Exception e) {
+            throw new RuntimeException("Ocorreu um erro ao tentar buscar a mesa.\n" + e);
+        }
+        */
+
 }

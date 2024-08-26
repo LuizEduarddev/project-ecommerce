@@ -84,8 +84,10 @@ public class PedidosService {
     }
 
     @Transactional
-    public ResponseEntity<String> addPedidoDelivery(deliveryDTO dto)
+    public ResponseEntity<String> addPedido(addPedidoDTO dto)
     {
+        //AUTENTICACAO FUNCIONANDO
+        /*
         if (dto.produtos().isEmpty())
         {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
@@ -142,6 +144,66 @@ public class PedidosService {
         }
         else {
             return ResponseEntity.ok("Necessário uma hierárquia maior");
+        }
+
+         */
+        if (dto.produtos().isEmpty())
+        {
+            throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
+        }
+        List<Products> produtos = new ArrayList<>();
+        dto.produtos().forEach((prod) -> {
+            produtos.add(productsRepository.findById(prod.idProd())
+                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
+        });
+        Users user = authenticationService.getUser(dto.token());
+        if (user == null)
+        {
+            throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");
+        }
+        if (!dto.idMesa().isEmpty())
+        {
+            Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
+            if (mesa != null)
+            {
+                try
+                {
+                    LocalTime currentTime = LocalTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                    String formattedTime = currentTime.format(formatter);
+                    Pedidos pedido = new Pedidos();
+                    Date dataAtual = new Date();
+                    SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
+                    String dataFormatada = formatDate.format(dataAtual);
+                    pedido.setDataPedido(dataFormatada);
+
+                    pedido.setHoraPedido(formattedTime);
+
+                    pedido.setPedidoPronto(false);
+
+                    double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
+
+                    pedido.setTotalPedido(total);
+
+                    pedido.setProdutos(produtos);
+                    pedido.setUsers(user);
+                    pedido.setMesa(mesa);
+
+                    repository.saveAndFlush(pedido);
+
+                    return ResponseEntity.ok("Pedido criado com sucesso");
+                }
+                catch(Exception e)
+                {
+                    return ResponseEntity.badRequest().body("Falha ao tentar criar pedido.\nErro: " + e);
+                }
+            }
+            else{
+                return ResponseEntity.ofNullable("Mesa não encontrada no sistema.");
+            }
+        }
+        else{
+            return ResponseEntity.ok("É necessário informar a mesa.");
         }
     }
 
@@ -348,5 +410,30 @@ public class PedidosService {
             return false;
         }
     }
+
+    @Transactional
+    public MesaDTO getPedidoByMesaDTO(GetPedidoDTO dto) {
+        if (!dto.idMesa().isEmpty()) {
+            Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
+            if (mesa != null) {
+                List<Pedidos> pedidosList = repository.findByMesa(mesa);
+
+                List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream().map(pedido -> {
+                    List<ProdutosMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream().map(produto -> new ProdutosMesaDTO(produto.getIdProd(),
+                            produto.getNomeProd(),
+                            produto.getPrecoProd())).collect(Collectors.toList());
+
+                    return new PedidosMesaDTO(pedido.getIdPedido(), produtosMesaDTOList);
+                }).collect(Collectors.toList());
+
+                double valorTotal = pedidosList.stream()
+                        .mapToDouble(Pedidos::getTotalPedido)
+                        .sum();
+                return new MesaDTO(pedidosMesaDTOList, valorTotal);
+            }
+        }
+        return null;
+    }
+
 
 }

@@ -4,5 +4,5 @@ import com.ecommerce.entities.Pedidos;
 
 import java.util.List;
 
-public record MesaDTO(int numeroMesa, List<String> nomeClientes, List<Pedidos> pedidosAnteriores) {
+public record MesaDTO(List<PedidosMesaDTO> pedidosMesa, double valorTotal) {
 }

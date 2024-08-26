@@ -23,11 +23,14 @@ public class MesaController {
         return service.getAllMesa(token);
     }
 
+    /*
     @PostMapping("/get-by-id")
     public MesaDTO getById(@RequestBody deleteMesaDTO dto)
     {
         return service.getMesaById(dto.idMesa(), dto.token());
     }
+
+     */
 
     @PostMapping("/add")
     public ResponseEntity<String> add(@RequestBody addMesaDTO dto)
