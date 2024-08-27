@@ -167,6 +167,7 @@ const MenuBalcao = () => {
             produtos: produtos,    
             token: ""
         };
+        console.log(produtos)
         api.post('api/pagamentos/pagamento/avulso', dataToSend)
         .then(response => {
             console.log(response.data);

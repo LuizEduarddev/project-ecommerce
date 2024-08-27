@@ -8,4 +8,5 @@ import com.ecommerce.entities.Users;
 @Repository
 public interface UsersRepository extends JpaRepository<Users, String>{
 	 Users findByLoginUser(String login);
+	 Users findByUserCpf(String cpf);
 }

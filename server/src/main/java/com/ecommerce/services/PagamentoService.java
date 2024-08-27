@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -303,6 +304,7 @@ public class PagamentoService {
         Pedidos pedido = pedidosService.pedidoBalcao(new PedidoAvulsoDTO(dto.produtos(), user));
         if (pedido != null)
         {
+
             try
             {
                 MercadoPagoConfig.setAccessToken(acessToken);
@@ -322,18 +324,16 @@ public class PagamentoService {
                 PaymentCreateRequest paymentCreateRequest =
                         PaymentCreateRequest.builder()
                                 .transactionAmount(BigDecimal.valueOf(pedido.getTotalPedido())) // Amount to be paid
-                                .description("Pagamento maria amelia") // Description of the payment
+                                .description("") // Description of the payment
                                 .paymentMethodId("pix") // Payment method ID for Pix
                                 .dateOfExpiration(expirationDate) // Expiration date
-                                /*
                                 .payer(
                                         PaymentPayerRequest.builder()
-                                                .email(user.getUserEmail())
-                                                .firstName(user.getUserFullName())
+                                                .email("")
+                                                .firstName("")
                                                 .identification(
-                                                        IdentificationRequest.builder().type("CPF").number(user.getUserCpf()).build()) // Payer's identification
+                                                        IdentificationRequest.builder().type("CPF").number("").build())// Payer's identification
                                                 .build())
-                                 */
                                 .build();
                 Payment responsePagamento = client.create(paymentCreateRequest, requestOptions);
                 insertPagamento(pedido, user, responsePagamento);

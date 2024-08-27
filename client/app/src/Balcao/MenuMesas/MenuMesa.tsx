@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
 import MenuBalcao from './MenuBalcao';
+import MenuCadastroUsuario from './MenuCadastroUsuario';
 
 type Mesa = {
     idMesa: string,
@@ -35,7 +36,7 @@ const MenuMesa = () => {
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
-    const [view, setView] = useState<'tables' | 'text'>('tables');
+    const [view, setView] = useState('mesas');
     
 
     useEffect(() => {
@@ -167,36 +168,59 @@ const MenuMesa = () => {
         }
     }
 
+    const renderMenu = () => {
+        if (view === 'mesas')
+        {
+            if (mesas.length > 0)
+            {
+                return(
+                    <View>
+                        <FlatList
+                            data={mesas}
+                            horizontal={true}
+                            renderItem={renderMesa}
+                            keyExtractor={(item) => item.idMesa}
+                        />
+    
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalVisible}
+                            onRequestClose={() => setModalVisible(false)}
+                        >
+                            {renderModal()}
+                        </Modal>
+                    </View>
+                );
+            }
+            else{
+                return(
+                    <Text>Nenhuma mesa disponível no momento.</Text>
+                );
+            }
+        }
+        else if(view === 'balcao')
+        {
+            return(
+                <MenuBalcao/>
+            );
+        }
+        else if(view === 'cadastro-usuario')
+        {
+            return(
+                <MenuCadastroUsuario/>
+            );
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View>
-                <Button title="Mesas" onPress={() => setView('tables')} />
-                <Button title="Balcão" onPress={() => setView('text')} />
+                <Button title="Mesas" onPress={() => setView('mesas')} />
+                <Button title="Balcão" onPress={() => setView('balcao')} />
+                <Button title="Cadastro de usuario" onPress={() => setView('cadastro-usuario')} />
             </View>
-
-            {view === 'tables' && mesas.length > 0 ? (
-                <View>
-                    <FlatList
-                        data={mesas}
-                        horizontal={true}
-                        renderItem={renderMesa}
-                        keyExtractor={(item) => item.idMesa}
-                    />
-
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
-                    >
-                        {renderModal()}
-                    </Modal>
-                </View>
-            ) : view === 'text' ? (
-                <MenuBalcao/>
-            ) : (
-                <Text style={styles.noMesaText}>Nenhuma mesa disponível</Text>
-            )}
+            {renderMenu()}
         </SafeAreaView>
     );
 }

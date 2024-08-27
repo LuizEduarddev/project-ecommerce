@@ -225,4 +225,15 @@ public class AuthenticationService {
 			throw new RuntimeException("Falha ao tentar inserir os pontos cupcake.\n" + e);
 		}
 	}
+
+    public ResponseEntity<String> registerUserAvulso(RegisterAvulsoDTO data) {
+		if (this.repository.findByUserCpf(data.userCpf()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);
+		else{
+			Users newUser = new Users(data.userFullName(), data.userCpf(), data.userTelefone(), data.userEmail(), data.userEndereco());
+			newUser.setPontosCupcake(0);
+			this.repository.saveAndFlush(newUser);
+			return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
+		}
+	}
+
 }

@@ -52,6 +52,20 @@ public class Users implements UserDetails {
 	public Users() {
 	}
 
+	public Users(String userFullName, String userCpf, String userTelefone, String userEmail, String userEndereco) {
+		this.userFullName = userFullName;
+		this.userCpf = userCpf;
+		this.userTelefone = userTelefone;
+		this.userEmail = userEmail;
+		this.userEndereco = userEndereco;
+	}
+
+	public Users(String nomeUsuario, String cpf, String numeroTelefone) {
+		this.userFullName = nomeUsuario;
+		this.userCpf = cpf;
+		this.userTelefone = numeroTelefone;
+	}
+
 	public Users(String loginUser, String passwordUser, UserRole userRole) {
 		this.loginUser = loginUser;
 		this.passwordUser = passwordUser;

@@ -74,6 +74,12 @@ public class AuthenticationController {
 		return service.registerUser(data);
 	}
 
+	@PostMapping("/register/avulso")
+	public ResponseEntity<String> registerAvulso(@ModelAttribute RegisterAvulsoDTO data)
+	{
+		return service.registerUserAvulso(data);
+	}
+
 	@PostMapping("/profile")
 	public UserProfileDTO getProfileData(@RequestBody String token)
 	{
