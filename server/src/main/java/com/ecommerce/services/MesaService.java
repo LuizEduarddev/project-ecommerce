@@ -212,6 +212,23 @@ public class MesaService {
         }
     }
 
+    public void alterMesaEmUso(String idMesa) {
+        Mesa mesa = repository.findById(idMesa).orElseThrow();
+
+        try
+        {
+            if (!mesa.isEmUso())
+            {
+                mesa.setEmUso(true);
+                repository.saveAndFlush(mesa);
+            }
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Falha ao tentar alterar o estado da mesa.");
+        }
+    }
+
     /*
     public MesaDTO getMesaById(String token, String idMesa) {
         //AUTENTICACAO FUNCIONANDO

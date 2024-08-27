@@ -72,6 +72,12 @@ public class AuthenticationService {
 				.orElseThrow();
 	}
 
+	@Transactional
+	public Users getBalcao()
+	{
+		return repository.findByLoginUser("balcao");
+	}
+
 	public ResponseEntity<String> registerUser(RegisterDTO data)
 	{
 		if (this.repository.findByLoginUser(data.login()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);

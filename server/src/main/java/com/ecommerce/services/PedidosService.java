@@ -161,7 +161,7 @@ public class PedidosService {
         {
             throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");
         }
-        if (!dto.idMesa().isEmpty())
+        if (!dto.idMesa().isBlank())
         {
             Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
             if (mesa != null)
@@ -189,6 +189,8 @@ public class PedidosService {
                     pedido.setUsers(user);
                     pedido.setMesa(mesa);
 
+                    mesaService.alterMesaEmUso(dto.idMesa());
+
                     repository.saveAndFlush(pedido);
 
                     return ResponseEntity.ok("Pedido criado com sucesso");
@@ -203,24 +205,20 @@ public class PedidosService {
             }
         }
         else{
-            return ResponseEntity.ok("É necessário informar a mesa.");
+            throw new RuntimeException("E necessario informar a mesa");
         }
     }
 
-    public ResponseEntity<String> addPedido(List<String> idProdutos, String idUser, String idMesa)
-    {
+    public Pedidos pedidoBalcao(PedidoAvulsoDTO dto) {
+        if (dto.produtos().isEmpty())
+        {
+            throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
+        }
         List<Products> produtos = new ArrayList<>();
-        idProdutos.forEach((id) -> {
-            produtos.add(productsRepository.findById(id)
+        dto.produtos().forEach((prod) -> {
+            produtos.add(productsRepository.findById(prod.idProd())
                     .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
         });
-
-        Users user = usersRepository.findById(idUser)
-                .orElseThrow(() -> new RuntimeException("Cliente nao encontrado no sistema.\nFalha para criar pedido"));
-
-        Mesa mesa = mesaRepository.findById(idMesa)
-                .orElseThrow(() -> new RuntimeException("Mesa nao encontrada no sistema.\nFalha para criar pedido"));
-
         try
         {
             LocalTime currentTime = LocalTime.now();
@@ -241,19 +239,19 @@ public class PedidosService {
             pedido.setTotalPedido(total);
 
             pedido.setProdutos(produtos);
-            pedido.setUsers(user);
-
-            pedido.setMesa(mesa);
+            pedido.setUsers(dto.user());
+            pedido.setMesa(null);
 
             repository.saveAndFlush(pedido);
 
-            return ResponseEntity.ok("Pedido criado com sucesso");
+            return pedido;
         }
         catch(Exception e)
         {
-            return ResponseEntity.badRequest().body("Falha ao tentar criar pedido.\nErro: " + e);
+            throw new RuntimeException("Falha ao tentar criar pedido.\nErro: " + e);
         }
     }
+
 
     private HttpStatus checkUserAuthorityAdmin(String token)
     {

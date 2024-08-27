@@ -3,7 +3,7 @@ package com.ecommerce.services;
 import com.ecommerce.entities.Pagamentos;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Users;
-import com.ecommerce.entities.dto.pagamentoDTO;
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.repository.PagamentosRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.UsersRepository;
@@ -157,9 +157,9 @@ public class PagamentoService {
     private ResponseEntity<String> insertPagamentoExistente(Pedidos pedido, Users user, Pagamentos pagamento, Payment paymentResponse) {
         try
         {
-            if (authenticationService.getUserById(user.getIdUser()) != null)
+            if (authenticationService.getUserById(user.getIdUser()) != null )
             {
-                if (alreadyPayed(pedido.getIdPedido()))
+                if (alreadyPayed(pedido.getIdPedido()) && !authenticationService.getUserById(user.getIdUser()).getAuthorities().contains("BALCAO"))
                 {
                     if (!pagamento.isCreditado())
                     {
@@ -264,11 +264,14 @@ public class PagamentoService {
                                     .build();
                     Payment responsePagamento = client.create(paymentCreateRequest, requestOptions);
                     insertPagamento(pedido, user, responsePagamento);
-                    checkPaymentAsync(pedido.getIdPedido(), dto.token(), 0);
+                    checkPaymentAsync(pedido.getIdPedido(), dto.token());
                     return responsePagamento;
                 }
-                else{
+                else if (user == null){
                     throw new RuntimeException("Usuario nao encontrado.");
+                }
+                else {
+                    throw new RuntimeException("Erro nao detectado");
                 }
             } catch (MPApiException e) {
                 MPResponse response = e.getApiResponse();
@@ -285,94 +288,158 @@ public class PagamentoService {
 
     }
 
+    public Object pagamentoAvulso(pagamentoAvulsoDTO dto, Users user) {
+        /*
+            Explicacao:
+            Durante os testes, para nao ser necessario logar o tempo inteiro, o pagamento automaticamente ja passa o balcao, e necessario retirar isto depois da fase de testes
+         */
+        /*
+        Users user = authenticationService.getUser(dto.token());
+        if (user == null)
+        {
+            throw new RuntimeException("Falha ao tentar recuperar o usuario");
+        }
+        */
+        Pedidos pedido = pedidosService.pedidoBalcao(new PedidoAvulsoDTO(dto.produtos(), user));
+        if (pedido != null)
+        {
+            try
+            {
+                MercadoPagoConfig.setAccessToken(acessToken);
+
+                Map<String, String> customHeaders = new HashMap<>();
+                customHeaders.put("x-idempotency-key", pedido.getIdPedido());
+
+                MPRequestOptions requestOptions = MPRequestOptions.builder()
+                        .customHeaders(customHeaders)
+                        .build();
+
+                PaymentClient client = new PaymentClient();
+
+                OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+                OffsetDateTime expirationDate = now.plus(Duration.ofMinutes(5));
+
+                PaymentCreateRequest paymentCreateRequest =
+                        PaymentCreateRequest.builder()
+                                .transactionAmount(BigDecimal.valueOf(pedido.getTotalPedido())) // Amount to be paid
+                                .description("Pagamento maria amelia") // Description of the payment
+                                .paymentMethodId("pix") // Payment method ID for Pix
+                                .dateOfExpiration(expirationDate) // Expiration date
+                                /*
+                                .payer(
+                                        PaymentPayerRequest.builder()
+                                                .email(user.getUserEmail())
+                                                .firstName(user.getUserFullName())
+                                                .identification(
+                                                        IdentificationRequest.builder().type("CPF").number(user.getUserCpf()).build()) // Payer's identification
+                                                .build())
+                                 */
+                                .build();
+                Payment responsePagamento = client.create(paymentCreateRequest, requestOptions);
+                insertPagamento(pedido, user, responsePagamento);
+                checkPaymentAsync(pedido.getIdPedido(), dto.token());
+                return new responsePagamentoDTO(responsePagamento, pedido.getIdPedido());
+
+            } catch (MPApiException e) {
+                MPResponse response = e.getApiResponse();
+                if (response != null) {
+                    throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
+                }
+                throw new RuntimeException("API error: " + e.getMessage());
+            } catch (MPException e) {
+                throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("General exception: " + e.getMessage());
+            }
+        }
+        else{
+            throw new RuntimeException("Falha ao tentar criar o pedido");
+        }
+    }
+
     @Async
-    public void checkPaymentAsync(String idPedido, String token, int contador) {
-        checkPaymentServer(idPedido, token, contador);
+    public void checkPaymentAsync(String idPedido, String token) {
+        checkPaymentServer(idPedido, token);
     }
 
-    public void checkPaymentServer(String idPedido, String token, int contador) {
-        try {
-            Pedidos pedido = pedidosService.getPedidoById(idPedido);
-            if (pedido != null) {
-                MercadoPagoConfig.setAccessToken(acessToken);
-                PaymentClient client = new PaymentClient();
+    public void checkPaymentServer(String idPedido, String token) {
+        for (int i=0; i <= 61; i++)
+        {
+            try {
+                Pedidos pedido = pedidosService.getPedidoById(idPedido);
+                if (pedido != null) {
+                    MercadoPagoConfig.setAccessToken(acessToken);
+                    PaymentClient client = new PaymentClient();
 
-                Long idPagamentoMercadoPago = getPagamentoByPedido(pedido).getIdPagamentoMercadoPago();
+                    Long idPagamentoMercadoPago = getPagamentoByPedido(pedido).getIdPagamentoMercadoPago();
 
-                Payment response = client.get(idPagamentoMercadoPago);
+                    Payment response = client.get(idPagamentoMercadoPago);
 
-                if (response.getStatus().equals("approved")) {
-                    if (response.getStatusDetail().equals("accredited")) {
-                        insertPagamento(pedido, authenticationService.getUser(token), response);
-                    } else {
+                    if (response.getStatus().equals("approved")) {
+                        if (response.getStatusDetail().equals("accredited")) {
+                            insertPagamento(pedido, authenticationService.getUser(token), response);
+                            break;
+                        }
+                    } else if (response.getStatus().equals("rejected")) {
+                        throw new RuntimeException("Pagamento rejeitado");
+                    } else{
+                            Thread.sleep(5000);
                     }
-                } else if (response.getStatus().equals("rejected")) {
-                } else{
-                    if (contador < 61) {
-                        contador += 1;
-                        Thread.sleep(5000);
-                    } else {
-                    }
+                } else {
+                    throw new RuntimeException("Pedido nao encontrado.");
                 }
-            } else {
-                throw new RuntimeException("Pedido não encontrado.");
+            } catch (MPApiException e) {
+                MPResponse response = e.getApiResponse();
+                if (response != null) {
+                    throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
+                }
+                throw new RuntimeException("API error: " + e.getMessage());
+            } catch (MPException e) {
+                throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("General exception: " + e.getMessage());
             }
-        } catch (MPApiException e) {
-            MPResponse response = e.getApiResponse();
-            if (response != null) {
-                throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
-            }
-            throw new RuntimeException("API error: " + e.getMessage());
-        } catch (MPException e) {
-            throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("General exception: " + e.getMessage());
         }
     }
 
-    public ResponseEntity<String> checkPaymentUser(String idPedido, String token, int contador) {
-        try {
-            Pedidos pedido = pedidosService.getPedidoById(idPedido);
-            if (pedido != null) {
-                MercadoPagoConfig.setAccessToken(acessToken);
-                PaymentClient client = new PaymentClient();
+    public ResponseEntity<String> checkPaymentUser(String idPedido, String token) {
+        for (int i=0; i <= 61; i++)
+        {
+            try {
+                Pedidos pedido = pedidosService.getPedidoById(idPedido);
+                if (pedido != null) {
+                    MercadoPagoConfig.setAccessToken(acessToken);
+                    PaymentClient client = new PaymentClient();
 
-                Long idPagamentoMercadoPago = getPagamentoByPedido(pedido).getIdPagamentoMercadoPago();
+                    Long idPagamentoMercadoPago = getPagamentoByPedido(pedido).getIdPagamentoMercadoPago();
 
-                Payment response = client.get(idPagamentoMercadoPago);
+                    Payment response = client.get(idPagamentoMercadoPago);
 
-                if (response.getStatus().equals("approved")) {
-                    if (response.getStatusDetail().equals("accredited")) {
-                        insertPagamento(pedido, authenticationService.getUser(token), response);
-                        return pedidosService.setPedidoPago(token, pedido.getIdPedido());
-                    } else {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Pagamento não foi acreditado.");
-                    }
-                } else if (response.getStatus().equals("rejected")) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Pagamento foi rejeitado.");
-                } else{
-                    if (contador < 61) {
-                        contador += 1;
+                    if (response.getStatus().equals("approved")) {
+                        if (response.getStatusDetail().equals("accredited")) {
+                            insertPagamento(pedido, authenticationService.getUser(token), response);
+                            return ResponseEntity.ok("Pagamento efetuado com sucesso");
+                        }
+                    } else if (response.getStatus().equals("rejected")) {
+                        throw new RuntimeException("Pagamento rejeitado");
+                    } else{
                         Thread.sleep(5000);
-                        return checkPaymentUser(idPedido, token, contador);
-                    } else {
-                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Pagamento ainda está pendente ou em processo.");
                     }
+                } else {
+                    throw new RuntimeException("Pedido nao encontrado.");
                 }
-            } else {
-                throw new RuntimeException("Pedido não encontrado.");
+            } catch (MPApiException e) {
+                MPResponse response = e.getApiResponse();
+                if (response != null) {
+                    throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
+                }
+                throw new RuntimeException("API error: " + e.getMessage());
+            } catch (MPException e) {
+                throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
+            } catch (Exception e) {
+                throw new RuntimeException("General exception: " + e.getMessage());
             }
-        } catch (MPApiException e) {
-            MPResponse response = e.getApiResponse();
-            if (response != null) {
-                throw new RuntimeException("Response status code: " + response.getStatusCode() + "\n" + ": " + response.getContent());
-            }
-            throw new RuntimeException("API error: " + e.getMessage());
-        } catch (MPException e) {
-            throw new RuntimeException("Mercado Pago exception: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("General exception: " + e.getMessage());
         }
+        return ResponseEntity.ofNullable("Pagamento nao efetuado");
     }
-
 }
