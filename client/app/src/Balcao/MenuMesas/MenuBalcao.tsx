@@ -83,6 +83,8 @@ const MenuBalcao = () => {
         }
     }
 
+    //foi?
+
     const valorTotal = () => {
         if (produtosBalcao && produtosBalcao.length > 0)
         {
