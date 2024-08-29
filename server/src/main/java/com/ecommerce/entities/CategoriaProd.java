@@ -1,5 +1,8 @@
 package com.ecommerce.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public enum CategoriaProd {
     BOMBOM("bombom"),
     DOCINHO("docinho"),
@@ -22,5 +25,13 @@ public enum CategoriaProd {
             }
         }
         return false;
+    }
+
+    public static List<String> allCategorias() {
+        List<String> categorias = new ArrayList<>();
+        for (CategoriaProd c : CategoriaProd.values()) {
+            categorias.add(c.toString().toUpperCase());
+        }
+        return categorias;
     }
 }

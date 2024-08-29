@@ -156,4 +156,8 @@ public class ProductsService {
 			return null;
 		}
 	}
+
+	public List<String> getCategories() {
+		return CategoriaProd.allCategorias();
+	}
 }
