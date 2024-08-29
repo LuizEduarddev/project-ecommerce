@@ -9,6 +9,7 @@ import PedidosCli from "./app/src/ProfilePage/PedidosCliente/PedidosCli";
 import SearchBar from "./app/src/HomePage/BarraPesquisa/SearchBar";
 import Pendencias from "./app/src/HomePage/PendenciasUsuario/Pendencias";
 import ChangeView from "./app/src/Balcao/ChangeView";
+import MenuPesquisaProduto from "./app/src/Balcao/MenuProdutos/MenuPesquisaProduto";
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,7 @@ export default function App()
         <Stack.Screen name="barra_de_pesquisa" component={SearchBar} options={{ headerShown: true }} />
         <Stack.Screen name="Pendencias" component={Pendencias} options={{ headerShown: false }} />
         <Stack.Screen name="ChangeView" component={ChangeView} options={{ headerShown: false }} />
+        <Stack.Screen name="MenuPesquisaProduto" component={MenuPesquisaProduto} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

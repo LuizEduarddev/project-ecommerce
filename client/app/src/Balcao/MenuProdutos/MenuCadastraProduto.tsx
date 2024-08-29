@@ -15,6 +15,7 @@ const MenuCadastraProduto = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [imagemProduto, setImagemProduto] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [categoriaProdShow, setCategoriaProdShow] = useState<string>('');
 
   const toggleSwitchPromocao = () => setPromoProd(previousState => !previousState);
   const toggleSwitchVisible = () => setVisible(previousState => !previousState);
@@ -99,18 +100,16 @@ const MenuCadastraProduto = () => {
     formData.append('categoriaProd', categoriaProd.toString());
     formData.append('precoPromocao', formattedPrecoPromocao ? formattedPrecoPromocao.toString() : '');
     formData.append('visible', visible.toString());
-  
     if (imagemProduto) {
       try {
         const response = await fetch(imagemProduto);
         const blob = await response.blob();
   
-        formData.append('file', blob, 'product_image.jpg');
+        formData.append('file', blob, nomeProduto + '.png');
       } catch (error) {
         console.error('Error converting image to Blob:', error);
       }
     }
-  
     api
       .post('api/products/add', formData, {
         headers: {
@@ -160,10 +159,10 @@ const MenuCadastraProduto = () => {
           maxHeight={300}
           labelField="label"
           valueField="value"
-          placeholder="Escolha uma categorias"
+          placeholder="Escolha uma categoria"
           value={categoriaProd}
           onChange={(item) => {
-            setCategoriaProd(item.value);
+            setCategoriaProd(item.label);
           }}
         />
       );

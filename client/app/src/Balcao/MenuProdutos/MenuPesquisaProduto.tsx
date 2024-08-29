@@ -26,6 +26,11 @@ const MenuPesquisaProduto = () => {
   const [produtoEditar, setProdutoEditar] = useState<Product | null>(null);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  const handleClose = () => {
+    setViewMenuEditarProduto(false);
+    setProdutoEditar(null); 
+  };
+
   const handleSearchInputChange = (text: string) => {
     setBuscaProduto(text);
 
@@ -82,7 +87,7 @@ const MenuPesquisaProduto = () => {
   return (
     <View>
       {viewMenuEditarProduto === true ? (
-        <MenuEditarProduto produto={produtoEditar}/>
+        <MenuEditarProduto id={produtoEditar.idProd} onClose={handleClose}/>
       ) : (
         <View style={styles.modalView}>
           <TextInput

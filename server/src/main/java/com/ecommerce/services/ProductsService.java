@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.CreateProductDTO;
+import com.ecommerce.entities.dto.EditarProductDTO;
 import com.ecommerce.entities.dto.ProductsBased64DTO;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,29 +83,28 @@ public class ProductsService {
 		}
 	}
 
-	public ResponseEntity<String> alterProduct(String id, Products alterProduto) throws Exception
-	{
-		Products produto = repository.findById(id)
-				.orElseThrow(() -> new Exception("Produto com id '" + id + "' nao encontrado."));
+	public ResponseEntity<String> alterProduct(EditarProductDTO dto) throws Exception {
+		Products produto = repository.findById(dto.getIdProduto())
+				.orElseThrow(() -> new Exception("Produto com id '" + dto.getIdProduto() + "' nao encontrado."));
 				
-		try {
-	        Class<?> produtoClass = Products.class;
-	        Field[] fields = produtoClass.getDeclaredFields();
-
-	        for (Field field : fields) {   		
-        		field.setAccessible(true);
-        		Object value = field.get(alterProduto);
-        		if (value != null) {
-        			field.set(produto, value);	
-	        	}
-	        }
-
-	        repository.saveAndFlush(produto);
-	        return new ResponseEntity<>("Produto '" + alterProduto.getNomeProd() + "' alterado com sucesso!", HttpStatus.ACCEPTED);
-	        
-	    } catch (IllegalAccessException e) {
-	        throw new Exception("Erro ao atualizar mesa." + e);
-	    }
+		try
+		{
+			MultipartFile file = dto.getFile();
+			byte[] imageData = file.getBytes();
+			produto.setNomeProd(dto.getNomeProd());
+			produto.setPrecoProd(dto.getPrecoProd());
+			produto.setPromoProd(dto.isPromoProd());
+			produto.setCategoriaProd(dto.getCategoriaProd());
+			produto.setPrecoProd(dto.getPrecoPromocao());
+			produto.setImagemProduto(imageData);
+			produto.setVisible(dto.isVisible());
+			repository.saveAndFlush(produto);
+			return new ResponseEntity<>("Produto alterado com sucesso.", HttpStatus.CREATED);
+		}
+		catch(Exception e)
+		{
+			throw new RuntimeException("Falha ao tentar alterar o produto: " + e);
+		}
 	}
 	
 	public ResponseEntity<String> deleteProduto(String id) throws Exception

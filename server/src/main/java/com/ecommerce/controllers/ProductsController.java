@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.CreateProductDTO;
+import com.ecommerce.entities.dto.EditarProductDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,10 +50,10 @@ public class ProductsController {
 		return service.searchProductBalcao(pesquisa);
 	}
 
-	@PostMapping("/get-by-id-{id}")
-	public Products getById(@PathVariable String id) throws Exception
+	@PostMapping("/get-by-id")
+	public Products getById(@RequestBody String idProduto) throws Exception
 	{
-		return service.getProductById(id);
+		return service.getProductById(idProduto);
 	}
 
 	@PostMapping("/add")
@@ -69,15 +70,23 @@ public class ProductsController {
 		return service.addProduct(novoProduto);
 	}
 	
-	@PutMapping("/alter-{id}")
-	public ResponseEntity<String> alter(@PathVariable String id, @RequestBody Products alterProduto) throws Exception
-	{
-		return service.alterProduct(id, alterProduto);
+	@PutMapping("/editar")
+	public ResponseEntity<String> alter(@RequestParam("idProd") String idProd,
+										@RequestParam("nomeProd") String nomeProd,
+										@RequestParam("precoProd") double precoProd,
+										@RequestParam("promoProd") boolean promoProd,
+										@RequestParam("categoriaProd") CategoriaProd categoriaProd,
+										@RequestParam("precoPromocao") double precoPromocao,
+										@RequestPart("file") MultipartFile file,
+										@RequestParam("visible") boolean visible
+	) throws Exception {
+		EditarProductDTO novoProduto = new EditarProductDTO(idProd,nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible);
+		return service.alterProduct(novoProduto);
 	}
 	
-	@DeleteMapping("/delete-{id}")
-	public ResponseEntity<String> delete(@PathVariable String id) throws Exception
+	@DeleteMapping("/delete")
+	public ResponseEntity<String> delete(@RequestParam String idProduto) throws Exception
 	{
-		return service.deleteProduto(id);
+		return service.deleteProduto(idProduto);
 	}
 }
