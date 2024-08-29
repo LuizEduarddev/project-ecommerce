@@ -33,6 +33,21 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
     setUserCpf(cpf);
   };
 
+  function formatCpfAsync(text: string)
+  {
+    let cpf = text.replace(/\D/g, '');
+    if (cpf.length <= 3) {
+      cpf = cpf.replace(/(\d{0,3})/, '$1');
+    } else if (cpf.length <= 6) {
+      cpf = cpf.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+    } else if (cpf.length <= 9) {
+      cpf = cpf.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+    } else {
+      cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+    }
+    return cpf;
+  }
+
   const getUnformattedCpf = (cpf: string) => cpf.replace(/\D/g, '');
 
   const renderModalBlank = () => {
@@ -54,7 +69,6 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
   };
 
   async function cadastrarUsuario() {
-    // Check for blank fields, using default values if inputs are empty
     if (
       (!userFullName.trim() && !user.userFullName.trim()) ||
       (!userCpf.trim() && !user.userCpf.trim()) ||
@@ -72,7 +86,7 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
           userEndereco: userEndereco.trim() || user.userEndereco,
           userEmail: userEmail.trim() || user.userEmail,
         };
-        api.post('api/auth/register/avulso', dataToSend)
+        api.post('api/auth/alter/avulso', dataToSend)
           .then(response => {
             console.log(response.data);
           })
@@ -108,13 +122,7 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
         value={userFullName}
         onChangeText={setUserFullName}
       />
-      <TextInput
-        placeholder={user.userCpf}
-        value={userCpf}
-        onChangeText={formatCpf}
-        keyboardType="numeric"
-        maxLength={14}
-      />
+      <Text>{formatCpfAsync(user.userCpf)}</Text>
       <TextInput
         placeholder={user.userEndereco}
         value={userEndereco}

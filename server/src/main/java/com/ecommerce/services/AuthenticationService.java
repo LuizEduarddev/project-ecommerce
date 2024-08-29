@@ -269,30 +269,34 @@ public class AuthenticationService {
 	}
 
 	public ResponseEntity<String> alterUserAvulsoData(UserDTO data) {
-		Users user = repository.findByUserCpf(data.userCpf());
-		if (user == null)
-			return new ResponseEntity<String>("Usuário inexistente.", HttpStatus.BAD_REQUEST);
-		else {
-			if (
-					data.userFullName() != null &&
-					data.userCpf() != null &&
-					data.userTelefone() != null &&
-					data.userEmail() != null &&
-					data.userEndereco() != null) {
-				try {
-					user.setUserFullName(data.userFullName());
-					user.setUserCpf(data.userCpf());
-					user.setUserTelefone(data.userTelefone());
-					user.setUserEmail(data.userEmail());
-					user.setUserEndereco(data.userEndereco());
+		if (data.userCpf() == null)
+		{
+			throw new RuntimeException("O cpf nao pode estar vazio.");
+		}
+		else{
+			Users user = repository.findByUserCpf(data.userCpf());
+			if (user == null)
+				return new ResponseEntity<String>("Usuário inexistente.", HttpStatus.BAD_REQUEST);
+			else {
+				if (
+						data.userFullName() != null &&
+						data.userTelefone() != null &&
+						data.userEmail() != null &&
+						data.userEndereco() != null) {
+					try {
+						user.setUserFullName(data.userFullName());
+						user.setUserTelefone(data.userTelefone());
+						user.setUserEmail(data.userEmail());
+						user.setUserEndereco(data.userEndereco());
 
-					this.repository.saveAndFlush(user);
-					return new ResponseEntity<String>("Usuário alterado com sucesso.", HttpStatus.CREATED);
-				} catch (Exception e) {
-					throw new RuntimeException("Erro: " + e);
+						this.repository.saveAndFlush(user);
+						return new ResponseEntity<String>("Usuário alterado com sucesso.", HttpStatus.CREATED);
+					} catch (Exception e) {
+						throw new RuntimeException("Erro: " + e);
+					}
+				} else {
+					throw new RuntimeException("Nennhum campo pode estar vazio");
 				}
-			} else {
-				throw new RuntimeException("Nennhum campo pode estar vazio");
 			}
 		}
 	}

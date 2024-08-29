@@ -8,7 +8,7 @@ import Menu from "./app/src/HomePage/MenuBarHome/MenuHome";
 import PedidosCli from "./app/src/ProfilePage/PedidosCliente/PedidosCli";
 import SearchBar from "./app/src/HomePage/BarraPesquisa/SearchBar";
 import Pendencias from "./app/src/HomePage/PendenciasUsuario/Pendencias";
-import ChangeView from "./app/src/Balcao/MenuMesas/ChangeView";
+import ChangeView from "./app/src/Balcao/ChangeView";
 
 const Stack = createNativeStackNavigator();
 

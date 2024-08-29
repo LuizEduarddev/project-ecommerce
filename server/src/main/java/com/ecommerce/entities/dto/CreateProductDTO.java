@@ -1,12 +1,13 @@
 package com.ecommerce.entities.dto;
 
+import com.ecommerce.entities.CategoriaProd;
 import org.springframework.web.multipart.MultipartFile;
 
 public class CreateProductDTO {
     private String nomeProd;
     private double precoProd;
     private boolean promoProd;
-    private String categoriaProd;
+    private CategoriaProd categoriaProd;
     private String precoPromocao;
     private MultipartFile file;
     private boolean visible;
@@ -16,7 +17,7 @@ public class CreateProductDTO {
 
     // Parameterized constructor
     public CreateProductDTO(String nomeProd, double precoProd, boolean promoProd,
-                            String categoriaProd, String precoPromocao, MultipartFile file, boolean visible) {
+                            CategoriaProd categoriaProd, String precoPromocao, MultipartFile file, boolean visible) {
         this.nomeProd = nomeProd;
         this.precoProd = precoProd;
         this.promoProd = promoProd;
@@ -51,11 +52,11 @@ public class CreateProductDTO {
         this.promoProd = promoProd;
     }
 
-    public String getCategoriaProd() {
+    public CategoriaProd getCategoriaProd() {
         return categoriaProd;
     }
 
-    public void setCategoriaProd(String categoriaProd) {
+    public void setCategoriaProd(CategoriaProd categoriaProd) {
         this.categoriaProd = categoriaProd;
     }
 

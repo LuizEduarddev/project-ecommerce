@@ -11,7 +11,7 @@ public class Products {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String idProd;
 
-	@Column(name = "nome_prod")
+	@Column(name = "nome_prod", unique = true)
 	private String nomeProd;
 
 	@Column(name = "preco_prod")
@@ -21,7 +21,8 @@ public class Products {
 	private boolean promoProd;
 
 	@Column(name = "categoria_prod")
-	private String categoriaProd;
+	@Enumerated(EnumType.STRING)
+	private CategoriaProd categoriaProd;
 
 	@Column(name = "preco_promocao")
 	private String precoPromocao;
@@ -38,8 +39,9 @@ public class Products {
 	}
 
 	// Parameterized constructor
-	public Products(String nomeProd, double precoProd, boolean promoProd, String categoriaProd,
-					String precoPromocao, byte[] imagemProduto, boolean visible) {
+
+
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, String precoPromocao, byte[] imagemProduto, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -47,6 +49,23 @@ public class Products {
 		this.precoPromocao = precoPromocao;
 		this.imagemProduto = imagemProduto;
 		this.visible = visible;
+	}
+
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, String precoPromocao, boolean visible) {
+		this.nomeProd = nomeProd;
+		this.precoProd = precoProd;
+		this.promoProd = promoProd;
+		this.categoriaProd = categoriaProd;
+		this.precoPromocao = precoPromocao;
+		this.visible = visible;
+	}
+
+	public CategoriaProd getCategoriaProd() {
+		return categoriaProd;
+	}
+
+	public void setCategoriaProd(CategoriaProd categoriaProd) {
+		this.categoriaProd = categoriaProd;
 	}
 
 	// Getters and Setters
@@ -82,13 +101,7 @@ public class Products {
 		this.promoProd = promoProd;
 	}
 
-	public String getCategoriaProd() {
-		return categoriaProd;
-	}
 
-	public void setCategoriaProd(String categoriaProd) {
-		this.categoriaProd = categoriaProd;
-	}
 
 	public String getPrecoPromocao() {
 		return precoPromocao;

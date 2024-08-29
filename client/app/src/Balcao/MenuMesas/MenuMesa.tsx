@@ -2,8 +2,8 @@ import { Alert, Button, FlatList, Image, Modal, Pressable, StyleSheet, Text, Tex
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
-import MenuBalcao from './MenuBalcao';
-import MenuCadastroUsuario from './MenuCadastroUsuario';
+import MenuBalcao from '../MenuBalcao/MenuBalcao';
+import MenuCadastroUsuario from '../MenuUsuario/MenuCadastroUsuario';
 
 type Mesa = {
     idMesa: string,

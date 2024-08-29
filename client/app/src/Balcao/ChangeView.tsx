@@ -1,8 +1,9 @@
 import { Button, StyleSheet, Text, View } from 'react-native'
 import React, { useState } from 'react'
-import MenuBalcao from './MenuBalcao';
-import MenuMesa from './MenuMesa';
-import MenuUsuario from './MenuUsuario';
+import MenuBalcao from './MenuBalcao/MenuBalcao';
+import MenuMesa from './MenuMesas/MenuMesa';
+import MenuUsuario from './MenuUsuario/MenuUsuario';
+import MenuProdutos from './MenuProdutos/MenuProdutos';
 
 const ChangeView = () => {
   
@@ -13,6 +14,7 @@ const ChangeView = () => {
             <Button title="Mesas" onPress={() => setView('mesas')} />
             <Button title="Balcão" onPress={() => setView('balcao')} />
             <Button title="Menu Usuários" onPress={() => setView('menu-usuario')} />
+            <Button title="Produtos" onPress={() => setView('menu-produtos')} />
             {
                 view === 'mesas' ? (
                     <MenuMesa/>
@@ -20,7 +22,10 @@ const ChangeView = () => {
                     <MenuBalcao/> 
                 ) : view === 'menu-usuario' ? (
                     <MenuUsuario/>
-                ) : (<Text>Nada para mostrar no momento.</Text>)
+                ) : view === 'menu-produtos' ? (
+                    <MenuProdutos/>
+                ) :
+                (<Text>Nada para mostrar no momento.</Text>)
             }
         </View>
   )

@@ -3,6 +3,7 @@ package com.ecommerce.services;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.CreateProductDTO;
 import com.ecommerce.entities.dto.ProductsBased64DTO;
 import jakarta.transaction.Transactional;
@@ -33,16 +34,45 @@ public class ProductsService {
 	}
 
 	public ResponseEntity<String> addProduct(CreateProductDTO novoProduto) {
+		if (CategoriaProd.isValidCategoria(novoProduto.getCategoriaProd().toString().toUpperCase()))
+		{
+			if (!novoProduto.getFile().isEmpty())
+			{
+				try {
+					MultipartFile file = novoProduto.getFile();
+					byte[] imageData = file.getBytes();
+					Products product = new Products(
+							novoProduto.getNomeProd(),
+							novoProduto.getPrecoProd(),
+							novoProduto.isPromoProd(),
+							novoProduto.getCategoriaProd(),
+							novoProduto.getPrecoPromocao(),
+							imageData,
+							novoProduto.isVisible()
+					);
+					repository.saveAndFlush(product);
+					return new ResponseEntity<>("Produto cadastrado com sucesso.", HttpStatus.CREATED);
+				} catch (Exception e) {
+					return new ResponseEntity<>("Falha ao tentar cadastrar o produto.\nERROR: " + e, HttpStatus.BAD_REQUEST);
+				}
+			}
+			else{
+				return addProductWithoutFoto(novoProduto);
+			}
+		}
+		else{
+			throw new RuntimeException("É necessário uma categoria válida");
+		}
+	}
+
+	private ResponseEntity<String> addProductWithoutFoto(CreateProductDTO novoProduto) {
 		try {
-			MultipartFile file = novoProduto.getFile();
-			byte[] imageData = file.getBytes();
 			Products product = new Products(
 					novoProduto.getNomeProd(),
 					novoProduto.getPrecoProd(),
 					novoProduto.isPromoProd(),
 					novoProduto.getCategoriaProd(),
 					novoProduto.getPrecoPromocao(),
-					imageData,
 					novoProduto.isVisible()
 			);
 			repository.saveAndFlush(product);
@@ -51,7 +81,7 @@ public class ProductsService {
 			return new ResponseEntity<>("Falha ao tentar cadastrar o produto.\nERROR: " + e, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+
 	public ResponseEntity<String> alterProduct(String id, Products alterProduto) throws Exception
 	{
 		Products produto = repository.findById(id)
@@ -113,5 +143,17 @@ public class ProductsService {
 		}
 
 		return produtosReturn;
+	}
+
+	@Transactional
+	public List<Products> searchProductBalcao(String pesquisa) {
+		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa);
+		if (!produtosList.isEmpty())
+		{
+			return produtosList;
+		}
+		else{
+			return null;
+		}
 	}
 }

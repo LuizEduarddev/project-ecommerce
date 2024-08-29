@@ -35,6 +35,12 @@ public class ProductsController {
 		return service.searchProduct(pesquisa);
 	}
 
+	//todo -> need add filter to only return if the user are == balcao
+	@PostMapping("/search/balcao")
+	public List<Products> searchBalcao(@RequestBody String pesquisa){
+		return service.searchProductBalcao(pesquisa);
+	}
+
 	@PostMapping("/get-by-id-{id}")
 	public Products getById(@PathVariable String id) throws Exception
 	{
