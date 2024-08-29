@@ -169,57 +169,37 @@ const MenuMesa = () => {
     }
 
     const renderMenu = () => {
-        if (view === 'mesas')
-        {
-            if (mesas.length > 0)
-            {
-                return(
-                    <View>
-                        <FlatList
-                            data={mesas}
-                            horizontal={true}
-                            renderItem={renderMesa}
-                            keyExtractor={(item) => item.idMesa}
-                        />
-    
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalVisible}
-                            onRequestClose={() => setModalVisible(false)}
-                        >
-                            {renderModal()}
-                        </Modal>
-                    </View>
-                );
-            }
-            else{
-                return(
-                    <Text>Nenhuma mesa disponível no momento.</Text>
-                );
-            }
-        }
-        else if(view === 'balcao')
+        if (mesas.length > 0)
         {
             return(
-                <MenuBalcao/>
+                <View>
+                    <FlatList
+                        data={mesas}
+                        horizontal={true}
+                        renderItem={renderMesa}
+                        keyExtractor={(item) => item.idMesa}
+                    />
+
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => setModalVisible(false)}
+                    >
+                        {renderModal()}
+                    </Modal>
+                </View>
             );
         }
-        else if(view === 'cadastro-usuario')
-        {
+        else{
             return(
-                <MenuCadastroUsuario/>
+                <Text>Nenhuma mesa disponível no momento.</Text>
             );
         }
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <View>
-                <Button title="Mesas" onPress={() => setView('mesas')} />
-                <Button title="Balcão" onPress={() => setView('balcao')} />
-                <Button title="Cadastro de usuario" onPress={() => setView('cadastro-usuario')} />
-            </View>
             {renderMenu()}
         </SafeAreaView>
     );

@@ -69,7 +69,7 @@ export default function Login({ navigation }) {
 
                     <TouchableOpacity
                         style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("MenuMesa")}
+                        onPress={() => navigation.navigate("ChangeView")}
                     >
                         <Text>Balcao</Text>
                     </TouchableOpacity>
