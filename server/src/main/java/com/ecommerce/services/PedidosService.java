@@ -407,7 +407,9 @@ public class PedidosService {
         }
     }
 
+    @Transactional
     public MesaDTO getPedidoByMesaDTO(GetPedidoDTO dto) {
+        //todo needs to create the function to check the token of the user.
         try
         {
             if (dto.idMesa() == null || dto.idMesa().isEmpty()) {

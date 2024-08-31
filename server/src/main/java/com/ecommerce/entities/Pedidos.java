@@ -5,6 +5,7 @@ import com.ecommerce.entities.dto.ProductsPedidosDTO;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "pedidos")
@@ -30,8 +31,10 @@ public class Pedidos {
     @Column(name = "pedido_pronto")
     private boolean pedidoPronto;
 
-    @ManyToMany
-    private List<ProductsPedidosDTO> produtos;
+    @ElementCollection
+    @CollectionTable(name = "pedido_produtos", joinColumns = @JoinColumn(name = "pedido_id"))
+    private List<ProductsPedidosDTO> produtos = new ArrayList<>();
+
 
     @ManyToOne
     private Users users;
