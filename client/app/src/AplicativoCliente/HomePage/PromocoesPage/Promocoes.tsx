@@ -1,6 +1,6 @@
 import { Alert, Dimensions, FlatList, Image, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import api from '../../../ApiConfigs/ApiRoute';
+import api from '../../../../ApiConfigs/ApiRoute';
 
 const { width } = Dimensions.get('window');
 

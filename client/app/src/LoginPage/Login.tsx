@@ -73,6 +73,13 @@ export default function Login({ navigation }) {
                     >
                         <Text>Balcao</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate("MenuGarcom")}
+                    >
+                        <Text>Garcom</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
             <View style={styles.bottomWhite} />

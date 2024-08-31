@@ -7,6 +7,7 @@ import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.CreateProductDTO;
 import com.ecommerce.entities.dto.EditarProductDTO;
 import com.ecommerce.entities.dto.ProductsBased64DTO;
+import com.ecommerce.entities.dto.ProductsCategoriaDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -182,5 +183,19 @@ public class ProductsService {
 
 	public List<String> getCategories() {
 		return CategoriaProd.allCategorias();
+	}
+
+	@Transactional
+	public List<ProductsCategoriaDTO> getProductByCategoria(String categoria) {
+		if (CategoriaProd.isValidCategoria(categoria))
+		{
+			CategoriaProd categoriaProd = CategoriaProd.valueOf(categoria.toUpperCase());
+			List<ProductsCategoriaDTO> dto = new ArrayList<>();
+			repository.findByCategoriaProd(categoriaProd).forEach(produto -> dto.add(new ProductsCategoriaDTO(produto.getIdProd(), produto.getNomeProd(), produto.getPrecoProd())));
+			return dto;
+		}
+		else{
+			throw new RuntimeException("Categoria inválida");
+		}
 	}
 }

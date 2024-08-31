@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.ecommerce.entities.CategoriaProd;
-import com.ecommerce.entities.dto.CreateProductDTO;
-import com.ecommerce.entities.dto.EditarProductDTO;
+import com.ecommerce.entities.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +54,12 @@ public class ProductsController {
 	public Products getById(@RequestBody String idProduto) throws Exception
 	{
 		return service.getProductById(idProduto);
+	}
+
+	@PostMapping("/get-by-categoria")
+	public List<ProductsCategoriaDTO> getByCategoria(@RequestParam String categoria) throws Exception
+	{
+		return service.getProductByCategoria(categoria);
 	}
 
 	@PostMapping("/add")

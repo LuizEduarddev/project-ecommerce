@@ -429,7 +429,7 @@ public class PedidosService {
                                 .map(produto -> new ProductsMesaDTO(produto.getProduto().getIdProd(), produto.getProduto().getNomeProd(), produto.getProduto().getPrecoProd(), produto.getQuantidade()))
                                 .collect(Collectors.toList());
 
-                        return new PedidosMesaDTO(pedido.getIdPedido(), produtosMesaDTOList);
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList);
                     })
                     .collect(Collectors.toList());
 

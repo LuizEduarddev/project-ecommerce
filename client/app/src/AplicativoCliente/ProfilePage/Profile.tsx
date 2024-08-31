@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useIsFocused } from '@react-navigation/native'
-import api from '../../ApiConfigs/ApiRoute'
+import api from '../../../ApiConfigs/ApiRoute'
 
 type ProfileData = {
     loginUser: string |null
