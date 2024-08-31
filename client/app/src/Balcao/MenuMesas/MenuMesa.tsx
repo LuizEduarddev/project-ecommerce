@@ -12,15 +12,16 @@ type Mesa = {
     mesaSuja: boolean
 }
 
-type ProdutosMesaDTO = {
+type ProductsMesaDTO = {
     idProduto: string,
     nomeProduto: string,
     valorProduto: number
+    quantidadeProduto:number
 }
 
 type PedidosMesaDTO = {
     idPedido: string,
-    produtos: ProdutosMesaDTO[]
+    produtos: ProductsMesaDTO[]
 }
 
 type Pedidos = {
@@ -74,11 +75,11 @@ const MenuMesa = () => {
         })
     }
 
-    const renderProdutos = ({item}: {item: ProdutosMesaDTO}) => {
+    const renderProdutos = ({item}: {item: ProductsMesaDTO}) => {
         if (item != null) {
             return(
                 <View>
-                    <Text>{item.nomeProduto}</Text>
+                    <Text>{item.nomeProduto} - x {item.quantidadeProduto}</Text>
                     <Text>{formatToReais(item.valorProduto)}</Text>
                 </View>
             );
@@ -116,7 +117,9 @@ const MenuMesa = () => {
                             keyExtractor={(item) => item.idPedido}
                         />
                         <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        
+                        <Pressable>
+                            <Text>Finalizar pedido</Text>
+                        </Pressable>
                         <Pressable onPress={() => setModalVisible(false)}>
                             <Text style={{backgroundColor: 'blue'}}>X</Text>
                         </Pressable>

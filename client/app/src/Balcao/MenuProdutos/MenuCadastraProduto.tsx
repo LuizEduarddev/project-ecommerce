@@ -12,7 +12,7 @@ const MenuCadastraProduto = () => {
   const [promoProd, setPromoProd] = useState<boolean>(false);
   const [categoriaProd, setCategoriaProd] = useState(null);
   const [precoPromocao, setPrecoPromocao] = useState<string>('');
-  const [visible, setVisible] = useState<boolean>(false);
+  const [visible, setVisible] = useState<boolean>(true);
   const [imagemProduto, setImagemProduto] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [categoriaProdShow, setCategoriaProdShow] = useState<string>('');
@@ -38,28 +38,7 @@ const MenuCadastraProduto = () => {
     getCategorias();
   }, []);
 
-  const handleTextChange = (text: string) => {
-    const numericValue = text.replace(/\D/g, '');
-    const formattedValue = formatToReal(numericValue);
-    setPrecoProd(formattedValue);
-  };
 
-  const handleTextChangePromocao = (text: string) => {
-    const numericValue = text.replace(/\D/g, '');
-    const formattedValue = formatToReal(numericValue);
-    setPrecoPromocao(formattedValue);
-  };
-
-  const formatToReal = (value: string) => {
-    if (!value) return '';
-
-    const numberValue = parseFloat(value) / 100;
-
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(numberValue);
-  };
 
   const validateForm = () => {
     const preco = parseFloat(precoProd.replace(/[^\d,]/g, '').replace(',', '.'));
@@ -88,17 +67,12 @@ const MenuCadastraProduto = () => {
   };
 
   async function apiCriarProduto() {
-    const formattedPrecoProd = parseFloat(precoProd.replace(/[^\d,]/g, '').replace(',', '.'));
-    const formattedPrecoPromocao = promoProd
-      ? parseFloat(precoPromocao.replace(/[^\d,]/g, '').replace(',', '.'))
-      : null;
-  
     const formData = new FormData();
     formData.append('nomeProd', nomeProduto);
-    formData.append('precoProd', formattedPrecoProd.toString());
+    formData.append('precoProd', precoProd.toString());
     formData.append('promoProd', promoProd.toString());
     formData.append('categoriaProd', categoriaProd.toString());
-    formData.append('precoPromocao', formattedPrecoPromocao ? formattedPrecoPromocao.toString() : '');
+    formData.append('precoPromocao', precoPromocao ? precoPromocao.toString() : '0');
     formData.append('visible', visible.toString());
     if (imagemProduto) {
       try {
@@ -188,7 +162,7 @@ const MenuCadastraProduto = () => {
         keyboardType="numeric"
         placeholder="Preço do produto"
         value={precoProd}
-        onChangeText={handleTextChange}
+        onChangeText={setPrecoProd}
         maxLength={15}
       />
       <Text>Promoção</Text>
@@ -203,7 +177,7 @@ const MenuCadastraProduto = () => {
           keyboardType="numeric"
           placeholder="Preço na promoção"
           value={precoPromocao}
-          onChangeText={handleTextChangePromocao}
+          onChangeText={setPrecoPromocao}
           maxLength={15}
         />
       )}

@@ -47,6 +47,7 @@ const MenuPesquisaProduto = () => {
     if (query === '') {
       return;
     } else {
+      console.log('postou: ' + query)
       api.post('api/products/search/balcao', query)
       .then((response) => {
         if (response.data === null) {

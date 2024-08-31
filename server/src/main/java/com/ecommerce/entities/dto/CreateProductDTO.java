@@ -8,7 +8,7 @@ public class CreateProductDTO {
     private double precoProd;
     private boolean promoProd;
     private CategoriaProd categoriaProd;
-    private String precoPromocao;
+    private double precoPromocao;
     private MultipartFile file;
     private boolean visible;
 
@@ -17,7 +17,7 @@ public class CreateProductDTO {
 
     // Parameterized constructor
     public CreateProductDTO(String nomeProd, double precoProd, boolean promoProd,
-                            CategoriaProd categoriaProd, String precoPromocao, MultipartFile file, boolean visible) {
+                            CategoriaProd categoriaProd, double precoPromocao, MultipartFile file, boolean visible) {
         this.nomeProd = nomeProd;
         this.precoProd = precoProd;
         this.promoProd = promoProd;
@@ -60,11 +60,11 @@ public class CreateProductDTO {
         this.categoriaProd = categoriaProd;
     }
 
-    public String getPrecoPromocao() {
+    public double getPrecoPromocao() {
         return precoPromocao;
     }
 
-    public void setPrecoPromocao(String precoPromocao) {
+    public void setPrecoPromocao(double precoPromocao) {
         this.precoPromocao = precoPromocao;
     }
 

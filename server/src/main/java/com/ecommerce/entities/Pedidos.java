@@ -1,5 +1,7 @@
 package com.ecommerce.entities;
 
+import com.ecommerce.entities.dto.ProductsDTO;
+import com.ecommerce.entities.dto.ProductsPedidosDTO;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -29,7 +31,7 @@ public class Pedidos {
     private boolean pedidoPronto;
 
     @ManyToMany
-    private List<Products> produtos;
+    private List<ProductsPedidosDTO> produtos;
 
     @ManyToOne
     private Users users;
@@ -39,7 +41,7 @@ public class Pedidos {
 
     public Pedidos(){}
 
-    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
@@ -49,7 +51,7 @@ public class Pedidos {
         this.users = users;
     }
 
-    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<Products> produtos, Users users, Mesa mesa) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
@@ -68,11 +70,11 @@ public class Pedidos {
         this.users = users;
     }
 
-    public List<Products> getProdutos() {
+    public List<ProductsPedidosDTO> getProdutos() {
         return produtos;
     }
 
-    public void setProdutos(List<Products> produtos) {
+    public void setProdutos(List<ProductsPedidosDTO> produtos) {
         this.produtos = produtos;
     }
 

@@ -25,7 +25,7 @@ public class Products {
 	private CategoriaProd categoriaProd;
 
 	@Column(name = "preco_promocao")
-	private String precoPromocao;
+	private double precoPromocao;
 
 	@Lob
 	@Column(name = "imagem_produto")
@@ -41,7 +41,7 @@ public class Products {
 	// Parameterized constructor
 
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, String precoPromocao, byte[] imagemProduto, boolean visible) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, double precoPromocao, byte[] imagemProduto, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -51,7 +51,7 @@ public class Products {
 		this.visible = visible;
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, String precoPromocao, boolean visible) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, double precoPromocao, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -103,11 +103,11 @@ public class Products {
 
 
 
-	public String getPrecoPromocao() {
+	public double getPrecoPromocao() {
 		return precoPromocao;
 	}
 
-	public void setPrecoPromocao(String precoPromocao) {
+	public void setPrecoPromocao(double precoPromocao) {
 		this.precoPromocao = precoPromocao;
 	}
 

@@ -10,6 +10,7 @@ import com.ecommerce.entities.dto.ProductsBased64DTO;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -37,13 +38,17 @@ public class ProductsService {
 	public ResponseEntity<String> addProduct(CreateProductDTO novoProduto) {
 		if (CategoriaProd.isValidCategoria(novoProduto.getCategoriaProd().toString().toUpperCase()))
 		{
+			if (novoProduto.isPromoProd() && (novoProduto.getPrecoProd() <= novoProduto.getPrecoPromocao() || novoProduto.getPrecoPromocao() == 0))
+			{
+				return ResponseEntity.internalServerError().body("Promoção inválida.");
+			}
 			if (!novoProduto.getFile().isEmpty())
 			{
 				try {
 					MultipartFile file = novoProduto.getFile();
 					byte[] imageData = file.getBytes();
 					Products product = new Products(
-							novoProduto.getNomeProd(),
+							novoProduto.getNomeProd().toUpperCase(),
 							novoProduto.getPrecoProd(),
 							novoProduto.isPromoProd(),
 							novoProduto.getCategoriaProd(),
@@ -86,24 +91,42 @@ public class ProductsService {
 	public ResponseEntity<String> alterProduct(EditarProductDTO dto) throws Exception {
 		Products produto = repository.findById(dto.getIdProduto())
 				.orElseThrow(() -> new Exception("Produto com id '" + dto.getIdProduto() + "' nao encontrado."));
-				
-		try
+		if (dto.isPromoProd() && (dto.getPrecoProd() <= dto.getPrecoPromocao() || dto.getPrecoPromocao() == 0))
 		{
-			MultipartFile file = dto.getFile();
-			byte[] imageData = file.getBytes();
+			return ResponseEntity.internalServerError().body("Promoção inválida.");
+		}
+		if (dto.getFile() == null)
+		{
 			produto.setNomeProd(dto.getNomeProd());
+
 			produto.setPrecoProd(dto.getPrecoProd());
 			produto.setPromoProd(dto.isPromoProd());
 			produto.setCategoriaProd(dto.getCategoriaProd());
-			produto.setPrecoProd(dto.getPrecoPromocao());
-			produto.setImagemProduto(imageData);
+			produto.setPrecoPromocao(dto.getPrecoPromocao());
 			produto.setVisible(dto.isVisible());
 			repository.saveAndFlush(produto);
 			return new ResponseEntity<>("Produto alterado com sucesso.", HttpStatus.CREATED);
 		}
-		catch(Exception e)
-		{
-			throw new RuntimeException("Falha ao tentar alterar o produto: " + e);
+		else {
+			try
+			{
+				MultipartFile file = dto.getFile();
+				byte[] imageData = file.getBytes();
+				produto.setNomeProd(dto.getNomeProd());
+
+				produto.setPrecoProd(dto.getPrecoProd());
+				produto.setPromoProd(dto.isPromoProd());
+				produto.setCategoriaProd(dto.getCategoriaProd());
+				produto.setPrecoPromocao(dto.getPrecoPromocao());
+				produto.setImagemProduto(imageData);
+				produto.setVisible(dto.isVisible());
+				repository.saveAndFlush(produto);
+				return new ResponseEntity<>("Produto alterado com sucesso.", HttpStatus.CREATED);
+			}
+			catch(Exception e)
+			{
+				throw new RuntimeException("Falha ao tentar alterar o produto: " + e);
+			}
 		}
 	}
 	
@@ -147,7 +170,7 @@ public class ProductsService {
 
 	@Transactional
 	public List<Products> searchProductBalcao(String pesquisa) {
-		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa);
+		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa.toUpperCase());
 		if (!produtosList.isEmpty())
 		{
 			return produtosList;

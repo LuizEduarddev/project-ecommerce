@@ -45,6 +45,7 @@ public class ProductsController {
 	}
 
 	//todo -> need add filter to only return if the user are == balcao
+	//ESTA FUNCAO E NECESSARIA POIS AQUI PUXA TODOS OS PRODUTOS MESMO QUE SEJAM VISIBLE == FALSE
 	@PostMapping("/search/balcao")
 	public List<Products> searchBalcao(@RequestBody String pesquisa){
 		return service.searchProductBalcao(pesquisa);
@@ -62,8 +63,8 @@ public class ProductsController {
 			@RequestParam("precoProd") double precoProd,
 			@RequestParam("promoProd") boolean promoProd,
 			@RequestParam("categoriaProd") CategoriaProd categoriaProd,
-			@RequestParam("precoPromocao") String precoPromocao,
-			@RequestPart("file") MultipartFile file,
+			@RequestParam("precoPromocao") double precoPromocao,
+			@RequestPart(value = "file", required = false) MultipartFile file,
 			@RequestParam("visible") boolean visible
 	) {
 		CreateProductDTO novoProduto = new CreateProductDTO(nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible);
@@ -77,7 +78,7 @@ public class ProductsController {
 										@RequestParam("promoProd") boolean promoProd,
 										@RequestParam("categoriaProd") CategoriaProd categoriaProd,
 										@RequestParam("precoPromocao") double precoPromocao,
-										@RequestPart("file") MultipartFile file,
+										@RequestPart(value = "file", required = false) MultipartFile file,
 										@RequestParam("visible") boolean visible
 	) throws Exception {
 		EditarProductDTO novoProduto = new EditarProductDTO(idProd,nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible);
