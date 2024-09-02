@@ -1,5 +1,5 @@
-import { FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -12,7 +12,7 @@ type Mesa = {
 };
 
 type ProductsMesaDTO = {
-    idProduto: string,
+    idProd: string,
     nomeProd: string,
     precoProd: number;
     quantidadeProduto: number;
@@ -51,8 +51,12 @@ const MenuGarcom = () => {
     const [produtosCategorias, setProdutosCategorias] = useState<ProductsMesaDTO[] | null>(null);
     const [categoriaPesquisa, setCategoriaPesquisa] = useState<string>('');
     const [modalProdutosCategoria, setModalProdutosCategoria] = useState<boolean>(false);
-    const [lancarProdutoPedido, setLancarProdutoPedido] = useState<ProductsMesaDTO[] | null>();
-    const [produtoInicialQuantidade, setProdutoInicialQuantidade] = useState<ProductsMesaDTO[] | null>();
+    const [produtosLancar, setProdutosLancar] = useState<ProductsMesaDTO[]>([]);
+    const [buscaProduto, setBuscaProduto] = useState<string>('');
+    const [produtoResponse, setProdutoResponse] = useState<ProductsMesaDTO[] | null>(null);
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    const [modalPedidosLancar, setModalPedidosLancar] = useState<boolean>(false);
+    const [userCpf, setUserCpf] = useState<string>('');
 
     async function getProdutos()
     {
@@ -110,6 +114,80 @@ const MenuGarcom = () => {
 
         getCategorias();
     }, []);
+
+    async function findProduto(query: string) {
+        if (query === "") {
+            return;
+        } else {
+            api.post('api/products/search', query)
+            .then(response => {
+                setProdutoResponse(response.data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        }
+    }
+
+    const saveProduto = (produto: ProductsMesaDTO) => {
+        setProdutosLancar(prevProducts => {
+            const existingProduct = prevProducts.find(p => p.idProd === produto.idProd);
+            
+            if (existingProduct) {
+                return prevProducts.map(p =>
+                    p.idProd === produto.idProd
+                        ? { ...p, quantidadeProduto: p.quantidadeProduto + 1 }
+                        : p
+                );
+            } else {
+                return [...prevProducts, { ...produto, quantidadeProduto: 1 }];
+            }
+        });
+    
+        setBuscaProduto('');
+        setProdutoResponse([]);
+    };
+    
+    
+
+    const deleteProduto = (id: string) => {
+        setProdutosLancar(prevProducts => {
+            const updatedProducts = prevProducts.filter(produto => produto.idProd !== id);
+            return updatedProducts;
+        });
+    };
+
+    const increaseQuantity = (id: string) => {
+        setProdutosLancar(prevProducts =>
+            prevProducts.map(produto =>
+                produto.idProd === id
+                    ? { ...produto, quantidadeProduto: produto.quantidadeProduto + 1 }
+                    : produto
+            )
+        );
+    };
+
+    const decreaseQuantity = (id: string) => {
+        setProdutosLancar(prevProducts =>
+            prevProducts.map(produto =>
+                produto.idProd === id && produto.quantidadeProduto > 1
+                    ? { ...produto, quantidadeProduto: produto.quantidadeProduto - 1 }
+                    : produto
+            )
+        );
+    };
+
+    const handleSearchInputChange = (text: string) => {
+        setBuscaProduto(text);
+
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(() => {
+            findProduto(text);
+        }, 600); 
+    };
 
     const openModal = (modalName: 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria') => {
         setActiveModal(modalName);
@@ -225,7 +303,7 @@ const MenuGarcom = () => {
                     <FlatList
                         data={item.produtos}
                         renderItem={renderProdutos}
-                        keyExtractor={(item) => item.idProduto}
+                        keyExtractor={(item) => item.idProd}
                     />
                     <Text>{item.pedidoPronto ? 'pronto' : 'em preparo'}</Text>
                 </View>
@@ -265,10 +343,137 @@ const MenuGarcom = () => {
         );
     };
 
+    const renderPesquisa = () => {
+        if (buscaProduto && produtoResponse && produtoResponse.length > 0) {
+            return produtoResponse.map(produto => (
+                <View 
+                    key={produto.idProd}
+                    style={{borderColor: 'black', borderWidth: 1}}
+                >
+                    <Pressable onPress={() => saveProduto(produto)}>
+                        <Text>{produto.nomeProd}</Text>
+                        <Text>{formatToReais(produto.precoProd)}</Text>
+                    </Pressable>
+                </View>
+            ));
+        } else if (buscaProduto && produtoResponse && produtoResponse.length === 0) {
+            return <Text>Nenhum produto encontrado</Text>;
+        } else {
+            return null; 
+        }
+    };
+    
+    const renderProdutosLancar = ({item}:{item:ProductsMesaDTO}) => {
+        return(
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+                    <Pressable onPress={() => decreaseQuantity(item.idProd)} >
+                        <Text>-</Text>
+                    </Pressable>
+                    <Text style={{ marginHorizontal: 10 }}>{item.quantidadeProduto}</Text> 
+                    <Pressable onPress={() => increaseQuantity(item.idProd)} >
+                        <Text>+</Text>
+                    </Pressable>
+                </View>
+                <View style={{ flex: 1 }}>
+                    <Text>{item.nomeProd}</Text>
+                    <Text>{formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
+                </View>
+                <Pressable onPress={() => deleteProduto(item.idProd)} style={styles.deleteButton}>
+                    <Text style={styles.deleteButtonText}>Delete</Text>
+                </Pressable>
+            </View>
+        );
+    }
+
+    const formatCpf = (text: string) => {
+        let cpf = text.replace(/\D/g, '');
+    
+        if (cpf.length <= 3) {
+          cpf = cpf.replace(/(\d{0,3})/, '$1');
+        } else if (cpf.length <= 6) {
+          cpf = cpf.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+        } else if (cpf.length <= 9) {
+          cpf = cpf.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+        } else {
+          cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+        }
+    
+        setUserCpf(cpf);
+      };
+
+    const valorTotal = () => {
+        if (produtosLancar.length > 0) {
+            let soma = 0;
+            produtosLancar.forEach(produto => soma += produto.precoProd * produto.quantidadeProduto); // Calculate total based on quantity
+            return <Text>Total: {formatToReais(soma)}</Text>;
+        } else {
+            return;
+        }
+    };
+
+    const renderModalConferirPedido = () => {
+        if (produtosLancar && produtosLancar.length > 0)
+        {
+            return(
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalPedidosLancar}
+                    onRequestClose={() => setModalPedidosLancar(false)}
+                >
+                    <View style={styles.modalView}>
+                        <TextInput
+                            placeholder="CPF"
+                            value={userCpf}
+                            onChangeText={formatCpf}
+                            keyboardType="numeric"
+                            maxLength={14}
+                        />
+                        <FlatList
+                            data={produtosLancar}
+                            renderItem={renderProdutosLancar}
+                            keyExtractor={(item) => item.idProd}
+                        />
+                        {valorTotal()}
+                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
+                            <Text style={{color:'white'}}>X</Text>
+                        </Pressable>
+                    </View>
+                </Modal>
+            );
+        }
+        else{
+            return(
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalPedidosLancar}
+                    onRequestClose={() => setModalPedidosLancar(false)}
+                    
+                >
+                    <View style={styles.modalView}>
+                        <Text>Nenhum produto selecionado</Text>
+                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
+                            <Text style={{color:'white'}}>X</Text>
+                        </Pressable>
+                    </View>
+                </Modal>
+            );
+        }
+    }
+
     const renderModalPedidoMesa = () => {
         if (categorias && categorias.length > 0) {
             return (
                 <View style={styles.modalView}>
+                    <TextInput
+                        style={{borderColor:'gray', borderWidth: 1}}
+                        placeholder='Busque por um produto'
+                        onChangeText={handleSearchInputChange}
+                        value={buscaProduto}
+                    />
+                    {renderPesquisa()}
                     <FlatList
                         data={categorias}
                         horizontal={true}
@@ -278,6 +483,10 @@ const MenuGarcom = () => {
                     <Pressable onPress={() => closeModal()} style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }}>
                         <Text style={{ color: 'white' }}>X</Text>
                     </Pressable>
+                    <Pressable onPress={() => setModalPedidosLancar(true)} style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }}>
+                        <Text style={{ color: 'white' }}>Conferir Pedido</Text>
+                    </Pressable>
+                    {renderModalConferirPedido()}
                 </View>
             );
         } else {
@@ -376,33 +585,15 @@ const MenuGarcom = () => {
     }
 
     const renderProdutosCategorias = ({ item }: { item: ProductsMesaDTO }) => {
-        const quantity = item.quantidadeProduto || 1;
         return (
             <View>
-                <Text>{item.nomeProd} - {formatToReais(item.precoProd)}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Pressable
-                        style={{ padding: 5, backgroundColor: 'green', marginRight: 10 }}
-                        //onPress={() => //saveProduto(item)}
-                    >
-                        <Text style={{ color: 'white' }}>Adicionar Produto</Text>
-                    </Pressable>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Pressable
-                            style={{ padding: 5, backgroundColor: 'blue', marginRight: 5 }}
-                            //onPress={() => decreaseQuantity(item.idProduto)} 
-                        >
-                            <Text style={{ color: 'white' }}>-</Text>
-                        </Pressable>
-                        <Text style={{ marginHorizontal: 5 }}>{quantity}</Text>
-                        <Pressable
-                            style={{ padding: 5, backgroundColor: 'blue', marginLeft: 5 }}
-                            //onPress={() => increaseQuantity(item.idProduto)} 
-                        >
-                            <Text style={{ color: 'white' }}>+</Text>
-                        </Pressable>
-                    </View>
-                </View>
+                <Pressable
+                    onPress={() => saveProduto(item)}
+                    style={{borderColor:'black', borderWidth:1}}
+                >
+                    
+                    <Text>{item.nomeProd} - {formatToReais(item.precoProd)}</Text>
+                </Pressable>
             </View>
         );
     };
@@ -415,7 +606,7 @@ const MenuGarcom = () => {
                     <FlatList
                         data={produtosCategorias}
                         renderItem={renderProdutosCategorias}
-                        keyExtractor={(item) => item.idProduto}
+                        keyExtractor={(item) => item.idProd}
                     />
                     <Pressable onPress={() => setModalProdutosCategoria(false)} style={{padding:5, borderColor:'black', borderWidth: 1, backgroundColor: 'blue'}}>
                         <Text style={{color:'white'}}>X</Text>
@@ -557,6 +748,15 @@ const styles = StyleSheet.create({
     icon: {
         width: 20,
         height: 20,
+    },
+    deleteButton: {
+        backgroundColor: 'red',
+        borderRadius: 5,
+        padding: 5,
+        marginLeft: 10,
+    },
+    deleteButtonText: {
+        color: 'white',
     },
 });
 

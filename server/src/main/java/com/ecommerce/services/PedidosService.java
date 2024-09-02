@@ -185,6 +185,7 @@ public class PedidosService {
                     pedido.setProdutos(productsPedidosDTOS);
                     pedido.setUsers(null);
                     pedido.setMesa(mesa);
+                    pedido.setCpfClientePedido(dto.cpfClientePedido());
 
                     mesaService.alterMesaEmUso(dto.idMesa());
 

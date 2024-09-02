@@ -1,4 +1,4 @@
 package com.ecommerce.entities.dto;
 
-public record ProductsMesaDTO(String idProduto, String nomeProd, double precoProd, int quantidadeProduto) {
+public record ProductsMesaDTO(String idProd, String nomeProd, double precoProd, int quantidadeProduto) {
 }
