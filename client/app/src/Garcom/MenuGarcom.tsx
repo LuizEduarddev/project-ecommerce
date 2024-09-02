@@ -47,7 +47,7 @@ const MenuGarcom = () => {
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
     const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState<FormaDePagamento | undefined>();
-    const [activeModal, setActiveModal] = useState<'none' | 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria'>('none');
+    const [activeModal, setActiveModal] = useState<'none' | 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf'>('none');
     const [produtosCategorias, setProdutosCategorias] = useState<ProductsMesaDTO[] | null>(null);
     const [categoriaPesquisa, setCategoriaPesquisa] = useState<string>('');
     const [modalProdutosCategoria, setModalProdutosCategoria] = useState<boolean>(false);
@@ -57,6 +57,9 @@ const MenuGarcom = () => {
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
     const [modalPedidosLancar, setModalPedidosLancar] = useState<boolean>(false);
     const [userCpf, setUserCpf] = useState<string>('');
+    const [mesaSelecionada, setMesaSelecionada] = useState('');
+    const [buscaPorCpf, setBuscaPorCpf] = useState('');
+    const [pedidoCpf, setPedidoCpf] = useState<Pedidos | null>(null);
 
     async function getProdutos()
     {
@@ -95,7 +98,7 @@ const MenuGarcom = () => {
         };
 
         fetchMesas();
-    }, []);
+    }, [mesas]);
 
     useEffect(() => {
         async function getCategorias() {
@@ -128,6 +131,35 @@ const MenuGarcom = () => {
             });
         }
     }
+
+    async function findPedido(query: string) {
+        if (query === "") {
+            return;
+        } else {
+            api.post('api/pedidos/get-by-cpf', null, {
+                params: {
+                    cpf: query
+                }
+            })
+            .then(response => {
+                setPedidoCpf(response.data);
+                openModal('pedidosClienteCpf')
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        }
+    }
+
+    const handleSearchPedidoCpf = (text: string) => {
+        if (text !== '' && text) {
+            setBuscaPorCpf(text);
+    
+            if (getUnformattedCpf(text).length >= 11) {
+                findPedido(getUnformattedCpf(text));
+            }
+        }
+    };
 
     const saveProduto = (produto: ProductsMesaDTO) => {
         setProdutosLancar(prevProducts => {
@@ -189,7 +221,7 @@ const MenuGarcom = () => {
         }, 600); 
     };
 
-    const openModal = (modalName: 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria') => {
+    const openModal = (modalName: 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf') => {
         setActiveModal(modalName);
     };
 
@@ -322,6 +354,7 @@ const MenuGarcom = () => {
         };
         api.post('api/pedidos/get-by-mesa', dataToSend)
             .then(response => {
+                setMesaSelecionada(idMesa);
                 setPedidos(response.data);
                 openModal('menu');
             })
@@ -338,6 +371,9 @@ const MenuGarcom = () => {
                 </Pressable>
                 <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => openModal('pedidoMesa')}>
                     <Text style={{ color: 'white' }}>Lançar pedido mesa</Text>
+                </Pressable>
+                <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => closeModal()}>
+                    <Text style={{ color: 'white' }}>X</Text>
                 </Pressable>
             </View>
         );
@@ -400,7 +436,7 @@ const MenuGarcom = () => {
         }
     
         setUserCpf(cpf);
-      };
+    };
 
     const valorTotal = () => {
         if (produtosLancar.length > 0) {
@@ -411,6 +447,39 @@ const MenuGarcom = () => {
             return;
         }
     };
+
+    const getUnformattedCpf = (userCpf: string) => userCpf.replace(/\D/g, '');
+
+    async function tryLancarPedido()
+    {
+        
+        if (getUnformattedCpf(userCpf).length < 11)
+        {
+            console.log('Cpf precisa ter 11 caracteres.\nCPF: ');
+        }
+        else{
+            const produtos = produtosLancar.map(productMesa => ({
+                idProd: productMesa.idProd,
+                quantidade: productMesa.quantidadeProduto
+              }));
+            const dataToSend = {
+                produtos: produtos,
+                token: "",
+                idMesa: mesaSelecionada,
+                cpfClientePedido: getUnformattedCpf(userCpf)
+            }
+
+            api.post('api/pedidos/add', dataToSend)
+            .then(response => {
+                console.log(response.data);
+                closeModal();
+                setProdutosLancar([]);
+            })
+            .catch(error => {
+                console.log(error as string);
+            })
+        }
+    }
 
     const renderModalConferirPedido = () => {
         if (produtosLancar && produtosLancar.length > 0)
@@ -438,6 +507,9 @@ const MenuGarcom = () => {
                         {valorTotal()}
                         <Pressable onPress={() => setModalPedidosLancar(false)} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
                             <Text style={{color:'white'}}>X</Text>
+                        </Pressable>
+                        <Pressable onPress={() => tryLancarPedido()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
+                            <Text style={{color:'white'}}>Lançar pedido</Text>
                         </Pressable>
                     </View>
                 </Modal>
@@ -502,6 +574,12 @@ const MenuGarcom = () => {
         if (mesas.length > 0) {
             return (
                 <View>
+                    <TextInput
+                        style={{borderColor:'gray', borderWidth: 1}}
+                        placeholder='Busca pedido por CPF'
+                        onChangeText={handleSearchPedidoCpf}
+                        value={buscaPorCpf}
+                    />
                     <FlatList
                         data={mesas}
                         horizontal={true}
@@ -626,6 +704,24 @@ const MenuGarcom = () => {
         }
     }
 
+    const renderModalPedidosCpf = () => {
+        if (pedidoCpf.pedidosMesa.length > 0 && pedidoCpf)
+        {
+            return(
+                <View style={styles.modalView}>
+                    <FlatList
+                        data={pedidoCpf.pedidosMesa}
+                        renderItem={renderPedidosMesa}
+                        keyExtractor={(item) => item.idPedido}
+                    />
+                    <Pressable onPress={() => closeModal()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
+                        <Text style={{color:'white'}}>X</Text>
+                    </Pressable>
+                </View>
+            );
+        }
+    }
+
     const renderModals = () => {
         switch (activeModal) {
             case 'menu':
@@ -682,6 +778,17 @@ const MenuGarcom = () => {
                     >
                         {renderModalPedidoMesa()}
                     </Modal>
+                );
+            case 'pedidosClienteCpf':
+            return (
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={true}
+                    onRequestClose={closeModal}
+                >
+                    {renderModalPedidosCpf()}
+                </Modal>
                 );
             default:
                 return null;

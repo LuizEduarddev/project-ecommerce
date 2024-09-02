@@ -13,4 +13,5 @@ public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByMesa(Mesa mesa);
     List<Pedidos> findByUsersAndMesa(Users users, Mesa mesa);
     List<Pedidos> findByUsersAndMesaAndPedidoPagoFalse(Users user, Mesa mesa);
+    List<Pedidos> findByCpfClientePedido(String cpfClientePedido);
 }

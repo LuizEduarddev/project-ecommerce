@@ -446,4 +446,35 @@ public class PedidosService {
         }
     }
 
+    @Transactional
+    public MesaDTO getPedidoByCpf(String cpf) {
+        try
+        {
+            if (cpf == null) {
+                return null;
+            }
+
+            List<Pedidos> pedidosList = repository.findByCpfClientePedido(cpf);
+
+            List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream()
+                    .map(pedido -> {
+                        List<ProductsMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream()
+                                .map(produto -> new ProductsMesaDTO(produto.getProduto().getIdProd(), produto.getProduto().getNomeProd(), produto.getProduto().getPrecoProd(), produto.getQuantidade()))
+                                .collect(Collectors.toList());
+
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList);
+                    })
+                    .collect(Collectors.toList());
+
+            double valorTotal = pedidosList.stream()
+                    .mapToDouble(Pedidos::getTotalPedido)
+                    .sum();
+
+            return new MesaDTO(pedidosMesaDTOList, valorTotal);
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException("Erro: " + e);
+        }
+    }
 }

@@ -53,6 +53,12 @@ public class PedidosController {
         return service.getPedidoByMesaDTO(dto);
     }
 
+    @PostMapping("/get-by-cpf")
+    public MesaDTO getByCpf(@RequestParam String cpf)
+    {
+        return service.getPedidoByCpf(cpf);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<String> add(@RequestBody addPedidoDTO dto)
     {

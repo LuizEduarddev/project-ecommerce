@@ -16,6 +16,9 @@ public class Pedidos {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String idPedido;
 
+    @Column(name = "cpf_cliente_pedido")
+    private String cpfClientePedido;
+
     @Column(name = "data_pedido")
     private String dataPedido;
 
@@ -54,7 +57,7 @@ public class Pedidos {
         this.users = users;
     }
 
-    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
@@ -63,6 +66,7 @@ public class Pedidos {
         this.produtos = produtos;
         this.users = users;
         this.mesa = mesa;
+        this.cpfClientePedido = cpfClientePedido;
     }
 
     public Users getUsers() {
@@ -135,5 +139,13 @@ public class Pedidos {
 
     public void setMesa(Mesa mesa) {
         this.mesa = mesa;
+    }
+
+    public String getCpfClientePedido() {
+        return cpfClientePedido;
+    }
+
+    public void setCpfClientePedido(String cpfClientePedido) {
+        this.cpfClientePedido = cpfClientePedido;
     }
 }
