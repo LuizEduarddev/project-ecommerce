@@ -83,4 +83,5 @@ public class CreateProductDTO {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
+
 }

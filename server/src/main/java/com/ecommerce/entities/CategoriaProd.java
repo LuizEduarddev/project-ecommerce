@@ -6,7 +6,8 @@ import java.util.List;
 public enum CategoriaProd {
     BOMBOM("bombom"),
     DOCINHO("docinho"),
-    BOLO("bolo");
+    BOLO("bolo"),
+    COZINHA("cozinha");
 
     private final String value;
 

@@ -1,17 +1,14 @@
 package com.ecommerce.services;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.CreateProductDTO;
 import com.ecommerce.entities.dto.EditarProductDTO;
-import com.ecommerce.entities.dto.ProductsBased64DTO;
 import com.ecommerce.entities.dto.ProductsCategoriaDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

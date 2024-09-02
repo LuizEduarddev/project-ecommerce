@@ -15,7 +15,6 @@ const MenuCadastraProduto = () => {
   const [visible, setVisible] = useState<boolean>(true);
   const [imagemProduto, setImagemProduto] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [categoriaProdShow, setCategoriaProdShow] = useState<string>('');
 
   const toggleSwitchPromocao = () => setPromoProd(previousState => !previousState);
   const toggleSwitchVisible = () => setVisible(previousState => !previousState);
@@ -44,7 +43,7 @@ const MenuCadastraProduto = () => {
     const preco = parseFloat(precoProd.replace(/[^\d,]/g, '').replace(',', '.'));
     const promocao = parseFloat(precoPromocao.replace(/[^\d,]/g, '').replace(',', '.'));
 
-    if (!nomeProduto || !precoProd || categoriaProd === null || (promoProd && !precoPromocao)) {
+    if (!nomeProduto || !precoProd || categoriaProd === null ||(promoProd && !precoPromocao)) {
       setErrorMessage('Por favor, preencha todos os campos obrigatórios.');
       return false;
     }
@@ -123,22 +122,25 @@ const MenuCadastraProduto = () => {
   const renderCategories = () => {
     if (categorias) {
       return (
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholder}
-          selectedTextStyle={styles.selectedText}
-          inputSearchStyle={styles.inputSearch}
-          iconStyle={styles.icon}
-          data={categorias}
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder="Escolha uma categoria"
-          value={categoriaProd}
-          onChange={(item) => {
-            setCategoriaProd(item.label);
-          }}
-        />
+        <View>
+
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholder}
+            selectedTextStyle={styles.selectedText}
+            inputSearchStyle={styles.inputSearch}
+            iconStyle={styles.icon}
+            data={categorias}
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder="Escolha uma categoria"
+            value={categoriaProd}
+            onChange={(item) => {
+              setCategoriaProd(item.label);
+            }}
+          />
+        </View>
       );
     } else {
       return (

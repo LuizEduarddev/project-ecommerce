@@ -186,6 +186,7 @@ public class PedidosService {
                     pedido.setUsers(null);
                     pedido.setMesa(mesa);
                     pedido.setCpfClientePedido(dto.cpfClientePedido());
+                    pedido.setHoraPronto(null);
 
                     mesaService.alterMesaEmUso(dto.idMesa());
 
@@ -288,10 +289,13 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPronto(String idPedido, String token)
+    public ResponseEntity<String> setPedidoPronto(String idPedido)
     {
         try
         {
+            //TODO -> FAZER AUTENTICACAO
+            //AUTENTICACAO FUNCIONANDO
+            /*
             Pedidos pedido = repository.findById(idPedido)
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
@@ -304,6 +308,17 @@ public class PedidosService {
             else{
                 throw new RuntimeException("É necessário uma autoridade maior para executar esta acao");
             }
+            */
+            Pedidos pedido = repository.findById(idPedido)
+                    .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
+            pedido.setPedidoPronto(true);
+            LocalTime currentTime = LocalTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            String formattedTime = currentTime.format(formatter);
+            pedido.setHoraPronto(formattedTime);
+            repository.saveAndFlush(pedido);
+            return ResponseEntity.ok("Pedido foi alterado para pronto.");
+
         }
         catch (Exception e)
         {
@@ -477,4 +492,34 @@ public class PedidosService {
             throw new RuntimeException("Erro: " + e);
         }
     }
+
+    @Transactional
+    public List<PedidoCozinhaDTO> getPedidoForCozinha() {
+        List<Pedidos> pedidos = repository.findAll(); // Fetch all or use other filtering methods
+        return pedidos.stream()
+                .map(this::filterAndConvertToPedidoCozinhaDTO)
+                .filter(dto -> !dto.produtos().isEmpty()) // Ensure only orders with 'cozinha' products are included
+                .collect(Collectors.toList());
+    }
+
+    private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTO(Pedidos pedido) {
+        List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
+                .filter(produtosPedido -> produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))
+                .map(produtosPedido -> new PedidoCozinhaProdutosDTO(
+                        produtosPedido.getProduto().getIdProd(),
+                        produtosPedido.getProduto().getNomeProd(),
+                        produtosPedido.getQuantidade()
+                ))
+                .collect(Collectors.toList());
+
+        return new PedidoCozinhaDTO(
+                pedido.getIdPedido(),
+                pedido.getHoraPedido(),
+                pedido.getHoraPronto(),
+                pedido.isPedidoPronto(),
+                produtosCozinhaDTO
+        );
+    }
+
+
 }

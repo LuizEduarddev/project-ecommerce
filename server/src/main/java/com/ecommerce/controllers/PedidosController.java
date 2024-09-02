@@ -29,6 +29,12 @@ public class PedidosController {
         return service.getPedidosPendentes(token);
     }
 
+    @PostMapping("/pronto")
+    public ResponseEntity<String> pedidoPronto(@RequestParam String idPedido)
+    {
+        return service.setPedidoPronto(idPedido);
+    }
+
     @PostMapping("/get-all-admin")
     public PedidosAdminDTO getAllAdmin(@RequestBody String token)
     {
@@ -51,6 +57,12 @@ public class PedidosController {
     public MesaDTO getByMesa(@RequestBody GetPedidoDTO dto)
     {
         return service.getPedidoByMesaDTO(dto);
+    }
+
+    @GetMapping("/get-for-cozinha")
+    public List<PedidoCozinhaDTO> getForCpf()
+    {
+        return service.getPedidoForCozinha();
     }
 
     @PostMapping("/get-by-cpf")

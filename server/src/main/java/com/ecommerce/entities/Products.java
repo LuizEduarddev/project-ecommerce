@@ -24,6 +24,7 @@ public class Products {
 	@Enumerated(EnumType.STRING)
 	private CategoriaProd categoriaProd;
 
+
 	@Column(name = "preco_promocao")
 	private double precoPromocao;
 
@@ -38,10 +39,7 @@ public class Products {
 	public Products() {
 	}
 
-	// Parameterized constructor
-
-
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, double precoPromocao, byte[] imagemProduto, boolean visible) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd,double precoPromocao, byte[] imagemProduto, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -100,8 +98,6 @@ public class Products {
 	public void setPromoProd(boolean promoProd) {
 		this.promoProd = promoProd;
 	}
-
-
 
 	public double getPrecoPromocao() {
 		return precoPromocao;

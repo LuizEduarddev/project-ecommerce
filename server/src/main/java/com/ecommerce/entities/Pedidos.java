@@ -34,6 +34,10 @@ public class Pedidos {
     @Column(name = "pedido_pronto")
     private boolean pedidoPronto;
 
+    @Column(name = "hora_pronto")
+    private String horaPronto;
+
+
     @ElementCollection
     @CollectionTable(name = "pedido_produtos", joinColumns = @JoinColumn(name = "pedido_id"))
     private List<ProductsPedidosDTO> produtos = new ArrayList<>();
@@ -57,9 +61,10 @@ public class Pedidos {
         this.users = users;
     }
 
-    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
+    public Pedidos(String dataPedido, String horaPedido, String horaPronto, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
+        this.horaPronto = horaPronto;
         this.totalPedido = totalPedido;
         this.pedidoPago = pedidoPago;
         this.pedidoPronto = pedidoPronto;
@@ -147,5 +152,13 @@ public class Pedidos {
 
     public void setCpfClientePedido(String cpfClientePedido) {
         this.cpfClientePedido = cpfClientePedido;
+    }
+
+    public String getHoraPronto() {
+        return horaPronto;
+    }
+
+    public void setHoraPronto(String horaPronto) {
+        this.horaPronto = horaPronto;
     }
 }

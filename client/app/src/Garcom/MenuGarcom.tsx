@@ -720,6 +720,16 @@ const MenuGarcom = () => {
                 </View>
             );
         }
+        else{
+            return(
+                <View style={styles.modalView}>
+                    <Text>Cliente não possui nenhum pedido.</Text>
+                    <Pressable onPress={() => closeModal()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
+                        <Text style={{color:'white'}}>X</Text>
+                    </Pressable>
+                </View>
+            );
+        }
     }
 
     const renderModals = () => {

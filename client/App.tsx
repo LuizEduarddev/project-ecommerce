@@ -10,6 +10,7 @@ import SearchBar from "./app/src/AplicativoCliente/HomePage/BarraPesquisa/Search
 import Pendencias from "./app/src/AplicativoCliente/HomePage/PendenciasUsuario/Pendencias";
 import ChangeView from "./app/src/Balcao/ChangeView";
 import MenuGarcom from "./app/src/Garcom/MenuGarcom";
+import MenuCozinha from "./app/src/Cozinha/MenuCozinha";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function App()
         <Stack.Screen name="Pendencias" component={Pendencias} options={{ headerShown: false }} />
         <Stack.Screen name="ChangeView" component={ChangeView} options={{ headerShown: false }} />
         <Stack.Screen name="MenuGarcom" component={MenuGarcom} options={{ headerShown: false }} />
+        <Stack.Screen name="MenuCozinha" component={MenuCozinha} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
