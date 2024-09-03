@@ -1,6 +1,5 @@
 import { Text, TextInput, View, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from "react-native";
 import { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../../ApiConfigs/ApiRoute";
 
 export default function Login({ navigation }) {
@@ -9,14 +8,33 @@ export default function Login({ navigation }) {
 
     async function storeData(token) {
         try {
-            const response = await api.post('api/auth/get-username', token);
-            if (response != null) {
-                await AsyncStorage.setItem('username', response.data);
-            }
-            await AsyncStorage.setItem('session-token', token);
-            navigation.navigate('Home');
+            await localStorage.setItem('session-token', token);
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async function directUser(authorities:string[])
+    {
+        if (authorities.filter((item) => item === 'ROLE_BALCAO' ))
+        {
+            navigation.navigate('ChangeView');
+        }
+        else if (authorities.filter((item) => item ==='ROLE_GARCOM'))
+        {
+            navigation.navigate('MenuGarcom');
+        }
+        else if (authorities.filter((item) => item ==='ROLE_BALCAO_PREPARO'))
+        {
+            navigation.navigate('MenuBalcaoDePreparo');
+        }
+        else if (authorities.filter((item) => item === 'ROLE_COZINHA')) 
+        {
+            navigation.navigate('MenuCozinha');
+        }
+        else
+        {
+            console.log("erro, tente novamente");
         }
     }
 
@@ -31,6 +49,7 @@ export default function Login({ navigation }) {
             api.post('/api/auth/login', dataLogin)
             .then(response => {
                 storeData(response.data.token);
+                directUser(response.data.authorities);
             })
             .catch(error => {
                 Alert.alert('Falha ao tentar se conectar com o servidor.');
@@ -65,34 +84,6 @@ export default function Login({ navigation }) {
                         onPress={() => tryLogin()}
                     >
                         <Text style={styles.textButtonLogin}>Entrar</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("ChangeView")}
-                    >
-                        <Text>Balcao</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("MenuGarcom")}
-                    >
-                        <Text>Garcom</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("MenuCozinha")}
-                    >
-                        <Text>Cozinha</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("MenuBalcaoDePreparo")}
-                    >
-                        <Text>Balcao de Preparo</Text>
                     </TouchableOpacity>
                 </View>
             </View>

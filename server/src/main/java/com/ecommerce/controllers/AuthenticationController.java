@@ -41,18 +41,22 @@ public class AuthenticationController {
 	private MesaService mesaService;
 	
 	@PostMapping("/login")
-	public ResponseEntity<String> login(@RequestBody AuthDTO data)
+	public ResponseEntity<AuthLoginDTO> login(@RequestBody AuthDTO data)
 	{
 		String token = service.loginUser(data);
-		//Optional<Integer> numeroMesa = mesaService.addClienteMesa(data.mesaId(), token);
-		//return ResponseEntity.ok(new LoginResponseDTO(token, numeroMesa));
-		return ResponseEntity.ok(token);
+		return ResponseEntity.ok(new AuthLoginDTO(token, service.getPermission(token)));
 	}
 
 	@PostMapping("/get-by-cpf")
-	public UserDTO getByCpf(@RequestBody String cpf)
-	{
+	public UserDTO getByCpf(@RequestBody String cpf) {
 		return service.getByCpf(cpf);
+	}
+
+
+	@PostMapping("/get-authorities")
+	public Collection<? extends GrantedAuthority> getAuthorities(@RequestParam String token)
+	{
+		return service.getPermission(token);
 	}
 
 	@PostMapping("/alter/avulso")

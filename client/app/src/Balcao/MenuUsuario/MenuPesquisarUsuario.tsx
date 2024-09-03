@@ -57,7 +57,11 @@ const MenuPesquisarUsuario = () => {
     if (query === '') {
       return;
     } else {
-      api.post('api/auth/get-by-cpf', query)
+      api.post('api/auth/get-by-cpf', query, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}` 
+        }
+      })
       .then((response) => {
         if (response.data === null) {
           Alert.alert('Usuário não encontrado no sistema.');

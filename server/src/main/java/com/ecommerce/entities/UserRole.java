@@ -3,10 +3,10 @@ package com.ecommerce.entities;
 public enum UserRole {
     ADMIN("admin"),
     USER("user"),
-    COZINHACAFE("cozinha-cafe"),
-    GERENTE("gerente"),
-    GARCOM("garcom"),
-    BALCAO("balcao");
+    BALCAOPREPARO("balcaopreparo"),
+    BALCAO("balcao"),
+    COZINHA("cozinha"),
+    GARCOM("garcom");
 
     private String role;
 

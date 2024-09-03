@@ -81,6 +81,10 @@ public class AuthenticationService {
 
 	public ResponseEntity<String> registerUser(RegisterDTO data)
 	{
+		if (data.role() != null)
+		{
+			throw new RuntimeException("Apenas administradores podem fazer esta acao");
+		}
 		if (this.repository.findByLoginUser(data.login()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);
 		if (data.file().isPresent())
 		{
@@ -90,6 +94,7 @@ public class AuthenticationService {
 		else{
 			String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
 			Users newUser = new Users(data.login(), encryptPassword, data.role());
+			newUser.setUserRole(UserRole.USER);
 			newUser.setPontosCupcake(0);
 			this.repository.saveAndFlush(newUser);
 			return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
@@ -104,6 +109,7 @@ public class AuthenticationService {
 			byte[] imageData = file.getBytes();
 			String encryptPassword = new BCryptPasswordEncoder().encode(data.password());
 			Users newUser = new Users(data.login(), encryptPassword, data.role(), imageData);
+			newUser.setUserRole(UserRole.USER);
 			newUser.setPontosCupcake(0);
 			this.repository.saveAndFlush(newUser);
 		}

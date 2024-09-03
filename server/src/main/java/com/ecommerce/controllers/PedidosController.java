@@ -32,7 +32,6 @@ public class PedidosController {
     @PostMapping("/pronto")
     public ResponseEntity<String> pedidoPronto(@RequestBody SetPedidoProntoDTO dto)
     {
-        System.out.println(dto.idPedido() + dto.local());
         return service.setPedidoPronto(dto.idPedido(), dto.local());
     }
 
