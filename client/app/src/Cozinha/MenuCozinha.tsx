@@ -21,104 +21,81 @@ const MenuCozinha = () => {
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
-  const [modalVisualizarPedido, setModalVisualizarPedido] = useState<boolean>(false);
+  const [modalPedidoId, setModalPedidoId] = useState<string | null>(null);
   const [modalConfirmarPedidoPronto, setModalConfirmarPedidoPronto] = useState<boolean>(false);
 
+  const fetchPedidos = async () => {
+    try {
+      const response = await api.get('api/pedidos/get-for-cozinha');
+      const pedidos = response.data;
+
+      const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
+      const pedidosNaoProntos = pedidos.filter(pedido => pedido.pedidoPronto === false);
+
+      setAllPedidos(pedidos); 
+      setPedidosProntos(pedidosProntos);
+      setPedidosNaoProntos(pedidosNaoProntos);
+    } catch (error) {
+      console.log(error as string);
+    }
+  };
+
   useEffect(() => {
-    const fetchPedidos = async () => {
-      api.get('api/pedidos/get-for-cozinha')
-      .then(response => {
-        setAllPedidos(response.data)
-        
-        const pedidosProntos = allPedidos.filter(pedido => pedido.pedidoPronto === true);
-        const pedidosNaoProntos = allPedidos.filter(pedido => pedido.pedidoPronto === false);
-        
-        setPedidosProntos(pedidosProntos);
-        setPedidosNaoProntos(pedidosNaoProntos);
-      })
-      .catch(error => {
-        console.log(error as string);
-      })
-    };
-    
     fetchPedidos();
-
-    const interval = setInterval(fetchPedidos, 60000); 
-
+    const interval = setInterval(fetchPedidos, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  async function confirmarPedidoPronto(pedido:PedidoCozinhaDTO)
-  {
-    api.post('api/pedidos/pronto', null, {
-      params:{
-        idPedido: pedido.idPedido
-      }
-    })
-    .then(response => {
-      console.log(response.data)
-    })
-    .catch(error => {
+  async function confirmarPedidoPronto(pedido: PedidoCozinhaDTO) {
+    try {
+      const response = await api.post('api/pedidos/pronto', null, {
+        params: { idPedido: pedido.idPedido }
+      });
+      setModalConfirmarPedidoPronto(false);
+      setModalPedidoId(null);
+      fetchPedidos();
+    } catch (error) {
       console.log(error as string);
-    })
+    }
   }
 
   const calculateBackgroundColor = (horaPedido: string) => {
-    try {
-      const [hours, minutes] = horaPedido.split(':').map(Number);
-      if (isNaN(hours) || isNaN(minutes)) {
-        console.error('Invalid time format:', horaPedido);
-        return 'gray'; 
-      }
-      
-      const pedidoDate = new Date();
-      pedidoDate.setHours(hours, minutes, 0, 0); 
-  
-      const currentTime = new Date();
-      const diffInMinutes = (currentTime.getTime() - pedidoDate.getTime()) / (1000 * 60);
-  
-      if (diffInMinutes > 10) {
-        return 'red';
-      } else if (diffInMinutes > 5) {
-        return 'yellow';
-      } else {
-        return 'green';
-      }
-    } catch (error) {
-      console.error('Error calculating background color:', error);
-      return 'gray'; 
-    }
-  }
-  
-  const renderProdutosPedidos = ({ item }: { item: PedidoCozinhaProdutosDTO }) => {
-    return (
-      <View>
-        <Text>{item.nomeProd} - X ({item.quantidadeProduto})</Text>
-      </View>
-    );
-  }
+    const [hours, minutes] = horaPedido.split(':').map(Number);
+    const pedidoDate = new Date();
+    pedidoDate.setHours(hours, minutes, 0, 0);
+    const currentTime = new Date();
+    const diffInMinutes = (currentTime.getTime() - pedidoDate.getTime()) / (1000 * 60);
 
-  const renderModalConfirmarPedidoPronto = (pedido:PedidoCozinhaDTO) => {
-    return(
-      <View style={styles.modalView}>
-        <Text>Confirmar pedido pronto?</Text>
-        <Pressable onPress={() => confirmarPedidoPronto(pedido)} style={{backgroundColor:'green', borderColor:'black', borderWidth:1}}>
-          <Text style={{color:'white'}}>SIM</Text>  
-        </Pressable>
-        <Pressable onPress={() => setModalConfirmarPedidoPronto(false)} style={{backgroundColor:'red', borderColor:'black', borderWidth:1}}>
-          <Text style={{color:'white'}}>NÃO</Text>
-        </Pressable>
-      </View>
-    );
-  }
+    if (diffInMinutes > 10) return 'red';
+    if (diffInMinutes > 5) return 'yellow';
+    return 'green';
+  };
 
-  const renderModalVisualizarPedido = (pedido:PedidoCozinhaDTO) => {
+  const renderProdutosPedidos = ({ item }: { item: PedidoCozinhaProdutosDTO }) => (
+    <View>
+      <Text>{item.nomeProd} - X ({item.quantidadeProduto})</Text>
+    </View>
+  );
+
+  const renderModalConfirmarPedidoPronto = (pedido: PedidoCozinhaDTO) => (
+    <View style={styles.modalView}>
+      <Text>Confirmar pedido pronto?</Text>
+      <Pressable onPress={() => confirmarPedidoPronto(pedido)} style={{ backgroundColor: 'green', borderColor: 'black', borderWidth: 1 }}>
+        <Text style={{ color: 'white' }}>SIM</Text>
+      </Pressable>
+      <Pressable onPress={() => setModalConfirmarPedidoPronto(false)} style={{ backgroundColor: 'red', borderColor: 'black', borderWidth: 1 }}>
+        <Text style={{ color: 'white' }}>NÃO</Text>
+      </Pressable>
+    </View>
+  );
+
+  const renderModalVisualizarPedido = (pedido: PedidoCozinhaDTO) => {
     const backgroundColor = calculateBackgroundColor(pedido.horaPedido);
-    return(
+    return (
       <View style={styles.modalView}>
-        {pedido.pedidoPronto === true ? (
-          <Text style={[styles.pedidoContainer, { backgroundColor:'green' }]}>pronto ás: {pedido.horaPronto}</Text>
-        ):(
+        {pedido.pedidoPronto ? (
+          <Text style={[styles.pedidoContainer, { backgroundColor: 'green' }]}>Pronto às: {pedido.horaPronto}</Text>
+        ) : (
           <Text style={[styles.pedidoContainer, { backgroundColor }]}>{pedido.horaPedido}</Text>
         )}
         <FlatList
@@ -126,129 +103,77 @@ const MenuCozinha = () => {
           renderItem={renderProdutosPedidos}
           keyExtractor={(produto) => produto.idProduto}
         />
-        {
-          pedido.pedidoPronto ? (
-            <View>
-              <Pressable onPress={() => setModalVisualizarPedido(false)} style={{backgroundColor:'green', borderColor:'black', borderWidth:1}}>
-                <Text>Pronto</Text>
-              </Pressable>
-            </View>
-          ):(
-            <View style={{backgroundColor:'green'}}>
-              <Text style={{color:'white'}}>Pedido pronto!</Text>
-            </View>
-          )
-        }
-        
+        {!pedido.pedidoPronto && (
+          <Pressable onPress={() => setModalConfirmarPedidoPronto(true)} style={{ backgroundColor: 'green', borderColor: 'black', borderWidth: 1 }}>
+            <Text>Pronto</Text>
+          </Pressable>
+        )}
         <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalConfirmarPedidoPronto}
-            onRequestClose={() => setModalConfirmarPedidoPronto(false)}
+          animationType="slide"
+          transparent={true}
+          visible={modalConfirmarPedidoPronto}
+          onRequestClose={() => setModalConfirmarPedidoPronto(false)}
         >
-            {renderModalConfirmarPedidoPronto(pedido)}
+          {renderModalConfirmarPedidoPronto(pedido)}
         </Modal>
       </View>
     );
-  }
+  };
 
   const renderPedidos = ({ item }: { item: PedidoCozinhaDTO }) => {
     const backgroundColor = calculateBackgroundColor(item.horaPedido);
-    if (item.pedidoPronto === true)
-    {
-      return (
-        <View>
-          <Pressable onPress={() => setModalVisualizarPedido(true)}>
-            <Text>Pronto ás: {item.horaPronto}</Text>
-            <FlatList
-              data={item.produtos}
-              renderItem={renderProdutosPedidos}
-              keyExtractor={(produto) => produto.idProduto}
-            />
-          </Pressable>
-          <Modal
-              animationType="slide"
-              transparent={true}
-              visible={modalVisualizarPedido}
-              onRequestClose={() => setModalVisualizarPedido(false)}
-          >
-              {renderModalVisualizarPedido(item)}
-          </Modal>
-        </View>
-      );
-    }
-    else{
-      return (
-        <View>
-          <Pressable onPress={() => setModalVisualizarPedido(true)}>
+    return (
+      <View>
+        <Pressable onPress={() => setModalPedidoId(item.idPedido)}>
+          {item.pedidoPronto ? (
+            <Text>Pronto às: {item.horaPronto}</Text>
+          ) : (
             <Text style={[styles.pedidoContainer, { backgroundColor }]}>{item.horaPedido}</Text>
-            <FlatList
-              data={item.produtos}
-              renderItem={renderProdutosPedidos}
-              keyExtractor={(produto) => produto.idProduto}
-            />
-          </Pressable>
-          <Modal
-              animationType="slide"
-              transparent={true}
-              visible={modalVisualizarPedido}
-              onRequestClose={() => setModalVisualizarPedido(false)}
-          >
-              {renderModalVisualizarPedido(item)}
-          </Modal>
-        </View>
-      );
-    }
-  }
+          )}
+          <FlatList
+            data={item.produtos}
+            renderItem={renderProdutosPedidos}
+            keyExtractor={(produto) => produto.idProduto}
+          />
+        </Pressable>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalPedidoId === item.idPedido}
+          onRequestClose={() => setModalPedidoId(null)}
+        >
+          {renderModalVisualizarPedido(item)}
+        </Modal>
+      </View>
+    );
+  };
 
   const renderMenu = () => {
-    if (allPedidos.length > 0 && allPedidos)
-    {
-      if ((pedidosNaoProntos.length > 0 && pedidosNaoProntos) && (pedidosProntos.length > 0 && pedidosProntos))
-      {
-        return(
-          <View>
-            <Text>Pedidos em preparo</Text>
-            <FlatList
-              data={pedidosNaoProntos}
-              renderItem={renderPedidos}
-              keyExtractor={(item) => item.idPedido}
-            />
-            <Text>Pedidos prontos</Text>
-            <FlatList
-              data={pedidosProntos}
-              renderItem={renderPedidos}
-              keyExtractor={(item) => item.idPedido}
-            />
-          </View>
-        );
-      }
-      else if (pedidosNaoProntos.length > 0 && pedidosNaoProntos)
-      {
-        return(
-          <View>
-            <Text>Pedidos em preparo</Text>
-            <FlatList
-              data={pedidosNaoProntos}
-              renderItem={renderPedidos}
-              keyExtractor={(item) => item.idPedido}
-            />
-          </View>
-        );
-      }
-      else if (pedidosProntos.length > 0 && pedidosProntos)
-      {
-        return(
-          <View>
-            <Text>Pedidos prontos</Text>
-            <FlatList
-              data={pedidosProntos}
-              renderItem={renderPedidos}
-              keyExtractor={(item) => item.idPedido}
-            />
-          </View>
-        );
-      }  
+    if (allPedidos.length > 0) {
+      return (
+        <View>
+          {pedidosNaoProntos.length > 0 && (
+            <>
+              <Text>Pedidos em preparo</Text>
+              <FlatList
+                data={pedidosNaoProntos}
+                renderItem={renderPedidos}
+                keyExtractor={(item) => item.idPedido}
+              />
+            </>
+          )}
+          {pedidosProntos.length > 0 && (
+            <>
+              <Text>Pedidos prontos</Text>
+              <FlatList
+                data={pedidosProntos}
+                renderItem={renderPedidos}
+                keyExtractor={(item) => item.idPedido}
+              />
+            </>
+          )}
+        </View>
+      );
     } else {
       return (
         <View>
@@ -256,18 +181,16 @@ const MenuCozinha = () => {
         </View>
       );
     }
-  }
+  };
 
   return (
     <SafeAreaView>
-      <ScrollView>
-        {renderMenu()}
-      </ScrollView>
+      <ScrollView>{renderMenu()}</ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default MenuCozinha
+export default MenuCozinha;
 
 const styles = StyleSheet.create({
   pedidoContainer: {
@@ -290,4 +213,4 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-})
+});

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -463,8 +464,7 @@ public class PedidosService {
 
     @Transactional
     public MesaDTO getPedidoByCpf(String cpf) {
-        try
-        {
+        try {
             if (cpf == null) {
                 return null;
             }
@@ -472,35 +472,50 @@ public class PedidosService {
             List<Pedidos> pedidosList = repository.findByCpfClientePedido(cpf);
 
             List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream()
+                    .filter(pedido -> isToday(pedido.getDataPedido()))
                     .map(pedido -> {
                         List<ProductsMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream()
-                                .map(produto -> new ProductsMesaDTO(produto.getProduto().getIdProd(), produto.getProduto().getNomeProd(), produto.getProduto().getPrecoProd(), produto.getQuantidade()))
+                                .map(produto -> new ProductsMesaDTO(
+                                        produto.getProduto().getIdProd(),
+                                        produto.getProduto().getNomeProd(),
+                                        produto.getProduto().getPrecoProd(),
+                                        produto.getQuantidade()
+                                ))
                                 .collect(Collectors.toList());
 
-                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList);
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(), produtosMesaDTOList);
                     })
                     .collect(Collectors.toList());
 
             double valorTotal = pedidosList.stream()
+                    .filter(pedido ->isToday(pedido.getDataPedido()))
                     .mapToDouble(Pedidos::getTotalPedido)
                     .sum();
 
             return new MesaDTO(pedidosMesaDTOList, valorTotal);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Erro: " + e);
         }
     }
 
+
     @Transactional
     public List<PedidoCozinhaDTO> getPedidoForCozinha() {
-        List<Pedidos> pedidos = repository.findAll(); // Fetch all or use other filtering methods
+        List<Pedidos> pedidos = repository.findAll();
         return pedidos.stream()
+                .filter(pedido -> isToday(pedido.getDataPedido()))
                 .map(this::filterAndConvertToPedidoCozinhaDTO)
-                .filter(dto -> !dto.produtos().isEmpty()) // Ensure only orders with 'cozinha' products are included
+                .filter(dto -> !dto.produtos().isEmpty())
                 .collect(Collectors.toList());
     }
+
+    private boolean isToday(String dataPedido) {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String formattedToday = today.format(formatter);
+        return dataPedido.equals(formattedToday);
+    }
+
 
     private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTO(Pedidos pedido) {
         List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
