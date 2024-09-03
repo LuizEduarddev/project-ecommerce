@@ -121,7 +121,7 @@ public class PedidosService {
 
                     pedido.setHoraPedido(formattedTime);
 
-                    pedido.setPedidoPronto(false);
+                    pedido.setPedidoProntoCozinha(false);
 
                     double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
 
@@ -180,6 +180,8 @@ public class PedidosService {
                     pedido.setHoraPedido(formattedTime);
 
                     pedido.setPedidoPronto(false);
+                    pedido.setPedidoProntoBalcao(false);
+                    pedido.setPedidoProntoCozinha(false);
 
                     pedido.setTotalPedido(finalTotal);
 
@@ -237,6 +239,9 @@ public class PedidosService {
             pedido.setHoraPedido(formattedTime);
 
             pedido.setPedidoPronto(false);
+            pedido.setPedidoProntoBalcao(false);
+            pedido.setPedidoProntoCozinha(false);
+
             pedido.setTotalPedido(finalTotal);
 
             pedido.setProdutos(productsPedidosDTOS);
@@ -290,7 +295,7 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPronto(String idPedido)
+    public ResponseEntity<String> setPedidoPronto(String idPedido, String local)
     {
         try
         {
@@ -302,7 +307,7 @@ public class PedidosService {
 
             if (checkUserAuthority(token) == HttpStatus.ACCEPTED)
             {
-                pedido.setPedidoPronto(true);
+                pedido.setPedidoProntoCozinha(true);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
@@ -312,14 +317,43 @@ public class PedidosService {
             */
             Pedidos pedido = repository.findById(idPedido)
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
-            pedido.setPedidoPronto(true);
-            LocalTime currentTime = LocalTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            String formattedTime = currentTime.format(formatter);
-            pedido.setHoraPronto(formattedTime);
-            repository.saveAndFlush(pedido);
-            return ResponseEntity.ok("Pedido foi alterado para pronto.");
-
+            if (local.equals("cozinha"))
+            {
+                if (pedido.isPedidoProntoBalcao())
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoCozinha(true);
+                }
+                else{
+                    pedido.setPedidoProntoCozinha(true);
+                }
+                LocalTime currentTime = LocalTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                String formattedTime = currentTime.format(formatter);
+                pedido.setHoraPronto(formattedTime);
+                repository.saveAndFlush(pedido);
+                return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            }
+            else if (local.equals("balcao-preparo"))
+            {
+                if (pedido.isPedidoProntoCozinha())
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoBalcao(true);
+                }
+                else{
+                    pedido.setPedidoProntoBalcao(true);
+                }
+                LocalTime currentTime = LocalTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                String formattedTime = currentTime.format(formatter);
+                pedido.setHoraPronto(formattedTime);
+                repository.saveAndFlush(pedido);
+                return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            }
+            else{
+                throw new RuntimeException("Falha ao capturar o local de preparo");
+            }
         }
         catch (Exception e)
         {
@@ -531,10 +565,38 @@ public class PedidosService {
                 pedido.getIdPedido(),
                 pedido.getHoraPedido(),
                 pedido.getHoraPronto(),
-                pedido.isPedidoPronto(),
+                pedido.isPedidoProntoCozinha(),
                 produtosCozinhaDTO
         );
     }
 
 
+    @Transactional
+    public List<PedidoCozinhaDTO> getPedidoForBalcaoPreparo() {
+        List<Pedidos> pedidos = repository.findAll();
+        return pedidos.stream()
+                .filter(pedido -> isToday(pedido.getDataPedido()))
+                .map(this::filterAndConvertToPedidoCozinhaDTOBalcao)
+                .filter(dto -> !dto.produtos().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTOBalcao(Pedidos pedido) {
+        List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
+                .filter(produtosPedido -> !produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))
+                .map(produtosPedido -> new PedidoCozinhaProdutosDTO(
+                        produtosPedido.getProduto().getIdProd(),
+                        produtosPedido.getProduto().getNomeProd(),
+                        produtosPedido.getQuantidade()
+                ))
+                .collect(Collectors.toList());
+
+        return new PedidoCozinhaDTO(
+                pedido.getIdPedido(),
+                pedido.getHoraPedido(),
+                pedido.getHoraPronto(),
+                pedido.isPedidoProntoBalcao(),
+                produtosCozinhaDTO
+        );
+    }
 }

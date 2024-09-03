@@ -17,7 +17,7 @@ type PedidoCozinhaDTO = {
   produtos: PedidoCozinhaProdutosDTO[]
 }
 
-const MenuCozinha = () => {
+const MenuBalcaoDePreparo = () => {
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
@@ -26,7 +26,7 @@ const MenuCozinha = () => {
 
   const fetchPedidos = async () => {
     try {
-      const response = await api.get('api/pedidos/get-for-cozinha');
+      const response = await api.get('api/pedidos/get-for-balcao-preparo');
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
@@ -48,18 +48,18 @@ const MenuCozinha = () => {
 
   async function confirmarPedidoPronto(pedido: PedidoCozinhaDTO) {
     try {
-      const dataToSend = {
-        idPedido: pedido.idPedido,
-        local: "cozinha"
-    }
-    const response = await api.post('api/pedidos/pronto', dataToSend, {
-        headers: {
-          'Content-Type': 'application/json'
+        const dataToSend = {
+            idPedido: pedido.idPedido,
+            local: "balcao-preparo"
         }
-      });
-      setModalConfirmarPedidoPronto(false);
-      setModalPedidoId(null);
-      fetchPedidos();
+        const response = await api.post('api/pedidos/pronto', dataToSend, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+        setModalConfirmarPedidoPronto(false);
+        setModalPedidoId(null);
+        fetchPedidos();
     } catch (error) {
       console.log(error as string);
     }
@@ -196,7 +196,7 @@ const MenuCozinha = () => {
   );
 };
 
-export default MenuCozinha;
+export default MenuBalcaoDePreparo;
 
 const styles = StyleSheet.create({
   pedidoContainer: {

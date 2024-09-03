@@ -30,9 +30,10 @@ public class PedidosController {
     }
 
     @PostMapping("/pronto")
-    public ResponseEntity<String> pedidoPronto(@RequestParam String idPedido)
+    public ResponseEntity<String> pedidoPronto(@RequestBody SetPedidoProntoDTO dto)
     {
-        return service.setPedidoPronto(idPedido);
+        System.out.println(dto.idPedido() + dto.local());
+        return service.setPedidoPronto(dto.idPedido(), dto.local());
     }
 
     @PostMapping("/get-all-admin")
@@ -60,9 +61,15 @@ public class PedidosController {
     }
 
     @GetMapping("/get-for-cozinha")
-    public List<PedidoCozinhaDTO> getForCpf()
+    public List<PedidoCozinhaDTO> getForCozinha()
     {
         return service.getPedidoForCozinha();
+    }
+
+    @GetMapping("/get-for-balcao-preparo")
+    public List<PedidoCozinhaDTO> getForBalcaoPreparo()
+    {
+        return service.getPedidoForBalcaoPreparo();
     }
 
     @PostMapping("/get-by-cpf")

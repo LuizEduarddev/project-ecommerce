@@ -1,10 +1,8 @@
 package com.ecommerce.entities;
 
-import com.ecommerce.entities.dto.ProductsDTO;
 import com.ecommerce.entities.dto.ProductsPedidosDTO;
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +29,12 @@ public class Pedidos {
     @Column(name = "pedido_pago")
     private boolean pedidoPago;
 
+    @Column(name = "pedido_pronto_cozinha")
+    private boolean pedidoProntoCozinha;
+
+    @Column(name = "pedido_pronto_balcao")
+    private boolean pedidoProntoBalcao;
+
     @Column(name = "pedido_pronto")
     private boolean pedidoPronto;
 
@@ -51,22 +55,26 @@ public class Pedidos {
 
     public Pedidos(){}
 
-    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users) {
+    public Pedidos(String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoProntoCozinha, boolean pedidoProntoBalcao, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.totalPedido = totalPedido;
         this.pedidoPago = pedidoPago;
+        this.pedidoProntoCozinha = pedidoProntoCozinha;
+        this.pedidoProntoBalcao = pedidoProntoBalcao;
         this.pedidoPronto = pedidoPronto;
         this.produtos = produtos;
         this.users = users;
     }
 
-    public Pedidos(String dataPedido, String horaPedido, String horaPronto, double totalPedido, boolean pedidoPago, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
+    public Pedidos(String dataPedido, String horaPedido, String horaPronto, double totalPedido, boolean pedidoPago, boolean pedidoProntoCozinha, boolean pedidoProntoBalcao, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.horaPronto = horaPronto;
         this.totalPedido = totalPedido;
         this.pedidoPago = pedidoPago;
+        this.pedidoProntoCozinha = pedidoProntoCozinha;
+        this.pedidoProntoBalcao = pedidoProntoBalcao;
         this.pedidoPronto = pedidoPronto;
         this.produtos = produtos;
         this.users = users;
@@ -90,12 +98,12 @@ public class Pedidos {
         this.produtos = produtos;
     }
 
-    public boolean isPedidoPronto() {
-        return pedidoPronto;
+    public boolean isPedidoProntoCozinha() {
+        return pedidoProntoCozinha;
     }
 
-    public void setPedidoPronto(boolean pedidoPronto) {
-        this.pedidoPronto = pedidoPronto;
+    public void setPedidoProntoCozinha(boolean pedidoProntoCozinha) {
+        this.pedidoProntoCozinha = pedidoProntoCozinha;
     }
 
     public boolean isPedidoPago() {
@@ -160,5 +168,21 @@ public class Pedidos {
 
     public void setHoraPronto(String horaPronto) {
         this.horaPronto = horaPronto;
+    }
+
+    public boolean isPedidoProntoBalcao() {
+        return pedidoProntoBalcao;
+    }
+
+    public void setPedidoProntoBalcao(boolean pedidoProntoBalcao) {
+        this.pedidoProntoBalcao = pedidoProntoBalcao;
+    }
+
+    public boolean isPedidoPronto() {
+        return pedidoPronto;
+    }
+
+    public void setPedidoPronto(boolean pedidoPronto) {
+        this.pedidoPronto = pedidoPronto;
     }
 }
