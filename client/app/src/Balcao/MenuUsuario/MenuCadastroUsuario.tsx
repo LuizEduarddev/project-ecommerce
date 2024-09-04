@@ -46,7 +46,12 @@ const MenuCadastroUsuario = () => {
         userEndereco,
         userEmail,
       };
-      api.post('api/auth/register/avulso', dataToSend)
+      api.post('api/auth/register/avulso', dataToSend, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+          'Content-Type': 'application/json'
+      }
+      })
       .then(response => {
         console.log(response.data);
       })

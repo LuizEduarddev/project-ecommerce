@@ -22,6 +22,7 @@ type ProductsMesaDTO = {
 
 type PedidosMesaDTO = {
     idPedido: string,
+    pedidoPronto: boolean,
     produtos: ProductsMesaDTO[]
 }
 
@@ -57,9 +58,10 @@ const MenuMesa = () => {
 
     useEffect(() => {
         const fetchMesas = async () => {
-            api.post('api/mesa/get-all', "", {
+            api.get('api/mesa/get-all', {
                 headers: {
                     'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
                     'Content-Type': 'application/json',
                   }
             })
@@ -80,7 +82,12 @@ const MenuMesa = () => {
             idMesa: idMesa,
             token: ''
         }
-        api.post('api/pedidos/get-by-mesa', dataToSend)
+        api.post('api/pedidos/get-by-mesa', dataToSend, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json'
+            }
+        })
         .then(response => {
             setPedidos(response.data);
             setModalVisible(true);

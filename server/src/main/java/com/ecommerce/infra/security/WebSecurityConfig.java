@@ -34,22 +34,97 @@ public class WebSecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+						//AUTH REQUESTS
+						.requestMatchers(HttpMethod.POST, "/api/auth/register").hasAnyRole(String.valueOf(UserRole.ADMIN))
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-						.requestMatchers(HttpMethod.POST, "/api/auth/get-by-cpf").hasAnyAuthority(
-								String.valueOf(UserRole.GARCOM.getRole()),
-								String.valueOf(UserRole.BALCAO.getRole())
+						.requestMatchers(HttpMethod.POST, "/api/auth/get-by-cpf").hasAnyRole(
+								String.valueOf(UserRole.GARCOM),
+								String.valueOf(UserRole.BALCAO)
 						)
-						.requestMatchers(HttpMethod.POST, "/api/auth/alter/avulso").hasAuthority(String.valueOf(UserRole.BALCAO.getRole()))
-						.requestMatchers(HttpMethod.POST, "/api/auth/get-by-id").hasAuthority(String.valueOf(UserRole.ADMIN.getRole()))
+						.requestMatchers(HttpMethod.POST, "/api/auth/alter/avulso").hasRole(String.valueOf(UserRole.BALCAO))
+						.requestMatchers(HttpMethod.POST, "/api/auth/get-by-id").hasRole(String.valueOf(UserRole.ADMIN))
 						.requestMatchers(HttpMethod.POST, "/api/auth/get-username").permitAll()
-						.requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-						.requestMatchers(HttpMethod.POST, "/api/auth/register/avulso").hasAuthority(String.valueOf(UserRole.BALCAO.getRole()))
-						.requestMatchers(HttpMethod.POST, "/api/auth/profile").hasAuthority(String.valueOf(UserRole.ADMIN.getRole()))
-						.requestMatchers(HttpMethod.POST, "/api/auth/alter-profile").hasAuthority(String.valueOf(UserRole.ADMIN.getRole()))
-						.requestMatchers(HttpMethod.GET, "/api/auth/get-all").hasAuthority(String.valueOf(UserRole.ADMIN.getRole()))
+						.requestMatchers(HttpMethod.POST, "/api/auth/register/avulso").hasRole(String.valueOf(UserRole.BALCAO))
+						.requestMatchers(HttpMethod.POST, "/api/auth/profile").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/auth/alter-profile").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.GET, "/api/auth/get-all").hasRole(String.valueOf(UserRole.ADMIN))
 
-						//.requestMatchers(HttpMethod.POST, "/api/products/add").hasRole("ADMIN")
+						//MESAS REQUEST
+						.requestMatchers(HttpMethod.GET, "/api/mesa/get-all").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/mesa/add").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/mesa/update").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/mesa/delete").hasRole(String.valueOf(UserRole.ADMIN))
+
+						//PEDIDOS REQUEST
+						.requestMatchers(HttpMethod.GET, "/api/pedidos/get-all").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/pendencias").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/pronto").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.BALCAOPREPARO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-all-admin").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-by-user").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-by-id").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.BALCAOPREPARO),
+								String.valueOf(UserRole.GARCOM),
+								String.valueOf(UserRole.COZINHA)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-by-mesa").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.BALCAOPREPARO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.GET, "/api/pedidos/get-for-cozinha").hasRole(String.valueOf(UserRole.COZINHA))
+						.requestMatchers(HttpMethod.GET, "/api/pedidos/get-for-balcao-preparo").hasRole(String.valueOf(UserRole.BALCAOPREPARO))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-by-cpf").hasRole(String.valueOf(UserRole.GARCOM))
+						.requestMatchers(HttpMethod.POST, "/api/pedidos/add").hasRole(String.valueOf(UserRole.GARCOM))
+
+
+						//PRODUCTS
+						.requestMatchers(HttpMethod.GET, "/api/products/get-categories").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.GET, "/api/products/get-all").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.GET, "/api/products/get-promotion").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/products/search").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/products/search/balcao").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/products/get-by-id").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/products/get-by-categoria").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
+						.requestMatchers(HttpMethod.POST, "/api/products/get-by-categoria").hasRole(String.valueOf(UserRole.GARCOM))
+						.requestMatchers(HttpMethod.POST, "/api/products/add").hasRole(String.valueOf(UserRole.BALCAO))
+						.requestMatchers(HttpMethod.PUT, "/api/products/editar").hasRole(String.valueOf(UserRole.BALCAO))
+						.requestMatchers(HttpMethod.DELETE, "/api/products/delete").hasRole(String.valueOf(UserRole.BALCAO))
+
+
+
+
+
 						.anyRequest().permitAll())
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();

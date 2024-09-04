@@ -17,10 +17,10 @@ public class MesaController {
     @Autowired
     private MesaService service;
 
-    @PostMapping("/get-all")
-    public List<MesaBalcaoDTO> getAll(@RequestBody String token)
+    @GetMapping("/get-all")
+    public List<MesaBalcaoDTO> getAll()
     {
-        return service.getAllMesa(token);
+        return service.getAllMesa();
     }
 
     /*

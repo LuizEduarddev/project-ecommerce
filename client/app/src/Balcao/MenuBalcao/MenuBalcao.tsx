@@ -25,7 +25,13 @@ const MenuBalcao = () => {
         if (query === "") {
             return;
         } else {
-            api.post('api/products/search', query)
+            api.post('api/products/search', query, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json',
+                  }
+            })
             .then(response => {
                 setProdutoResponse(response.data);
             })

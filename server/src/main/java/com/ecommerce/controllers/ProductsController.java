@@ -42,7 +42,6 @@ public class ProductsController {
 		return service.searchProduct(pesquisa);
 	}
 
-	//todo -> need add filter to only return if the user are == balcao
 	//ESTA FUNCAO E NECESSARIA POIS AQUI PUXA TODOS OS PRODUTOS MESMO QUE SEJAM VISIBLE == FALSE
 	@PostMapping("/search/balcao")
 	public List<Products> searchBalcao(@RequestBody String pesquisa){

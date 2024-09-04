@@ -21,7 +21,13 @@ const MenuCadastraProduto = () => {
 
   useEffect(() => {
     async function getCategorias() {
-      api.get('api/products/get-categories')
+      api.get('api/products/get-categories', {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+          'Content-Type': 'application/json',
+        }
+      })
         .then(response => {
           const formattedCategories = response.data.map((category, index) => ({
             label: category,
@@ -83,11 +89,14 @@ const MenuCadastraProduto = () => {
         console.error('Error converting image to Blob:', error);
       }
     }
+    console.log(formData.get('nomeProd'))
     api
       .post('api/products/add', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+          'Content-Type': 'application/json',
+        }
       })
       .then(response => {
         console.log(response.data);

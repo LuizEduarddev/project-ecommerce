@@ -46,24 +46,9 @@ public class PedidosService {
 
     final String acessToken = "";
 
-    public List<Pedidos> getAllPedidos(String token)
+    public List<Pedidos> getAllPedidos()
     {
-        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
-        boolean hasCozinha = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
-        boolean hasAdmin = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean hasGarcom = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_GARCOM"));
-
-        if (hasCozinha|| hasAdmin || hasGarcom)
-        {
-            return repository.findAll();
-        }
-        else {
-            throw new RuntimeException("Requerido uma permissão maior.");
-        }
-
+        return repository.findAll();
     }
 
     public List<Pedidos> getPedidoByMesa(Mesa mesa)

@@ -38,7 +38,7 @@ public class MesaService {
     @Lazy
     private PedidosService pedidosService;
 
-    public List<MesaBalcaoDTO> getAllMesa(String token)
+    public List<MesaBalcaoDTO> getAllMesa()
     {
         //PERMISSAO FUNCTIONANDO
         /*

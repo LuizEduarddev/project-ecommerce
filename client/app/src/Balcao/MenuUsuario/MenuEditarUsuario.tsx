@@ -86,7 +86,12 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
           userEndereco: userEndereco.trim() || user.userEndereco,
           userEmail: userEmail.trim() || user.userEmail,
         };
-        api.post('api/auth/alter/avulso', dataToSend)
+        api.post('api/auth/alter/avulso', dataToSend, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+            'Content-Type': 'application/json'
+        }
+        })
           .then(response => {
             console.log(response.data);
           })
