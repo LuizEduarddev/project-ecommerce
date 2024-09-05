@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useIsFocused } from '@react-navigation/native';
-import api from '../../ApiConfigs/ApiRoute';
+import api from '../../../ApiConfigs/ApiRoute';
 
 type Item  = {
     idProd: string,

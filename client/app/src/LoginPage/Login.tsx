@@ -69,9 +69,30 @@ export default function Login({ navigation }) {
 
                     <TouchableOpacity
                         style={styles.buttonLogin}
-                        onPress={() => navigation.navigate("MenuMesa")}
+                        onPress={() => navigation.navigate("ChangeView")}
                     >
                         <Text>Balcao</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate("MenuGarcom")}
+                    >
+                        <Text>Garcom</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate("MenuCozinha")}
+                    >
+                        <Text>Cozinha</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate("MenuBalcaoDePreparo")}
+                    >
+                        <Text>Balcao de Preparo</Text>
                     </TouchableOpacity>
                 </View>
             </View>

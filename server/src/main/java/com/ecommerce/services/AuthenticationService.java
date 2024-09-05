@@ -1,5 +1,6 @@
 package com.ecommerce.services;
 
+import com.ecommerce.entities.UserRole;
 import com.ecommerce.entities.dto.*;
 import com.ecommerce.infra.security.SecurityFilter;
 import jakarta.transaction.Transactional;
@@ -227,13 +228,76 @@ public class AuthenticationService {
 	}
 
     public ResponseEntity<String> registerUserAvulso(RegisterAvulsoDTO data) {
-		if (this.repository.findByUserCpf(data.userCpf()) != null) return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);
-		else{
-			Users newUser = new Users(data.userFullName(), data.userCpf(), data.userTelefone(), data.userEmail(), data.userEndereco());
-			newUser.setPontosCupcake(0);
-			this.repository.saveAndFlush(newUser);
-			return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
+		if (this.repository.findByUserCpf(data.userCpf()) != null)
+			return new ResponseEntity<String>("Usuário já existente.", HttpStatus.BAD_REQUEST);
+		else {
+			if (data.userFullName() != null && data.userCpf() != null && data.userTelefone() != null && data.userEmail() != null && data.userEndereco() != null) {
+				try {
+					System.out.println("Registering User: " + data.userFullName() + ", " + data.userCpf() + "," + data.userTelefone() + "," + data.userEmail() + "," + data.userEndereco());
+
+					Users newUser = new Users(data.userFullName(), data.userCpf(), data.userTelefone(), data.userEmail(), data.userEndereco());
+					newUser.setUserRole(UserRole.USER);
+					newUser.setPontosCupcake(0);
+					this.repository.saveAndFlush(newUser);
+					return new ResponseEntity<String>("Usuário criado com sucesso.", HttpStatus.CREATED);
+				} catch (Exception e) {
+					throw new RuntimeException("Erro: " + e);
+				}
+			} else {
+				throw new RuntimeException("Nennhum campo pode estar vazio");
+			}
 		}
 	}
 
+	@Transactional
+	public UserDTO getByCpf(String cpf) {
+		try
+		{
+			Users user = repository.findByUserCpf(cpf);
+			if (user != null)
+			{
+				return new UserDTO(user.getUserFullName(), user.getUserCpf(), user.getUserTelefone(), user.getUserEmail(), user.getUserEndereco());
+			}
+			else{
+				return null;
+			}
+		}
+		catch(Exception e)
+		{
+			throw new RuntimeException("Falha ao buscar o usuário.\n" + e);
+		}
+	}
+
+	public ResponseEntity<String> alterUserAvulsoData(UserDTO data) {
+		if (data.userCpf() == null)
+		{
+			throw new RuntimeException("O cpf nao pode estar vazio.");
+		}
+		else{
+			Users user = repository.findByUserCpf(data.userCpf());
+			if (user == null)
+				return new ResponseEntity<String>("Usuário inexistente.", HttpStatus.BAD_REQUEST);
+			else {
+				if (
+						data.userFullName() != null &&
+						data.userTelefone() != null &&
+						data.userEmail() != null &&
+						data.userEndereco() != null) {
+					try {
+						user.setUserFullName(data.userFullName());
+						user.setUserTelefone(data.userTelefone());
+						user.setUserEmail(data.userEmail());
+						user.setUserEndereco(data.userEndereco());
+
+						this.repository.saveAndFlush(user);
+						return new ResponseEntity<String>("Usuário alterado com sucesso.", HttpStatus.CREATED);
+					} catch (Exception e) {
+						throw new RuntimeException("Erro: " + e);
+					}
+				} else {
+					throw new RuntimeException("Nennhum campo pode estar vazio");
+				}
+			}
+		}
+	}
 }

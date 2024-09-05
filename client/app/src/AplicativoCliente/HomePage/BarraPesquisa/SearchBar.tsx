@@ -1,6 +1,6 @@
 import { Alert, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useState } from 'react';
-import api from '../../../ApiConfigs/ApiRoute';
+import api from '../../../../ApiConfigs/ApiRoute';
 
 interface Product {
   idProd: string;

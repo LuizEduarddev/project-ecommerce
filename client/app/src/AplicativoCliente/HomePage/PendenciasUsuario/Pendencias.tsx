@@ -1,6 +1,6 @@
 import { Alert, Button, FlatList, Modal, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import api from '../../../ApiConfigs/ApiRoute'
+import api from '../../../../ApiConfigs/ApiRoute'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'

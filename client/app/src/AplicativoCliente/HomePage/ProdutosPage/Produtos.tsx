@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Button, FlatList, Image, StyleSheet, Text, View } from 'react-native';
-import api from '../../../ApiConfigs/ApiRoute';
+import api from '../../../../ApiConfigs/ApiRoute';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Item = {

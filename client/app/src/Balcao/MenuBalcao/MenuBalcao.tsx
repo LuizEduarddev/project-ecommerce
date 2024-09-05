@@ -28,12 +28,12 @@ const MenuBalcao = () => {
             return;
         } else {
             api.post('api/products/search', query)
-                .then(response => {
-                    setProdutoResponse(response.data);
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+            .then(response => {
+                setProdutoResponse(response.data);
+            })
+            .catch(error => {
+                console.log(error);
+            });
         }
     }
 

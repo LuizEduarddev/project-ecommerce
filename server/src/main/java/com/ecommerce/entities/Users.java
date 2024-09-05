@@ -17,10 +17,10 @@ public class Users implements UserDetails {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String idUser;
 
-	@Column(name = "login_user", nullable = false)
+	@Column(name = "login_user", nullable = true)
 	private String loginUser;
 
-	@Column(name = "password_user", nullable = false)
+	@Column(name = "password_user", nullable = true)
 	private String passwordUser;
 
 	@Column(name = "user_role", nullable = true)
@@ -33,7 +33,7 @@ public class Users implements UserDetails {
 	@Column(name = "user_telefone", nullable = true)
 	private String userTelefone;
 
-	@Column(name = "user_cpf", nullable = true)
+	@Column(name = "user_cpf", nullable = true, unique = true)
 	private String userCpf;
 
 	@Column(name = "user_endereco", nullable = true)
@@ -198,5 +198,13 @@ public class Users implements UserDetails {
 
 	public void setImagemUsuario(byte[] imagemUsuario) {
 		this.imagemUsuario = imagemUsuario;
+	}
+
+	public UserRole getUserRole() {
+		return userRole;
+	}
+
+	public void setUserRole(UserRole userRole) {
+		this.userRole = userRole;
 	}
 }

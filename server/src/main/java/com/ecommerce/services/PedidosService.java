@@ -13,9 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,7 +85,6 @@ public class PedidosService {
                 .orElseThrow();
     }
 
-    @Transactional
     public ResponseEntity<String> addPedido(addPedidoDTO dto)
     {
         //AUTENTICACAO FUNCIONANDO
@@ -120,7 +121,7 @@ public class PedidosService {
 
                     pedido.setHoraPedido(formattedTime);
 
-                    pedido.setPedidoPronto(false);
+                    pedido.setPedidoProntoCozinha(false);
 
                     double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
 
@@ -151,16 +152,15 @@ public class PedidosService {
         {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
         }
-        List<Products> produtos = new ArrayList<>();
-        dto.produtos().forEach((prod) -> {
-            produtos.add(productsRepository.findById(prod.idProd())
-                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
+        AtomicReference<Double> total = new AtomicReference<>(0.0);
+        List<ProductsPedidosDTO> productsPedidosDTOS = new ArrayList<>();
+        dto.produtos().forEach(prod -> {
+            Products produto = productsRepository.findById(prod.idProd())
+                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido"));
+            productsPedidosDTOS.add(new ProductsPedidosDTO(produto, prod.quantidade()));
+            total.updateAndGet(t -> t + produto.getPrecoProd() * prod.quantidade());
         });
-        Users user = authenticationService.getUser(dto.token());
-        if (user == null)
-        {
-            throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");
-        }
+        double finalTotal = total.get();
         if (!dto.idMesa().isBlank())
         {
             Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
@@ -180,14 +180,16 @@ public class PedidosService {
                     pedido.setHoraPedido(formattedTime);
 
                     pedido.setPedidoPronto(false);
+                    pedido.setPedidoProntoBalcao(false);
+                    pedido.setPedidoProntoCozinha(false);
 
-                    double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
+                    pedido.setTotalPedido(finalTotal);
 
-                    pedido.setTotalPedido(total);
-
-                    pedido.setProdutos(produtos);
-                    pedido.setUsers(user);
+                    pedido.setProdutos(productsPedidosDTOS);
+                    pedido.setUsers(null);
                     pedido.setMesa(mesa);
+                    pedido.setCpfClientePedido(dto.cpfClientePedido());
+                    pedido.setHoraPronto(null);
 
                     mesaService.alterMesaEmUso(dto.idMesa());
 
@@ -214,11 +216,15 @@ public class PedidosService {
         {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
         }
-        List<Products> produtos = new ArrayList<>();
-        dto.produtos().forEach((prod) -> {
-            produtos.add(productsRepository.findById(prod.idProd())
-                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
+        AtomicReference<Double> total = new AtomicReference<>(0.0);
+        List<ProductsPedidosDTO> productsPedidosDTOS = new ArrayList<>();
+        dto.produtos().forEach(prod -> {
+            Products produto = productsRepository.findById(prod.idProd())
+                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido"));
+            productsPedidosDTOS.add(new ProductsPedidosDTO(produto, prod.quantidade()));
+            total.updateAndGet(t -> t + produto.getPrecoProd() * prod.quantidade());
         });
+        double finalTotal = total.get();
         try
         {
             LocalTime currentTime = LocalTime.now();
@@ -233,12 +239,12 @@ public class PedidosService {
             pedido.setHoraPedido(formattedTime);
 
             pedido.setPedidoPronto(false);
+            pedido.setPedidoProntoBalcao(false);
+            pedido.setPedidoProntoCozinha(false);
 
-            double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
+            pedido.setTotalPedido(finalTotal);
 
-            pedido.setTotalPedido(total);
-
-            pedido.setProdutos(produtos);
+            pedido.setProdutos(productsPedidosDTOS);
             pedido.setUsers(dto.user());
             pedido.setMesa(null);
 
@@ -289,21 +295,64 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPronto(String idPedido, String token)
+    public ResponseEntity<String> setPedidoPronto(String idPedido, String local)
     {
         try
         {
+            //TODO -> FAZER AUTENTICACAO
+            //AUTENTICACAO FUNCIONANDO
+            /*
             Pedidos pedido = repository.findById(idPedido)
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
             if (checkUserAuthority(token) == HttpStatus.ACCEPTED)
             {
-                pedido.setPedidoPronto(true);
+                pedido.setPedidoProntoCozinha(true);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
             else{
                 throw new RuntimeException("É necessário uma autoridade maior para executar esta acao");
+            }
+            */
+            Pedidos pedido = repository.findById(idPedido)
+                    .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
+            if (local.equals("cozinha"))
+            {
+                if (pedido.isPedidoProntoBalcao())
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoCozinha(true);
+                }
+                else{
+                    pedido.setPedidoProntoCozinha(true);
+                }
+                LocalTime currentTime = LocalTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                String formattedTime = currentTime.format(formatter);
+                pedido.setHoraPronto(formattedTime);
+                repository.saveAndFlush(pedido);
+                return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            }
+            else if (local.equals("balcao-preparo"))
+            {
+                if (pedido.isPedidoProntoCozinha())
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoBalcao(true);
+                }
+                else{
+                    pedido.setPedidoProntoBalcao(true);
+                }
+                LocalTime currentTime = LocalTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+                String formattedTime = currentTime.format(formatter);
+                pedido.setHoraPronto(formattedTime);
+                repository.saveAndFlush(pedido);
+                return ResponseEntity.ok("Pedido foi alterado para pronto.");
+            }
+            else{
+                throw new RuntimeException("Falha ao capturar o local de preparo");
             }
         }
         catch (Exception e)
@@ -345,9 +394,8 @@ public class PedidosService {
     private PedidosClienteDTO convertToDTO(Pedidos pedido) {
         List<ProductsOrderedDTO> productsDTOList = pedido.getProdutos().stream()
                 .map(product -> new ProductsOrderedDTO(
-                        product.getIdProd(),
-                        product.getNomeProd(),
-                        product.getPrecoProd()
+                        product.getProduto().getIdProd(),  // Ensure getId() is used to retrieve product ID
+                        product.getQuantidade()        // Ensure getQuantidade() is used to retrieve quantity
                 ))
                 .collect(Collectors.toList());
 
@@ -360,6 +408,7 @@ public class PedidosService {
                 productsDTOList
         );
     }
+
 
     public PedidosAdminDTO getAllPedidosAdmin(String token) {
         if (checkUserAuthorityAdmin(token) == HttpStatus.ACCEPTED)
@@ -411,27 +460,143 @@ public class PedidosService {
 
     @Transactional
     public MesaDTO getPedidoByMesaDTO(GetPedidoDTO dto) {
-        if (!dto.idMesa().isEmpty()) {
-            Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
-            if (mesa != null) {
-                List<Pedidos> pedidosList = repository.findByMesa(mesa);
-
-                List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream().map(pedido -> {
-                    List<ProdutosMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream().map(produto -> new ProdutosMesaDTO(produto.getIdProd(),
-                            produto.getNomeProd(),
-                            produto.getPrecoProd())).collect(Collectors.toList());
-
-                    return new PedidosMesaDTO(pedido.getIdPedido(), produtosMesaDTOList);
-                }).collect(Collectors.toList());
-
-                double valorTotal = pedidosList.stream()
-                        .mapToDouble(Pedidos::getTotalPedido)
-                        .sum();
-                return new MesaDTO(pedidosMesaDTOList, valorTotal);
+        //todo needs to create the function to check the token of the user.
+        try
+        {
+            if (dto.idMesa() == null || dto.idMesa().isEmpty()) {
+                return null;
             }
+
+            Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
+            if (mesa == null) {
+                return null;
+            }
+
+            List<Pedidos> pedidosList = repository.findByMesa(mesa);
+
+            List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream()
+                    .map(pedido -> {
+                        List<ProductsMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream()
+                                .map(produto -> new ProductsMesaDTO(produto.getProduto().getIdProd(), produto.getProduto().getNomeProd(), produto.getProduto().getPrecoProd(), produto.getQuantidade()))
+                                .collect(Collectors.toList());
+
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList);
+                    })
+                    .collect(Collectors.toList());
+
+            double valorTotal = pedidosList.stream()
+                    .mapToDouble(Pedidos::getTotalPedido)
+                    .sum();
+
+            return new MesaDTO(pedidosMesaDTOList, valorTotal);
         }
-        return null;
+        catch(Exception e)
+        {
+            throw new RuntimeException("Erro: " + e);
+        }
+    }
+
+    @Transactional
+    public MesaDTO getPedidoByCpf(String cpf) {
+        try {
+            if (cpf == null) {
+                return null;
+            }
+
+            List<Pedidos> pedidosList = repository.findByCpfClientePedido(cpf);
+
+            List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream()
+                    .filter(pedido -> isToday(pedido.getDataPedido()))
+                    .map(pedido -> {
+                        List<ProductsMesaDTO> produtosMesaDTOList = pedido.getProdutos().stream()
+                                .map(produto -> new ProductsMesaDTO(
+                                        produto.getProduto().getIdProd(),
+                                        produto.getProduto().getNomeProd(),
+                                        produto.getProduto().getPrecoProd(),
+                                        produto.getQuantidade()
+                                ))
+                                .collect(Collectors.toList());
+
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(), produtosMesaDTOList);
+                    })
+                    .collect(Collectors.toList());
+
+            double valorTotal = pedidosList.stream()
+                    .filter(pedido ->isToday(pedido.getDataPedido()))
+                    .mapToDouble(Pedidos::getTotalPedido)
+                    .sum();
+
+            return new MesaDTO(pedidosMesaDTOList, valorTotal);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro: " + e);
+        }
     }
 
 
+    @Transactional
+    public List<PedidoCozinhaDTO> getPedidoForCozinha() {
+        List<Pedidos> pedidos = repository.findAll();
+        return pedidos.stream()
+                .filter(pedido -> isToday(pedido.getDataPedido()))
+                .map(this::filterAndConvertToPedidoCozinhaDTO)
+                .filter(dto -> !dto.produtos().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private boolean isToday(String dataPedido) {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String formattedToday = today.format(formatter);
+        return dataPedido.equals(formattedToday);
+    }
+
+
+    private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTO(Pedidos pedido) {
+        List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
+                .filter(produtosPedido -> produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))
+                .map(produtosPedido -> new PedidoCozinhaProdutosDTO(
+                        produtosPedido.getProduto().getIdProd(),
+                        produtosPedido.getProduto().getNomeProd(),
+                        produtosPedido.getQuantidade()
+                ))
+                .collect(Collectors.toList());
+
+        return new PedidoCozinhaDTO(
+                pedido.getIdPedido(),
+                pedido.getHoraPedido(),
+                pedido.getHoraPronto(),
+                pedido.isPedidoProntoCozinha(),
+                produtosCozinhaDTO
+        );
+    }
+
+
+    @Transactional
+    public List<PedidoCozinhaDTO> getPedidoForBalcaoPreparo() {
+        List<Pedidos> pedidos = repository.findAll();
+        return pedidos.stream()
+                .filter(pedido -> isToday(pedido.getDataPedido()))
+                .map(this::filterAndConvertToPedidoCozinhaDTOBalcao)
+                .filter(dto -> !dto.produtos().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTOBalcao(Pedidos pedido) {
+        List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
+                .filter(produtosPedido -> !produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))
+                .map(produtosPedido -> new PedidoCozinhaProdutosDTO(
+                        produtosPedido.getProduto().getIdProd(),
+                        produtosPedido.getProduto().getNomeProd(),
+                        produtosPedido.getQuantidade()
+                ))
+                .collect(Collectors.toList());
+
+        return new PedidoCozinhaDTO(
+                pedido.getIdPedido(),
+                pedido.getHoraPedido(),
+                pedido.getHoraPronto(),
+                pedido.isPedidoProntoBalcao(),
+                produtosCozinhaDTO
+        );
+    }
 }

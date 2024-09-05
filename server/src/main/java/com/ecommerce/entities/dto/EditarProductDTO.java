@@ -3,7 +3,8 @@ package com.ecommerce.entities.dto;
 import com.ecommerce.entities.CategoriaProd;
 import org.springframework.web.multipart.MultipartFile;
 
-public class CreateProductDTO {
+public class EditarProductDTO {
+    private String idProduto;
     private String nomeProd;
     private double precoProd;
     private boolean promoProd;
@@ -13,11 +14,12 @@ public class CreateProductDTO {
     private boolean visible;
 
     // Default constructor
-    public CreateProductDTO() {}
+    public EditarProductDTO() {}
 
     // Parameterized constructor
-    public CreateProductDTO(String nomeProd, double precoProd, boolean promoProd,
+    public EditarProductDTO(String idProduto,String nomeProd, double precoProd, boolean promoProd,
                             CategoriaProd categoriaProd, double precoPromocao, MultipartFile file, boolean visible) {
+        this.idProduto = idProduto;
         this.nomeProd = nomeProd;
         this.precoProd = precoProd;
         this.promoProd = promoProd;
@@ -27,7 +29,14 @@ public class CreateProductDTO {
         this.visible = visible;
     }
 
-    // Getters and Setters
+    public String getIdProduto() {
+        return idProduto;
+    }
+
+    public void setIdProduto(String idProduto) {
+        this.idProduto = idProduto;
+    }
+
     public String getNomeProd() {
         return nomeProd;
     }
@@ -83,5 +92,4 @@ public class CreateProductDTO {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
-
 }

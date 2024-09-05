@@ -49,6 +49,18 @@ public class AuthenticationController {
 		return ResponseEntity.ok(token);
 	}
 
+	@PostMapping("/get-by-cpf")
+	public UserDTO getByCpf(@RequestBody String cpf)
+	{
+		return service.getByCpf(cpf);
+	}
+
+	@PostMapping("/alter/avulso")
+	public ResponseEntity<String> alterUserAvulso(@RequestBody UserDTO dto)
+	{
+		return service.alterUserAvulsoData(dto);
+	}
+
 	@PostMapping("/get-by-id")
 	public String getById(@RequestBody GetUserDTO dto)
 	{
@@ -75,7 +87,7 @@ public class AuthenticationController {
 	}
 
 	@PostMapping("/register/avulso")
-	public ResponseEntity<String> registerAvulso(@ModelAttribute RegisterAvulsoDTO data)
+	public ResponseEntity<String> registerAvulso(@RequestBody RegisterAvulsoDTO data)
 	{
 		return service.registerUserAvulso(data);
 	}
