@@ -52,6 +52,13 @@ public class AuthenticationController {
 		return service.getByCpf(cpf);
 	}
 
+	@GetMapping("/garcom")
+	public void isGarcom() {
+	}
+
+	@GetMapping("/balcao_preparo")
+	public void isBalcaoPreparo() {
+	}
 
 	@PostMapping("/get-authorities")
 	public Collection<? extends GrantedAuthority> getAuthorities(@RequestParam String token)

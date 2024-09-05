@@ -42,7 +42,7 @@ const formatToReais = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
-const MenuGarcom = () => {
+const MenuGarcom = ({navigation}) => {
     const [categorias, setCategorias] = useState<{ label: string, value: number }[] | null>(null);
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
@@ -61,10 +61,39 @@ const MenuGarcom = () => {
     const [buscaPorCpf, setBuscaPorCpf] = useState('');
     const [pedidoCpf, setPedidoCpf] = useState<Pedidos | null>(null);
 
+    useEffect(() => {
+        const token = localStorage.getItem('session-token');
+        if (token) {
+            api.get('api/auth/garcom', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            })
+            .catch(error => {
+                if (error.response) {
+                    if (error.response.status === 403) {
+                        navigation.navigate('Login')
+                    } else {
+                        console.log('Other error response:', error.response.data);
+                    }
+                } else if (error.request) {
+                    console.log('No response received:', error.request);
+                } else {
+                    console.log('Error message:', error.message);
+                }
+            });
+        } else {
+            navigation.navigate('Login');
+        }
+    }, []);
+
     async function getProdutos()
     {
         api.post('api/products/get-by-categoria', null,{
-            params:{categoria: categoriaPesquisa}
+            params:{categoria: categoriaPesquisa},
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+            }
         })
         .then(response => {
             setProdutosCategorias(response.data);
@@ -83,9 +112,10 @@ const MenuGarcom = () => {
     
     useEffect(() => {
         const fetchMesas = async () => {
-            api.post('api/mesa/get-all', "", {
+            api.get('api/mesa/get-all', {
                 headers: {
                     'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
                     'Content-Type': 'application/json',
                 }
             })
@@ -102,7 +132,13 @@ const MenuGarcom = () => {
 
     useEffect(() => {
         async function getCategorias() {
-            api.get('api/products/get-categories')
+            api.get('api/products/get-categories', {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json',
+                }
+            })
                 .then(response => {
                     const formattedCategories = response.data.map((category, index) => ({
                         label: category,
@@ -122,7 +158,16 @@ const MenuGarcom = () => {
         if (query === "") {
             return;
         } else {
-            api.post('api/products/search', query)
+            api.post('api/products/search', null, {
+                params:{
+                    pesquisa:query
+                },
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json',
+                }
+            })
             .then(response => {
                 setProdutoResponse(response.data);
             })
@@ -139,6 +184,11 @@ const MenuGarcom = () => {
             api.post('api/pedidos/get-by-cpf', null, {
                 params: {
                     cpf: query
+                },
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json',
                 }
             })
             .then(response => {
@@ -352,7 +402,13 @@ const MenuGarcom = () => {
             idMesa: idMesa,
             token: ''
         };
-        api.post('api/pedidos/get-by-mesa', dataToSend)
+        api.post('api/pedidos/get-by-mesa', dataToSend, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json',
+            }
+        })
             .then(response => {
                 setMesaSelecionada(idMesa);
                 setPedidos(response.data);
@@ -469,7 +525,13 @@ const MenuGarcom = () => {
                 cpfClientePedido: getUnformattedCpf(userCpf)
             }
 
-            api.post('api/pedidos/add', dataToSend)
+            api.post('api/pedidos/add', dataToSend, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json',
+                }
+            })
             .then(response => {
                 console.log(response.data);
                 closeModal();

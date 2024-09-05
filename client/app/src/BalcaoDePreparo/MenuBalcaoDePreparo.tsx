@@ -17,16 +17,49 @@ type PedidoCozinhaDTO = {
   produtos: PedidoCozinhaProdutosDTO[]
 }
 
-const MenuBalcaoDePreparo = () => {
+const MenuBalcaoDePreparo = ({navigation}) => {
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
   const [modalPedidoId, setModalPedidoId] = useState<string | null>(null);
   const [modalConfirmarPedidoPronto, setModalConfirmarPedidoPronto] = useState<boolean>(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('session-token');
+    if (token) {
+        api.get('api/auth/balcao_preparo', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            }
+        })
+        .catch(error => {
+            if (error.response) {
+                if (error.response.status === 403) {
+                  navigation.navigate('Login')
+                } else {
+                    console.log('Other error response:', error.response.data);
+                }
+            } else if (error.request) {
+                console.log('No response received:', error.request);
+            } else {
+                console.log('Error message:', error.message);
+            }
+        });
+    } else {
+        navigation.navigate('Login');
+    }
+}, []);
+
   const fetchPedidos = async () => {
     try {
-      const response = await api.get('api/pedidos/get-for-balcao-preparo');
+      const response = await api.get('api/pedidos/get-for-balcao-preparo', {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+          'Content-Type': 'application/json',
+      }
+      });
+      console.log(response.data);
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);

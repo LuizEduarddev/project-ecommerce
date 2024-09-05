@@ -445,7 +445,6 @@ public class PedidosService {
 
     @Transactional
     public MesaDTO getPedidoByMesaDTO(GetPedidoDTO dto) {
-        //todo needs to create the function to check the token of the user.
         try
         {
             if (dto.idMesa() == null || dto.idMesa().isEmpty()) {
@@ -457,7 +456,9 @@ public class PedidosService {
                 return null;
             }
 
-            List<Pedidos> pedidosList = repository.findByMesa(mesa);
+            List<Pedidos> pedidosList = repository.findByMesa(mesa).stream()
+                    .filter(pedido -> !pedido.isPedidoPago())
+                    .toList();
 
             List<PedidosMesaDTO> pedidosMesaDTOList = pedidosList.stream()
                     .map(pedido -> {
@@ -546,6 +547,7 @@ public class PedidosService {
                 ))
                 .collect(Collectors.toList());
 
+
         return new PedidoCozinhaDTO(
                 pedido.getIdPedido(),
                 pedido.getHoraPedido(),
@@ -560,13 +562,17 @@ public class PedidosService {
     public List<PedidoCozinhaDTO> getPedidoForBalcaoPreparo() {
         List<Pedidos> pedidos = repository.findAll();
         return pedidos.stream()
-                .filter(pedido -> isToday(pedido.getDataPedido()))
-                .map(this::filterAndConvertToPedidoCozinhaDTOBalcao)
-                .filter(dto -> !dto.produtos().isEmpty())
-                .collect(Collectors.toList());
+        .filter(pedido -> isToday(pedido.getDataPedido())
+        )
+        .map(this::filterAndConvertToPedidoCozinhaDTOBalcao)
+        .filter(dto -> !dto.produtos().isEmpty()
+        )
+        .collect(Collectors.toList());
     }
 
     private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTOBalcao(Pedidos pedido) {
+        System.out.println(pedido.getHoraPedido());
+        //PROBLEMA ESTA DENTRO DESTE LIST, VERIFICAR O POR QUE
         List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
                 .filter(produtosPedido -> !produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))
                 .map(produtosPedido -> new PedidoCozinhaProdutosDTO(

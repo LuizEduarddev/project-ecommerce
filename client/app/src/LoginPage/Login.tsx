@@ -2,6 +2,12 @@ import { Text, TextInput, View, StyleSheet, TouchableOpacity, SafeAreaView, Aler
 import { useState } from "react";
 import api from "../../ApiConfigs/ApiRoute";
 
+interface GrantedAuthority {
+    authority: string;
+}
+
+type Authorities = GrantedAuthority[];
+
 export default function Login({ navigation }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -14,26 +20,22 @@ export default function Login({ navigation }) {
         }
     }
 
-    async function directUser(authorities:string[])
+    async function directUser(authorities:Authorities)
     {
-        if (authorities.filter((item) => item === 'ROLE_BALCAO' ))
-        {
+        if (authorities.some((item) => item.authority === 'ROLE_BALCAO')) {
+            console.log('entrou aqui');
             navigation.navigate('ChangeView');
-        }
-        else if (authorities.filter((item) => item ==='ROLE_GARCOM'))
-        {
+        } 
+        else if (authorities.some((item) => item.authority === 'ROLE_GARCOM')) {
             navigation.navigate('MenuGarcom');
-        }
-        else if (authorities.filter((item) => item ==='ROLE_BALCAO_PREPARO'))
-        {
+        } 
+        else if (authorities.some((item) => item.authority === 'ROLE_BALCAOPREPARO')) {
             navigation.navigate('MenuBalcaoDePreparo');
-        }
-        else if (authorities.filter((item) => item === 'ROLE_COZINHA')) 
-        {
+        } 
+        else if (authorities.some((item) => item.authority === 'ROLE_COZINHA')) {
             navigation.navigate('MenuCozinha');
-        }
-        else
-        {
+        } 
+        else {
             console.log("erro, tente novamente");
         }
     }
@@ -52,7 +54,7 @@ export default function Login({ navigation }) {
                 directUser(response.data.authorities);
             })
             .catch(error => {
-                Alert.alert('Falha ao tentar se conectar com o servidor.');
+                console.log('Usuario ou senha incorretos');
             });
         }
         catch(error)
