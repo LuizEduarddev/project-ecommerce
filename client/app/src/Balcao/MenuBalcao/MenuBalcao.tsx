@@ -1,7 +1,7 @@
 import { Button, FlatList, Pressable, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import React, { useState, useRef } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../assets/colors';
 
 type Product = {
@@ -119,16 +119,20 @@ const MenuBalcao = () => {
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
-                    <Button title="-" onPress={() => decreaseQuantity(item.idProd)} />
+                    <Pressable onPress={() => decreaseQuantity(item.idProd)}>
+                        <Icon style={styles.botaoMudarQuantidade} name='minus-circle-outline'></Icon>
+                    </Pressable>
                     <Text style={{ marginHorizontal: 10 }}>{item.quantity}</Text> {/* Display quantity */}
-                    <Button title="+" onPress={() => increaseQuantity(item.idProd)} />
+                    <Pressable onPress={() => increaseQuantity(item.idProd)}>
+                        <Icon style={styles.botaoMudarQuantidade} name='plus-circle-outline'></Icon>
+                    </Pressable>
                 </View>
                 <View style={{ flex: 1 }}>
                     <Text>{item.nomeProd}</Text>
                     <Text>{formatToReais(item.precoProd * item.quantity)}</Text> {/* Display total price */}
                 </View>
                 <Pressable onPress={() => deleteProduto(item.idProd)} style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>Delete</Text>
+                    <Text style={styles.deleteButtonText}>Exluir</Text>
                 </Pressable>
             </View>
         );
@@ -193,24 +197,19 @@ const MenuBalcao = () => {
     }
 
     const renderProdutosSalvos = () => {
-        if (produtosBalcao.length > 0) {
-            return (
-                <View>
-                    <FlatList
-                        data={produtosBalcao}
-                        renderItem={renderProdutosBalcao}
-                        keyExtractor={(item) => item.idProd}
-                    />
-                    {valorTotal()}
-                    <Button
-                        title='Efetuar pagamento'
-                        onPress={() => tryEfetuarPagamento()}
-                    />
-                </View>
-            );
-        } else {
-            return;
-        }
+        return (
+            <View style={styles.carrinho}>
+                <Text style={styles.tituloCarrinho}>Produtos selecionados ({produtosBalcao.length})</Text>
+                <FlatList
+                    data={produtosBalcao}
+                    renderItem={renderProdutosBalcao}
+                    keyExtractor={(item) => item.idProd}
+                />
+                {valorTotal()}
+                <br></br>
+                <Pressable style={styles.button} onPress={() => tryEfetuarPagamento()}>Efetuar pagamento</Pressable>
+            </View>
+        );
     };
 
     return (
@@ -223,7 +222,7 @@ const MenuBalcao = () => {
               value={buscaProduto}
               onChangeText={handleSearchInputChange}
             />
-            <Icon name="search" size={24} color="#333" style={styles.icon} />
+            <Icon name="magnify" size={24} color="#333" style={styles.icon} />
           </View>
           <View style={{flexDirection: 'row', width: '100%', gap: 20}}>
             <View style={styles.listaPesquisa}>
@@ -300,5 +299,21 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: 'white',
+  },
+  carrinho: {
+    borderWidth: 1,
+    padding: 15,
+    borderRadius: 10,
+    borderColor: colors['slate-gray'],
+  },
+  tituloCarrinho: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  botaoMudarQuantidade: {
+    color: colors['dim-gray'],
+    fontSize: 20,
   },
 });

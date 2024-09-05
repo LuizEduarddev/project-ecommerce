@@ -1,11 +1,7 @@
-import { Alert, Button, FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { colors } from '../../assets/colors';
-import MenuBalcao from '../MenuBalcao/MenuBalcao';
-import MenuCadastroUsuario from '../MenuUsuario/MenuCadastroUsuario';
 import { Dropdown } from 'react-native-element-dropdown';
 
 type Mesa = {
@@ -51,8 +47,8 @@ const MenuMesa = () => {
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
-    const [view, setView] = useState('Mesas');
     const [modalFecharContaVisible, setModalFecharContaVisible] = useState<boolean>(false);
+    const [view, setView] = useState('mesas');
     const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState<'pix' | 'crédito' | 'débito' | 'dinheiro'>();
 
     
@@ -281,23 +277,7 @@ const MenuMesa = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.menu}>
-                {/* essa logo de preferencia uma imagem sem fundo mesmo */}
-                <Image source={require('./assets/logo.png')} style={{width: 90, height: 90}}/>
-                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Mesas')}>
-                    <Icon name="table-chair" color="white" size={40}/>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Balcão')}>
-                    <Icon name="cash-register" color="white" size={40}/>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Cadastrar usuário')}>
-                    <Icon name="account-plus" color="white" size={40}/>
-                </TouchableOpacity>
-            </View>
-            <View style={{flex: 1, padding: 30, paddingTop: 10}}>
-                <Text style={styles.tituloPagina}>{view}</Text>
-                {renderMenu()}
-            </View>
+            {renderMenu()}
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -314,28 +294,8 @@ export default MenuMesa;
 
 const styles = StyleSheet.create({
     container: {
-        display: 'flex',
-        flexDirection: 'row',
-        flex: 1
-    },
-    menu: {
-        height: '100%',
-        width: 90,
-        backgroundColor: colors['bright-blue']
-    },
-    itemMenu: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: 40,
-        borderBottomWidth: 1,
-        borderBottomColor: 'white'
-    },
-    tituloPagina: {
-        fontSize: 40,
-        marginTop: 10,
-        marginBottom: 10,
-        fontWeight: 'bold',
-        color: colors['bright-blue']
+        flex: 1,
+        padding: 10,
     },
     mesaContainer: {
         padding: 5,
