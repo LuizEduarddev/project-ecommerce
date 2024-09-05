@@ -29,7 +29,7 @@ const ChangeView = () => {
                     <Icon name="store" color="white" size={40}/>
                 </TouchableOpacity>
             </View>
-            <View style={{flex: 1, padding: 30, paddingTop: 10, overflow: 'auto'}}>
+            <View style={{flex: 1, padding: 30, paddingTop: 10, overflow: 'scroll'}}>
                 <Text style={styles.tituloPagina}>{view}</Text>
                 {
                     view === 'Mesas' ? (
