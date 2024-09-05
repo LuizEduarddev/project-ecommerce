@@ -1,6 +1,8 @@
-import { Button, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, Pressable, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import React, { useState, useRef } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { colors } from '../../assets/colors';
 
 type Product = {
     idProd: string;
@@ -77,18 +79,23 @@ const MenuBalcao = () => {
             )
         );
     };
-
+    
     const renderPesquisa = () => {
-        if (produtoResponse && produtoResponse.length > 0) {
+      const imagem = 'https://img.elo7.com.br/product/zoom/4D35E8D/bolo-decorado-kg-batizado.jpg'
+      if (produtoResponse && produtoResponse.length > 0) {
             return produtoResponse.map(produto => (
                 <View 
-                    key={produto.idProd}
-                    style={{borderColor: 'black', borderWidth: 1}}
+                  key={produto.idProd}
+                  style={styles.produtoContainer}
                 >
-                    <Pressable onPress={() => saveProduto(produto)}>
-                        <Text>{produto.nomeProd}</Text>
-                        <Text>{formatToReais(produto.precoProd)}</Text>
-                    </Pressable>
+                  <Image source={{ uri: imagem }} style={{ width: 90, height: 90, borderRadius: 10 }} resizeMode='cover'></Image>
+                  <View style={{marginLeft: 10, gap: 5}}>
+                    <Text style={{fontWeight: 'bold', color: colors['raisin-black']}}>{produto.nomeProd}</Text>
+                  </View>
+                  <View style={{position: 'absolute', right: 10, height: 90, justifyContent: 'space-between', alignItems: 'flex-end'}}>
+                    <Text style={{color: colors['raisin-black'], fontSize: 20, fontWeight: 'bold'}}>{formatToReais(produto.precoProd)}</Text>
+                    <Pressable style={styles.button} onPress={() => saveProduto(produto)}>+ Adicionar produto</Pressable>
+                  </View>
                 </View>
             ));
         } else {
@@ -207,17 +214,25 @@ const MenuBalcao = () => {
     };
 
     return (
-        <View>
-            <View style={styles.modalView}>
-                <TextInput
-                    style={{borderColor:'gray', borderWidth: 1}}
-                    placeholder='Busque por um produto'
-                    onChangeText={handleSearchInputChange}
-                    value={buscaProduto}
-                />
-                {renderPesquisa()}
-                {renderProdutosSalvos()}
+        <View style={styles.modalView}>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Busque por um produto'
+              placeholderTextColor="#888"
+              value={buscaProduto}
+              onChangeText={handleSearchInputChange}
+            />
+            <Icon name="search" size={24} color="#333" style={styles.icon} />
+          </View>
+          <View style={{flexDirection: 'row', width: '100%', gap: 20}}>
+            <View style={styles.listaPesquisa}>
+              {renderPesquisa()}
             </View>
+            <View style={{width: 300}}>
+              {renderProdutosSalvos()}
+            </View>
+          </View>
         </View>
     );
 };
@@ -225,28 +240,65 @@ const MenuBalcao = () => {
 export default MenuBalcao;
 
 const styles = StyleSheet.create({
-    modalView: {
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    deleteButton: {
-        backgroundColor: 'red',
-        borderRadius: 5,
-        padding: 5,
-        marginLeft: 10,
-    },
-    deleteButtonText: {
-        color: 'white',
-    },
+  input: {
+    borderRadius: 25,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    fontSize: 16,
+    color: '#333',
+    paddingHorizontal: 40,
+    paddingVertical: 10,
+    flex: 1,
+  },
+  searchContainer: {
+    width: '90%',
+    marginBottom: 20,
+  },
+  icon: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    color: '#888',
+  },
+  listaPesquisa: {
+    flex: 1,
+  },
+  modalView: {
+    width: '100%',
+    alignItems: 'center'
+  },
+  produtoContainer: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingVertical: 15,
+    height: 120,
+    flex: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  button: {
+    color: 'white',
+    backgroundColor: colors['bright-blue'],
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    fontWeight: 'semibold',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    borderRadius: 5,
+    padding: 5,
+    marginLeft: 10,
+  },
+  deleteButtonText: {
+    color: 'white',
+  },
 });
