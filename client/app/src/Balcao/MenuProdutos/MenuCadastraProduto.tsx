@@ -89,13 +89,12 @@ const MenuCadastraProduto = () => {
         console.error('Error converting image to Blob:', error);
       }
     }
-    console.log(formData.get('nomeProd'))
     api
       .post('api/products/add', formData, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         }
       })
       .then(response => {

@@ -110,7 +110,11 @@ public class WebSecurityConfig {
 								String.valueOf(UserRole.ADMIN),
 								String.valueOf(UserRole.BALCAO)
 						)
-						.requestMatchers(HttpMethod.POST, "/api/products/get-by-id").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/products/get-by-id").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.BALCAO),
+								String.valueOf(UserRole.GARCOM)
+						)
 						.requestMatchers(HttpMethod.POST, "/api/products/get-by-categoria").hasAnyRole(
 								String.valueOf(UserRole.ADMIN),
 								String.valueOf(UserRole.BALCAO),

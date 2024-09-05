@@ -38,18 +38,18 @@ public class ProductsController {
 	}
 
 	@PostMapping("/search")
-	public List<Products> search(@RequestBody String pesquisa){
+	public List<Products> search(@RequestParam String pesquisa){
 		return service.searchProduct(pesquisa);
 	}
 
 	//ESTA FUNCAO E NECESSARIA POIS AQUI PUXA TODOS OS PRODUTOS MESMO QUE SEJAM VISIBLE == FALSE
 	@PostMapping("/search/balcao")
-	public List<Products> searchBalcao(@RequestBody String pesquisa){
+	public List<Products> searchBalcao(@RequestParam String pesquisa){
 		return service.searchProductBalcao(pesquisa);
 	}
 
 	@PostMapping("/get-by-id")
-	public Products getById(@RequestBody String idProduto) throws Exception
+	public Products getById(@RequestParam	 String idProduto) throws Exception
 	{
 		return service.getProductById(idProduto);
 	}

@@ -151,14 +151,13 @@ public class ProductsService {
 
 	@Transactional
 	public List<Products> searchProduct(String pesquisa) {
-		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa);
+		List<Products> produtosList = repository.findByNomeProdContaining(pesquisa.toUpperCase());
 		List<Products> produtosReturn = new ArrayList<>();
 		for (Products produto : produtosList) {
 			if (produto.isVisible()) {
 				produtosReturn.add(produto);
 			}
 		}
-
 		if (produtosReturn.isEmpty()) {
 			return null;
 		}
@@ -168,7 +167,7 @@ public class ProductsService {
 
 	@Transactional
 	public List<Products> searchProductBalcao(String pesquisa) {
-		List<Products> produtosList = repository.findByNomeProdContainingIgnoreCase(pesquisa.toUpperCase());
+		List<Products> produtosList = repository.findByNomeProdContaining(pesquisa.toUpperCase());
 		if (!produtosList.isEmpty())
 		{
 			return produtosList;

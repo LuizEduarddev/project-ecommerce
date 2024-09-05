@@ -40,7 +40,16 @@ const MenuEditarProduto = ({
     async function fetchProductData() {
       console.log(precoProd);
       try {
-        const response = await api.post('api/products/get-by-id', id);
+        const response = await api.post('api/products/get-by-id', null, {
+          params:{
+            idProduto:id
+          },
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+            'Content-Type': 'application/json',
+          }
+        });
         const product = response.data;
         setNomeProduto(product.nomeProd);
         setPrecoProd(product.precoProd.toString()); // Adjusting for display
@@ -61,7 +70,13 @@ const MenuEditarProduto = ({
   useEffect(() => {
     async function getCategorias() {
       try {
-        const response = await api.get('api/products/get-categories');
+        const response = await api.get('api/products/get-categories', {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+            'Content-Type': 'application/json',
+          }
+        });
         const formattedCategories = response.data.map(
           (category: string, index: number) => ({
             label: category,
@@ -125,6 +140,9 @@ const MenuEditarProduto = ({
         params: {
           idProduto: id,
         },
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+      }
       });
       console.log('Delete successful');
       onClose(); // Close the page after successful delete
@@ -156,8 +174,10 @@ const MenuEditarProduto = ({
     api
       .put('api/products/editar', formData, {
         headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
           'Content-Type': 'multipart/form-data',
-        },
+      }
       })
       .then((response) => {
         console.log(response.data);

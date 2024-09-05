@@ -47,7 +47,16 @@ const MenuPesquisaProduto = () => {
     if (query === '') {
       return;
     } else {
-      api.post('api/products/search/balcao', query)
+      api.post('api/products/search/balcao',null , {
+        params:{
+            pesquisa:query
+        },
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+            'Content-Type': 'application/json',
+        }
+    })
       .then((response) => {
         if (response.data === null) {
           console.log('Produto não encontrado no sistema.');
