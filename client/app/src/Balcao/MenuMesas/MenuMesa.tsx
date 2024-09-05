@@ -1,9 +1,7 @@
-import { Alert, Button, FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
-import MenuBalcao from '../MenuBalcao/MenuBalcao';
-import MenuCadastroUsuario from '../MenuUsuario/MenuCadastroUsuario';
 import { Dropdown } from 'react-native-element-dropdown';
 
 type Mesa = {
