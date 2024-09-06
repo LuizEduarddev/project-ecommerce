@@ -1,6 +1,8 @@
 package com.ecommerce.controllers;
 
+import com.ecommerce.entities.MetodoPagamento;
 import com.ecommerce.entities.Pedidos;
+import com.ecommerce.entities.dto.addPagamentoDTO;
 import com.ecommerce.entities.dto.pagamentoAvulsoDTO;
 import com.ecommerce.entities.dto.pagamentoDTO;
 import com.ecommerce.services.AuthenticationService;
@@ -22,31 +24,20 @@ public class PagamentosController {
     @Autowired
     private PagamentoService service;
 
-    //E NECESSARIO APAGAR ISTO
-    @Autowired
-    private AuthenticationService authenticationService;
-
-
     @GetMapping("/get-all")
-    public List<Pagamentos> getAll(@RequestBody String token)
+    public List<Pagamentos> getAll()
     {
-        return service.getAllPagamentos(token);
+        return service.getAllPagamentos();
     }
 
-
-    @PostMapping("/pagamento")
-    public Object pagamento(@RequestBody pagamentoDTO dto) throws MPException, MPApiException {
-        return service.pagamentoPedido(dto);
-    }
-
-    @PostMapping("/pagamento/avulso")
-    public Object pagamentoAvulso(@RequestBody pagamentoAvulsoDTO dto) throws MPException, MPApiException {
-        return service.pagamentoAvulso(dto, authenticationService.getBalcao());
-    }
-
-    @PostMapping("/check")
-    public ResponseEntity<String> checkPayment(@RequestBody pagamentoDTO dto)
+    @GetMapping("/get-metodos")
+    public List<String> getMetodosPagamento()
     {
-        return service.checkPaymentUser(dto.idPedido(), dto.token());
+        return MetodoPagamento.allCategorias();
+    }
+
+    @PostMapping("/add")
+    public Object add(@RequestBody(required = false) addPagamentoDTO dto){
+        return service.addPagamento(dto);
     }
 }

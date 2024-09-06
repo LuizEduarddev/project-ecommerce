@@ -71,69 +71,60 @@ public class PedidosService {
                 .orElseThrow();
     }
 
-    public ResponseEntity<String> addPedido(addPedidoDTO dto)
+    public Pedidos addPedidoAvulso(addPedidoPagamentoDTO dto)
     {
-        //AUTENTICACAO FUNCIONANDO
-        /*
         if (dto.produtos().isEmpty())
         {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
         }
-        List<Products> produtos = new ArrayList<>();
-        dto.produtos().forEach((prod) -> {
-            produtos.add(productsRepository.findById(prod.idProd())
-                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido")));
+        AtomicReference<Double> total = new AtomicReference<>(0.0);
+        List<ProductsPedidosDTO> productsPedidosDTOS = new ArrayList<>();
+        dto.produtos().forEach(prod -> {
+            Products produto = productsRepository.findById(prod.idProd())
+                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido"));
+            productsPedidosDTOS.add(new ProductsPedidosDTO(produto, prod.quantidade()));
+            total.updateAndGet(t -> t + produto.getPrecoProd() * prod.quantidade());
         });
-
-        Users user = authenticationService.getUser(dto.token());
-        if (user == null)
+        double finalTotal = total.get();
+        try
         {
-            throw new RuntimeException("Falha ao tentar pegar o usuario em 'addPedidoDelivery'");
+            LocalTime currentTime = LocalTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            String formattedTime = currentTime.format(formatter);
+            Pedidos pedido = new Pedidos();
+            Date dataAtual = new Date();
+            SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
+            String dataFormatada = formatDate.format(dataAtual);
+            pedido.setDataPedido(dataFormatada);
+
+            pedido.setHoraPedido(formattedTime);
+
+            pedido.setPedidoPronto(false);
+            pedido.setPedidoProntoBalcao(false);
+            pedido.setPedidoProntoCozinha(false);
+
+            pedido.setTotalPedido(finalTotal);
+
+            pedido.setProdutos(productsPedidosDTOS);
+            pedido.setUsers(null);
+            pedido.setMesa(null);
+            pedido.setCpfClientePedido(dto.cpfCliente());
+            pedido.setHoraPronto(null);
+
+            pedido.setPedidoPago(true);
+
+            repository.saveAndFlush(pedido);
+
+            return pedido;
         }
-        if(user.getAuthorities().contains("ROLE_GARCOM"))
+        catch(Exception e)
         {
-            if (!dto.idMesa().isEmpty())
-            {
-                try
-                {
-                    LocalTime currentTime = LocalTime.now();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                    String formattedTime = currentTime.format(formatter);
-                    Pedidos pedido = new Pedidos();
-                    Date dataAtual = new Date();
-                    SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
-                    String dataFormatada = formatDate.format(dataAtual);
-                    pedido.setDataPedido(dataFormatada);
-
-                    pedido.setHoraPedido(formattedTime);
-
-                    pedido.setPedidoProntoCozinha(false);
-
-                    double total = produtos.stream().mapToDouble(Products::getPrecoProd).sum();
-
-                    pedido.setTotalPedido(total);
-
-                    pedido.setProdutos(produtos);
-                    pedido.setUsers(user);
-
-                    repository.saveAndFlush(pedido);
-
-                    return ResponseEntity.ok("Pedido criado com sucesso");
-                }
-                catch(Exception e)
-                {
-                    return ResponseEntity.badRequest().body("Falha ao tentar criar pedido.\nErro: " + e);
-                }
-            }
-            else{
-                return ResponseEntity.ok("É necessário informar a mesa.");
-            }
+            throw new RuntimeException("Falha ao tentar criar pedido.\nErro: " + e);
         }
-        else {
-            return ResponseEntity.ok("Necessário uma hierárquia maior");
-        }
+    }
 
-         */
+    public ResponseEntity<String> addPedido(addPedidoDTO dto)
+    {
         if (dto.produtos().isEmpty())
         {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
@@ -462,7 +453,7 @@ public class PedidosService {
                                 .map(produto -> new ProductsMesaDTO(produto.getProduto().getIdProd(), produto.getProduto().getNomeProd(), produto.getProduto().getPrecoProd(), produto.getQuantidade()))
                                 .collect(Collectors.toList());
 
-                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList);
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(),produtosMesaDTOList, pedido.getCpfClientePedido());
                     })
                     .collect(Collectors.toList());
 
@@ -499,7 +490,7 @@ public class PedidosService {
                                 ))
                                 .collect(Collectors.toList());
 
-                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(), produtosMesaDTOList);
+                        return new PedidosMesaDTO(pedido.getIdPedido(), pedido.isPedidoPronto(), produtosMesaDTOList, pedido.getCpfClientePedido());
                     })
                     .collect(Collectors.toList());
 
@@ -584,5 +575,9 @@ public class PedidosService {
                 pedido.isPedidoProntoBalcao(),
                 produtosCozinhaDTO
         );
+    }
+
+    public List<Pedidos> getAllByMesa(Mesa mesa) {
+        return repository.findByMesa(mesa);
     }
 }

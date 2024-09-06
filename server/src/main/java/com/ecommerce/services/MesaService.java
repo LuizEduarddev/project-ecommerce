@@ -229,6 +229,10 @@ public class MesaService {
         }
     }
 
+    public void saveMesa(Mesa mesa) {
+        repository.saveAndFlush(mesa);
+    }
+
     /*
     public MesaDTO getMesaById(String token, String idMesa) {
         //AUTENTICACAO FUNCIONANDO

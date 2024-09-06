@@ -1,6 +1,7 @@
-import { Button, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import React, { useState, useRef } from 'react';
+import { Button, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
+import { Dropdown } from 'react-native-element-dropdown';
 
 type Product = {
     idProd: string;
@@ -18,8 +19,30 @@ const MenuBalcao = () => {
     const [produtoResponse, setProdutoResponse] = useState<Product[] | null>(null);
     const [produtosBalcao, setProdutosBalcao] = useState<Product[]>([]);
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-    const [modalVisible, setModalVisible] = useState(false);
+    const [metodosPagamento, setMetodosPagamento] = useState<string[]>([]);
+    const [clienteCPF, setClienteCPF] = useState<string>('');
+    const [metodoEscolhido, setMetodoEscolhido] = useState(null);
+    const [modalConfirmarPagamento, setModalConfirmarPagamento] = useState<boolean>(false);
+
+    useEffect(() => {
+        api.get('api/pagamentos/get-metodos', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json',
+                }
+        })
+        .then(response => {
+            const formattedCategories = response.data.map((category, index) => ({
+              label: category,
+              value: index,
+            }));
+            setMetodosPagamento(formattedCategories);
+          })
+        .catch(error => {
+        console.log(error);
+        });
+    }, [])
 
     async function findProduto(query: string) {
         if (query === "") {
@@ -146,52 +169,46 @@ const MenuBalcao = () => {
         }
     };
 
-    /*
-    async function checkPaymentStatus(idPedido) {
-        const dataToSend = {
-            idPedido: idPedido,
-            token: tokenCliente
-        };
-        api.post('api/pagamentos/check', dataToSend)
-        .then(response =>{
-            console.log(response.data);
-            setModalVisible(false); 
-        })
-        .catch(error => 
-        {
-            Alert.alert(error as string);
-        }
-        )
-    }
-    */
-
     async function tryEfetuarPagamento()
     {
-        const produtos = produtosBalcao.map(produto => ({
-            idProd: produto.idProd,
-            quantidade: produto.quantity
-        }));
+        if (clienteCPF.length > 1 &&clienteCPF.length < 11)
+        {
+            console.log('cpf tem que ter mais que 11 letras');
+        }
+        else if (metodoEscolhido === null)
+        {
+            console.log('escolha um metodo de pagamento')
+        }
+        else{
 
-        const dataToSend = {
-            produtos: produtos,    
-            token: ""
-        };
-        console.log(produtos)
-        api.post('api/pagamentos/pagamento/avulso', dataToSend)
-        .then(response => {
-            console.log(response.data);
-            // const linkPagamento = response.data.pointOfInteraction.transactionData.ticketUrl;
-            // if (linkPagamento) {
-            //     setPaymentUrl(linkPagamento);
-            //     setModalVisible(true);
-            //     checkPaymentStatus(item.idPedido); 
-            // } else {
-            //     Alert.alert("Invalid payment link.");
-            // }
-        })
-        .catch(error => {
-            console.log(error as string);
-        })
+            const produtos = produtosBalcao.map(produto => ({
+                idProd: produto.idProd,
+                quantidade: produto.quantity
+            }));
+    
+            const dataToSend = {
+                pedido: {
+                    produtos:produtos,
+                    cpfCliente: clienteCPF || null
+                },
+                metodoPagamento: metodoEscolhido
+            };
+            
+            api.post('api/pagamentos/add', dataToSend, {
+                headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                console.log(response.data);
+                setModalConfirmarPagamento(false);
+            })
+            .catch(error => {
+                console.log(error as string);
+            })
+        }
     }
 
     const renderProdutosSalvos = () => {
@@ -206,7 +223,7 @@ const MenuBalcao = () => {
                     {valorTotal()}
                     <Button
                         title='Efetuar pagamento'
-                        onPress={() => tryEfetuarPagamento()}
+                        onPress={() => setModalConfirmarPagamento(true)}
                     />
                 </View>
             );
@@ -214,6 +231,57 @@ const MenuBalcao = () => {
             return;
         }
     };
+
+    const renderMetodoPagamento = () => {
+        if (metodosPagamento) {
+          return (
+            <View>
+    
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholder}
+                selectedTextStyle={styles.selectedText}
+                inputSearchStyle={styles.inputSearch}
+                iconStyle={styles.icon}
+                data={metodosPagamento}
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder="Escolha um metodo de pagamento"
+                value={metodoEscolhido}
+                onChange={(item) => {
+                  setMetodoEscolhido(item.label);
+                }}
+              />
+            </View>
+          );
+        } else {
+          return (
+            <Text>As categorias não foram carregadas corretamente, tente novamente mais tarde.</Text>
+          );
+        }
+    };
+
+    if (modalConfirmarPagamento === true && ((clienteCPF.length > 1 &&clienteCPF.length < 11) || metodoEscolhido === null))
+    {
+        setModalConfirmarPagamento(false);
+        console.log('Faltam preencher alguns campos.');
+    }
+
+    const renderModalConfirmarPagamento = () => {
+        return(
+            <View style={styles.modalView}>
+                <Text>Deseja mesmo confirmar o pagamento?</Text>
+                <Pressable onPress={() => tryEfetuarPagamento()} style={{borderColor:'black', borderWidth:1, backgroundColor:'green'}}>
+                    <Text style={{color:'white'}}>Sim</Text>
+                </Pressable>
+
+                <Pressable onPress={() => setModalConfirmarPagamento(false)} style={{borderColor:'black', borderWidth:1, backgroundColor:'red'}}>
+                    <Text style={{color:'white'}}>Não</Text>
+                </Pressable>
+            </View>
+        );
+    }
 
     return (
         <View>
@@ -224,8 +292,23 @@ const MenuBalcao = () => {
                     onChangeText={handleSearchInputChange}
                     value={buscaProduto}
                 />
+                <TextInput
+                    style={{borderColor:'gray', borderWidth: 1}}
+                    placeholder='CPF do cliente'
+                    onChangeText={setClienteCPF}
+                    value={clienteCPF}
+                />
                 {renderPesquisa()}
                 {renderProdutosSalvos()}
+                {renderMetodoPagamento()}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalConfirmarPagamento}
+                    onRequestClose={() => setModalConfirmarPagamento(false)}
+                >
+                    {renderModalConfirmarPagamento()}
+                </Modal>
             </View>
         </View>
     );
@@ -258,4 +341,27 @@ const styles = StyleSheet.create({
     deleteButtonText: {
         color: 'white',
     },
+    dropdown: {
+        height: 50,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 8,
+      },
+      placeholder: {
+        fontSize: 16,
+        color: '#999',
+      },
+      selectedText: {
+        fontSize: 16,
+        marginTop: 10,
+      },
+      inputSearch: {
+        height: 40,
+        fontSize: 16,
+      },
+      icon: {
+        width: 20,
+        height: 20,
+      },
 });

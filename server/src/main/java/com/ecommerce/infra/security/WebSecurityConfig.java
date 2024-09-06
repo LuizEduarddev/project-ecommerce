@@ -128,9 +128,17 @@ public class WebSecurityConfig {
 						.requestMatchers(HttpMethod.PUT, "/api/products/editar").hasRole(String.valueOf(UserRole.BALCAO))
 						.requestMatchers(HttpMethod.DELETE, "/api/products/delete").hasRole(String.valueOf(UserRole.BALCAO))
 
-
-
-
+						//PAGAMENTOS
+						.requestMatchers(HttpMethod.GET, "/api/pagamentos/get-all").hasRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.GET, "/api/pagamentos/get-metodos").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.GARCOM),
+								String.valueOf(UserRole.BALCAO)
+						).requestMatchers(HttpMethod.POST, "/api/pagamentos/add").hasAnyRole(
+								String.valueOf(UserRole.ADMIN),
+								String.valueOf(UserRole.GARCOM),
+								String.valueOf(UserRole.BALCAO)
+						)
 
 						.anyRequest().permitAll())
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
