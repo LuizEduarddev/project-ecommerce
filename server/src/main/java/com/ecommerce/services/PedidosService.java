@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -280,29 +281,24 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> setPedidoPronto(String idPedido, String local)
+    public ResponseEntity<String> setPedidoPronto(String idPedido, String token)
     {
         try
         {
-            //TODO -> FAZER AUTENTICACAO
-            //AUTENTICACAO FUNCIONANDO
-            /*
+            List<Collection<? extends GrantedAuthority>> authorits = Collections.singletonList(authenticationService.getPermission(token));
+
             Pedidos pedido = repository.findById(idPedido)
                     .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
 
-            if (checkUserAuthority(token) == HttpStatus.ACCEPTED)
-            {
-                pedido.setPedidoProntoCozinha(true);
-                repository.saveAndFlush(pedido);
-                return ResponseEntity.ok("Pedido foi alterado para pronto.");
-            }
-            else{
-                throw new RuntimeException("É necessário uma autoridade maior para executar esta acao");
-            }
-            */
-            Pedidos pedido = repository.findById(idPedido)
-                    .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
-            if (local.equals("cozinha"))
+            boolean hasCozinhaRole = authorits.stream()
+                    .flatMap(Collection::stream)
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_COZINHA"));
+
+            boolean hasBalcaoPreparo = authorits.stream()
+                    .flatMap(Collection::stream)
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_BALCAOPREPARO"));
+
+            if (hasCozinhaRole)
             {
                 if (pedido.isPedidoProntoBalcao())
                 {
@@ -319,7 +315,7 @@ public class PedidosService {
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
-            else if (local.equals("balcao-preparo"))
+            else if (hasBalcaoPreparo)
             {
                 if (pedido.isPedidoProntoCozinha())
                 {
@@ -571,7 +567,6 @@ public class PedidosService {
     }
 
     private PedidoCozinhaDTO filterAndConvertToPedidoCozinhaDTOBalcao(Pedidos pedido) {
-        System.out.println(pedido.getHoraPedido());
         //PROBLEMA ESTA DENTRO DESTE LIST, VERIFICAR O POR QUE
         List<PedidoCozinhaProdutosDTO> produtosCozinhaDTO = pedido.getProdutos().stream()
                 .filter(produtosPedido -> !produtosPedido.getProduto().getCategoriaProd().getValue().equalsIgnoreCase("cozinha"))

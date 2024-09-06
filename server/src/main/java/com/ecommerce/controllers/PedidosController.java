@@ -32,7 +32,7 @@ public class PedidosController {
     @PostMapping("/pronto")
     public ResponseEntity<String> pedidoPronto(@RequestBody SetPedidoProntoDTO dto)
     {
-        return service.setPedidoPronto(dto.idPedido(), dto.local());
+        return service.setPedidoPronto(dto.idPedido(), dto.token());
     }
 
     @PostMapping("/get-all-admin")

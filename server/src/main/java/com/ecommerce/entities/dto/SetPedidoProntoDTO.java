@@ -1,4 +1,4 @@
 package com.ecommerce.entities.dto;
 
-public record SetPedidoProntoDTO(String idPedido, String local) {
+public record SetPedidoProntoDTO(String idPedido, String token) {
 }

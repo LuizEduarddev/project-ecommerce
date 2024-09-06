@@ -82,12 +82,14 @@ const MenuBalcaoDePreparo = ({navigation}) => {
   async function confirmarPedidoPronto(pedido: PedidoCozinhaDTO) {
     try {
         const dataToSend = {
-            idPedido: pedido.idPedido,
-            local: "balcao-preparo"
+          idPedido: pedido.idPedido,
+          token:localStorage.getItem('session-token')
         }
         const response = await api.post('api/pedidos/pronto', dataToSend, {
-            headers: {
-              'Content-Type': 'application/json'
+              headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json',
             }
           });
         setModalConfirmarPedidoPronto(false);

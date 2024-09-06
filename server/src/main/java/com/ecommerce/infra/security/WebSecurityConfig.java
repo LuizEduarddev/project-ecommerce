@@ -39,6 +39,7 @@ public class WebSecurityConfig {
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/garcom").hasRole(String.valueOf(UserRole.GARCOM))
 						.requestMatchers(HttpMethod.GET, "/api/auth/balcao_preparo").hasRole(String.valueOf(UserRole.BALCAOPREPARO))
+						.requestMatchers(HttpMethod.GET, "/api/auth/cozinha").hasRole(String.valueOf(UserRole.COZINHA))
 						.requestMatchers(HttpMethod.POST, "/api/auth/get-by-cpf").hasAnyRole(
 								String.valueOf(UserRole.GARCOM),
 								String.valueOf(UserRole.BALCAO)
@@ -68,7 +69,7 @@ public class WebSecurityConfig {
 								String.valueOf(UserRole.ADMIN),
 								String.valueOf(UserRole.BALCAO),
 								String.valueOf(UserRole.BALCAOPREPARO),
-								String.valueOf(UserRole.GARCOM)
+								String.valueOf(UserRole.COZINHA)
 						)
 						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-all-admin").hasRole(String.valueOf(UserRole.ADMIN))
 						.requestMatchers(HttpMethod.POST, "/api/pedidos/get-by-user").hasRole(String.valueOf(UserRole.ADMIN))

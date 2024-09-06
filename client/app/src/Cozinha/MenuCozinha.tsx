@@ -17,16 +17,46 @@ type PedidoCozinhaDTO = {
   produtos: PedidoCozinhaProdutosDTO[]
 }
 
-const MenuCozinha = () => {
+const MenuCozinha = ({navigation}) => {
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
   const [modalPedidoId, setModalPedidoId] = useState<string | null>(null);
   const [modalConfirmarPedidoPronto, setModalConfirmarPedidoPronto] = useState<boolean>(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem('session-token');
+    if (token) {
+        api.get('api/auth/cozinha', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        })
+        .catch(error => {
+            if (error.response) {
+                if (error.response.status === 403) {
+                    navigation.navigate('Login')
+                } else {
+                    console.log('Other error response:', error.response.data);
+                }
+            } else if (error.request) {
+                console.log('No response received:', error.request);
+            } else {
+                console.log('Error message:', error.message);
+            }
+        });
+    } else {
+        navigation.navigate('Login');
+    }
+}, []);
+
   const fetchPedidos = async () => {
     try {
-      const response = await api.get('api/pedidos/get-for-cozinha');
+      const response = await api.get('api/pedidos/get-for-cozinha', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+      }
+      });
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
@@ -50,11 +80,12 @@ const MenuCozinha = () => {
     try {
       const dataToSend = {
         idPedido: pedido.idPedido,
-        local: "cozinha"
+        token: localStorage.getItem('session-token')
     }
     const response = await api.post('api/pedidos/pronto', dataToSend, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
         }
       });
       setModalConfirmarPedidoPronto(false);

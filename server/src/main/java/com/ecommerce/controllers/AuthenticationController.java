@@ -59,6 +59,9 @@ public class AuthenticationController {
 	@GetMapping("/balcao_preparo")
 	public void isBalcaoPreparo() {
 	}
+	@GetMapping("/cozinha")
+	public void isCozinha() {
+	}
 
 	@PostMapping("/get-authorities")
 	public Collection<? extends GrantedAuthority> getAuthorities(@RequestParam String token)
