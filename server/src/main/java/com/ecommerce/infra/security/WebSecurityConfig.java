@@ -35,7 +35,7 @@ public class WebSecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
 						//AUTH REQUESTS
-						.requestMatchers(HttpMethod.POST, "/api/auth/register").hasAnyRole(String.valueOf(UserRole.ADMIN))
+						.requestMatchers(HttpMethod.POST, "/api/auth/register").hasAnyRole(String.valueOf(UserRole.ADMIN))//permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/garcom").hasRole(String.valueOf(UserRole.GARCOM))
 						.requestMatchers(HttpMethod.GET, "/api/auth/balcao_preparo").hasRole(String.valueOf(UserRole.BALCAOPREPARO))

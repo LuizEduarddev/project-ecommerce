@@ -14,7 +14,8 @@ type PedidoCozinhaDTO = {
   horaPedido: string,
   pedidoPronto: boolean,
   horaPronto: string,
-  produtos: PedidoCozinhaProdutosDTO[]
+  produtos: PedidoCozinhaProdutosDTO[],
+  numeroMesa: number
 }
 
 const MenuCozinha = ({navigation}) => {
@@ -131,9 +132,15 @@ const MenuCozinha = ({navigation}) => {
     return (
       <View style={styles.modalView}>
         {pedido.pedidoPronto ? (
-          <Text style={[styles.pedidoContainer, { backgroundColor: 'green' }]}>Pronto às: {pedido.horaPronto}</Text>
+          <View>
+            <Text>{pedido.numeroMesa != null ? pedido.numeroMesa : "viagem"}</Text>
+            <Text style={[styles.pedidoContainer, { backgroundColor: 'green' }]}>Pronto às: {pedido.horaPronto}</Text>
+          </View>
         ) : (
-          <Text style={[styles.pedidoContainer, { backgroundColor }]}>{pedido.horaPedido}</Text>
+          <View>
+            <Text>{pedido.numeroMesa != null ? pedido.numeroMesa : "viagem"}</Text>
+            <Text style={[styles.pedidoContainer, { backgroundColor }]}>{pedido.horaPedido}</Text>
+          </View>
         )}
         <FlatList
           data={pedido.produtos}
@@ -163,9 +170,15 @@ const MenuCozinha = ({navigation}) => {
       <View>
         <Pressable onPress={() => setModalPedidoId(item.idPedido)}>
           {item.pedidoPronto ? (
-            <Text>Pronto às: {item.horaPronto}</Text>
+            <View>
+              <Text>{item.numeroMesa != null ? item.numeroMesa : "viagem"}</Text>
+              <Text>Pronto às: {item.horaPronto}</Text>
+            </View>
           ) : (
-            <Text style={[styles.pedidoContainer, { backgroundColor }]}>{item.horaPedido}</Text>
+            <View>
+              <Text>{item.numeroMesa != null ? item.numeroMesa : "viagem"}</Text>
+              <Text style={[styles.pedidoContainer, { backgroundColor }]}>{item.horaPedido}</Text>
+            </View>
           )}
           <FlatList
             data={item.produtos}

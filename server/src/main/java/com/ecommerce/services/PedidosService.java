@@ -123,32 +123,35 @@ public class PedidosService {
         }
     }
 
-    public ResponseEntity<String> addPedido(addPedidoDTO dto)
-    {
-        if (dto.produtos().isEmpty())
-        {
+    public ResponseEntity<String> addPedido(addPedidoDTO dto) {
+        if (dto.produtos().isEmpty()) {
             throw new RuntimeException("Não é possível fazer um pedido com o carrinho vazio!");
         }
+
         AtomicReference<Double> total = new AtomicReference<>(0.0);
         List<ProductsPedidosDTO> productsPedidosDTOS = new ArrayList<>();
+
         dto.produtos().forEach(prod -> {
             Products produto = productsRepository.findById(prod.idProd())
-                    .orElseThrow(() -> new RuntimeException("Produto nao encontrado no sistema\nFalha para criar pedido"));
+                    .orElseThrow(() -> new RuntimeException("Produto não encontrado no sistema\nFalha para criar pedido"));
+
+            double produtoPreco = produto.isPromoProd() ? produto.getPrecoPromocao() : produto.getPrecoProd();
+
             productsPedidosDTOS.add(new ProductsPedidosDTO(produto, prod.quantidade()));
-            total.updateAndGet(t -> t + produto.getPrecoProd() * prod.quantidade());
+            total.updateAndGet(t -> t + produtoPreco * prod.quantidade());
         });
+
         double finalTotal = total.get();
-        if (!dto.idMesa().isBlank())
-        {
+
+        if (!dto.idMesa().isBlank()) {
             Mesa mesa = mesaService.getMesaFullById(dto.idMesa());
-            if (mesa != null)
-            {
-                try
-                {
+            if (mesa != null) {
+                try {
                     LocalTime currentTime = LocalTime.now();
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
                     String formattedTime = currentTime.format(formatter);
                     Pedidos pedido = new Pedidos();
+
                     Date dataAtual = new Date();
                     SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yyyy");
                     String dataFormatada = formatDate.format(dataAtual);
@@ -173,20 +176,17 @@ public class PedidosService {
                     repository.saveAndFlush(pedido);
 
                     return ResponseEntity.ok("Pedido criado com sucesso");
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     return ResponseEntity.badRequest().body("Falha ao tentar criar pedido.\nErro: " + e);
                 }
-            }
-            else{
+            } else {
                 return ResponseEntity.ofNullable("Mesa não encontrada no sistema.");
             }
-        }
-        else{
-            throw new RuntimeException("E necessario informar a mesa");
+        } else {
+            throw new RuntimeException("É necessário informar a mesa");
         }
     }
+
 
     public Pedidos pedidoBalcao(PedidoAvulsoDTO dto) {
         if (dto.produtos().isEmpty())
@@ -253,85 +253,66 @@ public class PedidosService {
         }
     }
 
-    private HttpStatus checkUserAuthority(String token)
-    {
-        Users user = usersRepository.findByLoginUser(authenticationService.getUserName(token));
-        if (user != null)
-        {
-            boolean hasCozinha = user.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_COZINHA-CAFE"));
-            boolean hasGarcom = user.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_GARCOM"));
-            if (hasCozinha || hasGarcom) return HttpStatus.ACCEPTED;
-            else {
-                return HttpStatus.FAILED_DEPENDENCY;
-            }
-        }
-        else{
-            throw new RuntimeException("Houve um erro ao tentar buscar o usuário.");
-        }
-    }
-
-    public ResponseEntity<String> setPedidoPronto(String idPedido, String token)
-    {
-        try
-        {
-            List<Collection<? extends GrantedAuthority>> authorits = Collections.singletonList(authenticationService.getPermission(token));
+    public ResponseEntity<String> setPedidoPronto(String idPedido, String token) {
+        try {
+            List<Collection<? extends GrantedAuthority>> authorities = Collections.singletonList(authenticationService.getPermission(token));
 
             Pedidos pedido = repository.findById(idPedido)
-                    .orElseThrow(() -> new RuntimeException("Pedido nao encontrado no sistema.\nFalha para alterar para pedido pronto."));
+                    .orElseThrow(() -> new RuntimeException("Pedido não encontrado no sistema.\nFalha ao alterar para pedido pronto."));
 
-            boolean hasCozinhaRole = authorits.stream()
+            boolean hasCozinhaRole = authorities.stream()
                     .flatMap(Collection::stream)
                     .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_COZINHA"));
 
-            boolean hasBalcaoPreparo = authorits.stream()
+            boolean hasBalcaoPreparoRole = authorities.stream()
                     .flatMap(Collection::stream)
                     .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_BALCAOPREPARO"));
 
-            if (hasCozinhaRole)
-            {
-                if (pedido.isPedidoProntoBalcao())
-                {
+            boolean hasBalcaoProducts = pedido.getProdutos().stream()
+                    .anyMatch(prod -> prod.getProduto().getCategoriaProd() == CategoriaProd.BOMBOM ||
+                            prod.getProduto().getCategoriaProd() == CategoriaProd.DOCINHO ||
+                            prod.getProduto().getCategoriaProd() == CategoriaProd.BOLO);
+
+            boolean hasCozinhaProducts = pedido.getProdutos().stream()
+                    .anyMatch(prod -> prod.getProduto().getCategoriaProd() == CategoriaProd.COZINHA);
+
+            if (hasCozinhaRole && hasCozinhaProducts) {
+                if (hasBalcaoProducts && pedido.isPedidoProntoBalcao()) {
                     pedido.setPedidoPronto(true);
                     pedido.setPedidoProntoCozinha(true);
-                }
-                else{
+                } else {
                     pedido.setPedidoProntoCozinha(true);
                 }
-                LocalTime currentTime = LocalTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                String formattedTime = currentTime.format(formatter);
-                pedido.setHoraPronto(formattedTime);
+                setHoraPronto(pedido);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
-            else if (hasBalcaoPreparo)
-            {
-                if (pedido.isPedidoProntoCozinha())
-                {
+            else if (hasBalcaoPreparoRole && hasBalcaoProducts) {
+                if (hasCozinhaProducts && pedido.isPedidoProntoCozinha()) {
                     pedido.setPedidoPronto(true);
                     pedido.setPedidoProntoBalcao(true);
-                }
-                else{
+                } else {
                     pedido.setPedidoProntoBalcao(true);
                 }
-                LocalTime currentTime = LocalTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-                String formattedTime = currentTime.format(formatter);
-                pedido.setHoraPronto(formattedTime);
+                setHoraPronto(pedido);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
-            else{
-                throw new RuntimeException("Falha ao capturar o local de preparo");
+            else {
+                throw new RuntimeException("Falha ao capturar o local de preparo ou produtos não correspondem ao local de preparo.");
             }
-        }
-        catch (Exception e)
-        {
-            return ResponseEntity.badRequest().body("Falha ao tentar mudar o status do pedido para pronto.\nError: "  + e);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Falha ao tentar mudar o status do pedido para pronto.\nError: " + e.getMessage());
         }
     }
+
+    private void setHoraPronto(Pedidos pedido) {
+        LocalTime currentTime = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        String formattedTime = currentTime.format(formatter);
+        pedido.setHoraPronto(formattedTime);
+    }
+
 
     @Transactional
     public List<PedidosClienteDTO> getPedidoByUser(String token) {
@@ -534,13 +515,15 @@ public class PedidosService {
                 ))
                 .collect(Collectors.toList());
 
+        Integer numeroMesa = pedido.getMesa() != null ? pedido.getMesa().getNumeroMesa() : null;
 
         return new PedidoCozinhaDTO(
                 pedido.getIdPedido(),
                 pedido.getHoraPedido(),
                 pedido.getHoraPronto(),
                 pedido.isPedidoProntoCozinha(),
-                produtosCozinhaDTO
+                produtosCozinhaDTO,
+                numeroMesa
         );
     }
 
@@ -568,12 +551,15 @@ public class PedidosService {
                 ))
                 .collect(Collectors.toList());
 
+        Integer numeroMesa = pedido.getMesa() != null ? pedido.getMesa().getNumeroMesa() : null;
+
         return new PedidoCozinhaDTO(
                 pedido.getIdPedido(),
                 pedido.getHoraPedido(),
                 pedido.getHoraPronto(),
                 pedido.isPedidoProntoBalcao(),
-                produtosCozinhaDTO
+                produtosCozinhaDTO,
+                numeroMesa
         );
     }
 

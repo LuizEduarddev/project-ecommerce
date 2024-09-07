@@ -153,17 +153,19 @@ public class ProductsService {
 	public List<Products> searchProduct(String pesquisa) {
 		List<Products> produtosList = repository.findByNomeProdContaining(pesquisa.toUpperCase());
 		List<Products> produtosReturn = new ArrayList<>();
+
 		for (Products produto : produtosList) {
 			if (produto.isVisible()) {
+				if (produto.isPromoProd()) {
+					produto.setPrecoProd(produto.getPrecoPromocao());
+				}
 				produtosReturn.add(produto);
 			}
 		}
-		if (produtosReturn.isEmpty()) {
-			return null;
-		}
 
-		return produtosReturn;
+		return produtosReturn.isEmpty() ? null : produtosReturn;
 	}
+
 
 	@Transactional
 	public List<Products> searchProductBalcao(String pesquisa) {

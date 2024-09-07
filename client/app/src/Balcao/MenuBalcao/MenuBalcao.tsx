@@ -262,7 +262,7 @@ const MenuBalcao = () => {
         }
     };
 
-    if (modalConfirmarPagamento === true && ((clienteCPF.length > 1 &&clienteCPF.length < 11) || metodoEscolhido === null))
+    if (modalConfirmarPagamento === true && ((clienteCPF.length > 0 &&clienteCPF.length < 11) || metodoEscolhido === null))
     {
         setModalConfirmarPagamento(false);
         console.log('Faltam preencher alguns campos.');
