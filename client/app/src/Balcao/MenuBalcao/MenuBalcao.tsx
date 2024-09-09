@@ -81,21 +81,17 @@ const MenuBalcao = () => {
     };
     
     const renderPesquisa = () => {
-      const imagem = 'https://img.elo7.com.br/product/zoom/4D35E8D/bolo-decorado-kg-batizado.jpg'
       if (produtoResponse && produtoResponse.length > 0) {
             return produtoResponse.map(produto => (
                 <View 
                   key={produto.idProd}
                   style={styles.produtoContainer}
                 >
-                  <Image source={{ uri: imagem }} style={{ width: 90, height: 90, borderRadius: 10 }} resizeMode='cover'></Image>
-                  <View style={{marginLeft: 10, gap: 5}}>
-                    <Text style={{fontWeight: 'bold', color: colors['raisin-black']}}>{produto.nomeProd}</Text>
-                  </View>
-                  <View style={{position: 'absolute', right: 10, height: 90, justifyContent: 'space-between', alignItems: 'flex-end'}}>
-                    <Text style={{color: colors['raisin-black'], fontSize: 20, fontWeight: 'bold'}}>{formatToReais(produto.precoProd)}</Text>
-                    <Pressable style={styles.button} onPress={() => saveProduto(produto)}>+ Adicionar produto</Pressable>
-                  </View>
+                    <Text style={styles.itemProdutoContainer}>{produto.nomeProd}</Text>
+                    <Text style={{color: colors['raisin-black'], flex: 1, alignItems: 'center'}}>{formatToReais(produto.precoProd)}</Text>
+                    <View style={{flex: 1}}>
+                        <Pressable style={styles.button} onPress={() => saveProduto(produto)}>+</Pressable>
+                    </View>
                 </View>
             ));
         } else {
@@ -207,7 +203,7 @@ const MenuBalcao = () => {
                 />
                 {valorTotal()}
                 <br></br>
-                <Pressable style={styles.button} onPress={() => tryEfetuarPagamento()}>Efetuar pagamento</Pressable>
+                <Pressable style={styles.efetuarPagamento} onPress={() => tryEfetuarPagamento()}>Efetuar pagamento</Pressable>
             </View>
         );
     };
@@ -280,8 +276,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    maxHeight: 70
+  },
+  itemProdutoContainer: {
+      flex: 1
   },
   button: {
+    color: 'white',
+    backgroundColor: colors['bright-blue'],
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    fontWeight: 'semibold',
+    alignSelf: 'flex-end',
+  },
+  efetuarPagamento: {
     color: 'white',
     backgroundColor: colors['bright-blue'],
     borderRadius: 20,
