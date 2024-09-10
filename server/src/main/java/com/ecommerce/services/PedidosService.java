@@ -65,10 +65,15 @@ public class PedidosService {
     }
 
     @Transactional
-    public Pedidos getPedidoById(String id)
+    public List<Pedidos> getPedidoById(List<String> listId)
     {
-        return repository.findById(id)
-                .orElseThrow();
+        List<Pedidos> retorno = new ArrayList<>();
+        listId.forEach(pedido -> {
+            Pedidos pedido1 = repository.findById(pedido)
+                    .orElseThrow();
+            retorno.add(pedido1);
+        });
+        return retorno;
     }
 
     public Pedidos addPedidoAvulso(addPedidoPagamentoDTO dto)
@@ -253,6 +258,7 @@ public class PedidosService {
         }
     }
 
+    @Transactional
     public ResponseEntity<String> setPedidoPronto(String idPedido, String token) {
         try {
             List<Collection<? extends GrantedAuthority>> authorities = Collections.singletonList(authenticationService.getPermission(token));

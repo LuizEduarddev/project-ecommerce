@@ -302,67 +302,6 @@ const MenuGarcom = ({navigation}) => {
         setModalProdutosCategoria(true);
     }
 
-    const finalizarPedido = () => {
-        closeModal();
-        openModal('fecharConta');
-    };
-
-    async function gerarPagamento()
-    {
-
-    }
-
-    const renderModalFecharConta = () => {
-        if (pedidos && pedidos.pedidosMesa) {
-            if (pedidos.pedidosMesa.length > 0) {
-                return (
-                    <View style={styles.modalView}>
-                        <FlatList
-                            data={pedidos.pedidosMesa}
-                            renderItem={renderPedidosMesa}
-                            keyExtractor={(item) => item.idPedido}
-                        />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Dropdown
-                            style={styles.dropdown}
-                            placeholderStyle={styles.placeholder}
-                            selectedTextStyle={styles.selectedText}
-                            inputSearchStyle={styles.inputSearch}
-                            iconStyle={styles.icon}
-                            data={formasDePagamento}
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder="Forma de pagamento"
-                            value={formaDePagamentoEscolhida}
-                            onChange={(item) => {
-                                setFormaDePagamentoEscolhida(item.value);
-                            }}
-                        />
-                        <Pressable
-                            style={{ backgroundColor: 'green', borderColor: 'green', borderWidth: 1 }}
-                            onPress={() => { gerarPagamento() }}
-                        >
-                            <Text style={{ color: 'white' }}>Finalizar pedido</Text>
-                        </Pressable>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue', color: 'white' }}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            } else {
-                return (
-                    <View style={styles.modalView}>
-                        <Text>A mesa não possui pedidos</Text>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue' }}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            }
-        }
-    };
-
     const renderProdutos = ({ item }: { item: ProductsMesaDTO }) => {
         if (item != null) {
             return (
@@ -700,12 +639,6 @@ const MenuGarcom = ({navigation}) => {
                             keyExtractor={(item) => item.idPedido}
                         />
                         <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Pressable
-                            style={{ backgroundColor: 'green', borderColor: 'green', borderWidth: 1 }}
-                            onPress={() => { finalizarPedido() }}
-                        >
-                            <Text style={{ color: 'white' }}>Finalizar pedido</Text>
-                        </Pressable>
                         <Pressable onPress={closeModal}>
                             <Text style={{ backgroundColor: 'blue', color: 'white' }}>X</Text>
                         </Pressable>
@@ -817,17 +750,6 @@ const MenuGarcom = ({navigation}) => {
                 >
                     {renderModalVisualizarPedidosMesa()}
                 </Modal>
-                );
-            case 'fecharConta':
-                return (
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={true}
-                        onRequestClose={closeModal}
-                    >
-                        {renderModalFecharConta()}
-                    </Modal>
                 );
             case 'escolha':
                 return (

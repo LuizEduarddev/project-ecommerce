@@ -2,5 +2,7 @@ package com.ecommerce.entities.dto;
 
 import com.ecommerce.entities.MetodoPagamento;
 
-public record addPagamentoDTO(String idPedido, addPedidoPagamentoDTO pedido, MetodoPagamento metodoPagamento) {
+import java.util.List;
+
+public record addPagamentoDTO(List<String> idPedidos, addPedidoPagamentoDTO pedido, MetodoPagamento metodoPagamento) {
 }

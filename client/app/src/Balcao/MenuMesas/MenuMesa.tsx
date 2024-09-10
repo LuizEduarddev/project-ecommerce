@@ -1,9 +1,7 @@
-import { Alert, Button, FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Button, FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
-import MenuBalcao from '../MenuBalcao/MenuBalcao';
-import MenuCadastroUsuario from '../MenuUsuario/MenuCadastroUsuario';
 import { Dropdown } from 'react-native-element-dropdown';
 
 type Mesa = {
@@ -16,8 +14,8 @@ type Mesa = {
 type ProductsMesaDTO = {
     idProduto: string,
     nomeProd: string,
-    precoProd: number
-    quantidadeProduto:number
+    precoProd: number,
+    quantidadeProduto: number
 }
 
 type PedidosMesaDTO = {
@@ -40,82 +38,106 @@ const MenuMesa = () => {
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
+    const [totalValue, setTotalValue] = useState<number>(0);
+    const [modalSelecaoPedidoFechamento, setModalSelecaoPedidoFechamento] = useState<boolean>(false);
+    const [pedidosSelecionadosFechamento, setPedidosSelecionadosFechamento] = useState<PedidosMesaDTO[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<ProductsMesaDTO[]>([]);
+    const [contadorPedidosSelecionadosFechamento, setContadorPedidosSelecionadosFechamento] = useState(0);
+    const [metodosPagamento, setMetodosPagamento] = useState<{ label: string, value: string }[]>([]);
+    const [metodosPagamentoCarregados, setMetodosPagamentoCarregados] = useState<boolean>(false);
+    const [modalConfirmacao, setModalConfirmacao] = useState<boolean>(false);
     const [modalFecharContaVisible, setModalFecharContaVisible] = useState<boolean>(false);
-    const [modalConfirmaFechamentoParcial, setModalConfirmaFechamentoParcial] = useState<boolean>(false);
-    const [modalConfirmaFechamentoCompleto, setModalConfirmaFechamentoCompleto] = useState<boolean>(false);
-    const [modalEscolhaFechamento, setModalEscolhaFechamento] = useState<boolean>(false);
-    const [modalFechamentoParcial, setModalFechamentoParcial] = useState<boolean>(false);
-    const [modalFecharContaParcial, setModalFecharContaParcial] = useState<boolean>(false);
-    const [pedidoFechamentoParcial, setPedidoFechamentoParcial] = useState<PedidosMesaDTO | null>(null);
-    const [metodosPagamento, setMetodosPagamento] = useState<string[]>([]);
-    const [view, setView] = useState('mesas');
-    const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState(null);
-
-    async function getMetodoPagamento()
-    {
-        api.get('api/pagamentos/get-metodos', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-                }
-        })
-        .then(response => {
-            const formattedCategories = response.data.map((category, index) => ({
-                label: category,
-                value: index,
-            }));
-            setMetodosPagamento(formattedCategories);
-            })
-        .catch(error => {
-        console.log(error);
-        });
-    }
+    const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchMesas = async () => {
-            api.get('api/mesa/get-all', {
+        getMetodoPagamento();
+    }, []);
+
+    async function getMetodoPagamento() {
+        try {
+            const response = await api.get('api/pagamentos/get-metodos', {
                 headers: {
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
                     'Content-Type': 'application/json',
-                  }
-            })
-            .then(response => {
+                }
+            });
+            const formattedCategories = response.data.map((category: string, index: number) => ({
+                label: category,
+                value: category,
+            }));
+            setMetodosPagamento(formattedCategories);
+            setMetodosPagamentoCarregados(true);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        const fetchMesas = async () => {
+            try {
+                const response = await api.get('api/mesa/get-all', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
                 setMesas(response.data);
-            })
-            .catch(error => {
-                console.log(error as string);
-            })
+            } catch (error) {
+                console.error(error);
+            }
         };
 
         fetchMesas();
     }, []);
 
+    const toggleSelectPedido = (pedido: PedidosMesaDTO) => {
+        const isSelected = pedidosSelecionadosFechamento.some(p => p.idPedido === pedido.idPedido);
+        if (isSelected) {
+            setPedidosSelecionadosFechamento(pedidosSelecionadosFechamento.filter(p => p.idPedido !== pedido.idPedido));
+            setContadorPedidosSelecionadosFechamento(contadorPedidosSelecionadosFechamento - 1);
+        } else {
+            setPedidosSelecionadosFechamento([...pedidosSelecionadosFechamento, pedido]);
+            setContadorPedidosSelecionadosFechamento(contadorPedidosSelecionadosFechamento + 1);
+        }
+    };
+
+    const handleConfirmSelection = () => {
+        const total = pedidosSelecionadosFechamento.reduce((acc, pedido) => {
+            const produtos = pedidos?.pedidosMesa.find(p => p.idPedido === pedido.idPedido)?.produtos || [];
+            return acc + produtos.reduce((prodAcc, produto) => prodAcc + (produto.precoProd * produto.quantidadeProduto), 0);
+        }, 0);
+        
+        setTotalValue(total);
+        setSelectedProducts(pedidosSelecionadosFechamento.flatMap(pedido => pedido.produtos));
+    
+        setModalSelecaoPedidoFechamento(false);
+        setModalFecharContaVisible(true);
+    };
 
     async function getMesaInformation(idMesa: string) {
         const dataToSend = {
             idMesa: idMesa,
             token: ''
-        }
-        api.post('api/pedidos/get-by-mesa', dataToSend, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
+        };
+        try {
+            const response = await api.post('api/pedidos/get-by-mesa', dataToSend, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             setPedidos(response.data);
             setModalVisible(true);
-        })
-        .catch(error => {
-            console.log(error as string);
-        })
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    const renderProdutos = ({item}: {item: ProductsMesaDTO}) => {
+    const renderProdutos = ({ item }: { item: ProductsMesaDTO }) => {
         if (item != null) {
-            return(
+            return (
                 <View>
                     <Text>{item.nomeProd} - x {item.quantidadeProduto}</Text>
                     <Text>{formatToReais(item.precoProd)} - {formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
@@ -128,9 +150,65 @@ const MenuMesa = () => {
         }
     }
 
-    const renderPedidosMesa = ({item}: {item: PedidosMesaDTO}) => {
+    const renderModalFecharConta = () => {
+        if (selectedProducts.length > 0 )
+        {
+            return (
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalFecharContaVisible}
+                    onRequestClose={() => setModalFecharContaVisible(false)}
+                >
+                    <View style={styles.modalView}>
+                            <>
+                                <FlatList
+                                    data={selectedProducts}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.pedidoItem}>
+                                            <Text>{item.nomeProd} - x {item.quantidadeProduto}</Text>
+                                            <Text>{formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
+                                        </View>
+                                    )}
+                                    keyExtractor={(item) => item.idProduto}
+                                />
+                                <Text>Valor total: {formatToReais(totalValue)}</Text>
+                                <Dropdown
+                                    style={styles.dropdown}
+                                    placeholderStyle={styles.placeholder}
+                                    selectedTextStyle={styles.selectedText}
+                                    inputSearchStyle={styles.inputSearch}
+                                    iconStyle={styles.icon}
+                                    data={metodosPagamento}
+                                    maxHeight={300}
+                                    labelField="label"
+                                    valueField="value"
+                                    placeholder="Forma de pagamento"
+                                    value={formaDePagamentoEscolhida}
+                                    onChange={(item) => {
+                                        setFormaDePagamentoEscolhida(item.value); // item.value will be the payment method like "pix"
+                                    }}
+                                />
+                                <Pressable 
+                                    style={styles.confirmButton}
+                                    onPress={() => {
+                                        setModalConfirmacao(true);
+                                        // setPedidoFechamentoCompleto(selectedProducts); // handle complete payment action here
+                                    }}
+                                >
+                                    <Text style={styles.confirmButtonText}>Gerar pagamento</Text>
+                                </Pressable>
+                            </>
+                    </View>
+                </Modal>
+            );
+        }
+        
+    };
+
+    const renderPedidosMesa = ({ item }: { item: PedidosMesaDTO }) => {
         if (item != null) {
-            return(
+            return (
                 <FlatList
                     data={item.produtos}
                     renderItem={renderProdutos}
@@ -138,26 +216,16 @@ const MenuMesa = () => {
                 />
             );
         } else {
-            return(
+            return (
                 <View></View>
             );
         }
     }
 
-    const fechamento = () => 
-    {
-        setModalVisible(false);
-        setModalEscolhaFechamento(true);
-    }
-
-    const fechamentoCompleto = () => {
-        setModalFecharContaVisible(true);
-    }
-
     const renderModal = () => {
         if (pedidos && pedidos.pedidosMesa) {
             if (pedidos.pedidosMesa.length > 0) {
-                return(
+                return (
                     <View style={styles.modalView}>
                         <FlatList
                             data={pedidos.pedidosMesa}
@@ -165,412 +233,121 @@ const MenuMesa = () => {
                             keyExtractor={(item) => item.idPedido}
                         />
                         <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Pressable 
-                            style={{backgroundColor:'green', borderColor:'green', borderWidth:1}}
-                            onPress={() => {fechamento()}}
+                        <Pressable
+                            style={{ backgroundColor: 'green', borderColor: 'green', borderWidth: 1 }}
+                            onPress={() => setModalSelecaoPedidoFechamento(true)}
                         >
-                            <Text style={{color:'white'}}>Fechamento</Text>
+                            <Text style={{ color: 'white' }}>Fechamento</Text>
                         </Pressable>
                         <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue', color:'white'}}>X</Text>
+                            <Text style={{ backgroundColor: 'red', color: 'white' }}>Fechar</Text>
                         </Pressable>
-                    </View>
-                );
-            } else {
-                return(
-                    <View style={styles.modalView}>
-                        <Text>A mesa não possui pedidos</Text>
-                        
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            }
-        }
-    }
-    
-    const renderMesa = ({ item }: { item: Mesa }) => {
-        if (item.emUso == true) {
-            return(
-                <View>
-                    <View style={styles.mesaContainer}>
-                        <Pressable onPress={() => getMesaInformation(item.idMesa)}>
-                            <Image 
-                                style={{backgroundColor: 'red', width: 50, height: 50}}
-                                source={require('./assets/mesaIcon.png')}
-                            />
-                            <Text style={styles.mesaText}>{item.numeroMesa}</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            );
-        } else {
-            return(
-                <View>
-                    <View style={styles.mesaContainer}>
-                        <Pressable onPress={() => getMesaInformation(item.idMesa)}>
-                            <Image 
-                                style={{width: 50, height: 50}}
-                                source={require('./assets/mesaIcon.png')}
-                            />
-                            <Text style={styles.mesaText}>{item.numeroMesa}</Text>
-                        </Pressable>
-                    </View>
-                </View>
-            );
-        }
-    }
-
-    const renderModalFecharConta = () => {
-        if (pedidos && pedidos.pedidosMesa) {
-            if (pedidos.pedidosMesa.length > 0) {
-                return(
-                    <View style={styles.modalView}>
-                        <FlatList
-                            data={pedidos.pedidosMesa}
-                            renderItem={renderPedidosMesa}
-                            keyExtractor={(item) => item.idPedido}
-                        />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Dropdown
-                            style={styles.dropdown}
-                            placeholderStyle={styles.placeholder}
-                            selectedTextStyle={styles.selectedText}
-                            inputSearchStyle={styles.inputSearch}
-                            iconStyle={styles.icon}
-                            data={metodosPagamento}
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder="Forma de pagamento"
-                            value={formaDePagamentoEscolhida}
-                            onChange={(item) => {
-                                setFormaDePagamentoEscolhida(item.value);
-                            }}
-                        />
-                        <Pressable 
-                            style={{backgroundColor:'green', borderColor:'green', borderWidth:1}}
-                            onPress={() => {(setModalConfirmaFechamentoCompleto(true))}}
-                        >
-                            <Text style={{color:'white'}}>Gerar pagamento</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalFecharContaVisible(false)}>
-                            <Text style={{backgroundColor: 'blue', color:'white'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            } else {
-                return(
-                    <View style={styles.modalView}>
-                        <Text>A mesa não possui pedidos</Text>
-                        
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            }
-        }
-    }
-
-    const renderMenu = () => {
-        if (mesas.length > 0)
-        {
-            return(
-                <View>
-                    <FlatList
-                        data={mesas}
-                        horizontal={true}
-                        renderItem={renderMesa}
-                        keyExtractor={(item) => item.idMesa}
-                    />
-
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => setModalVisible(false)}
-                    >
-                        {renderModal()}
-                    </Modal>
-                </View>
-            );
-        }
-        else{
-            return(
-                <Text>Nenhuma mesa disponível no momento.</Text>
-            );
-        }
-    }
-
-    async function tryEfetuarPagamentoParcial()
-    {
-        if (formaDePagamentoEscolhida === null)
-        {
-            console.log('escolha um metodo de pagamento')
-        }
-        else{
-            const produtos = pedidoFechamentoParcial.produtos.map(produto => ({
-                idProd: produto.idProduto,
-                quantidade: produto.quantidadeProduto
-            }));
-    
-            const dataToSend = {
-                idPedido:pedidoFechamentoParcial.idPedido,
-                pedido: {
-                    produtos:produtos,
-                    cpfCliente: pedidoFechamentoParcial.cpfClientePedido
-                },
-                metodoPagamento: formaDePagamentoEscolhida
-            };
-            
-            api.post('api/pagamentos/add', dataToSend, {
-                headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.log(error as string);
-            })
-        }
-    }
-
-    const renderModalConfirmaFechamentoParcial = () => {
-        return(
-            <View style={styles.modalView}>
-                <Text>Deseja mesmo confirmar o pagamento?</Text>
-                <Pressable onPress={() => {setModalConfirmaFechamentoParcial(false), tryEfetuarPagamentoParcial()}} style={{borderColor:'black', borderWidth:1, backgroundColor:'green'}}>
-                    <Text style={{color:'white'}}>Sim</Text>
-                </Pressable>
-
-                <Pressable onPress={() => setModalConfirmaFechamentoParcial(false)} style={{borderColor:'black', borderWidth:1, backgroundColor:'red'}}>
-                    <Text style={{color:'white'}}>Não</Text>
-                </Pressable>
-            </View>
-        );
-    }
-
-    const renderModalConfirmaFechamentoCompleto = () => {
-        return(
-            <View style={styles.modalView}>
-                <Text>Deseja mesmo confirmar o pagamento?</Text>
-                <Pressable onPress={() => console.log('pressionou')} style={{borderColor:'black', borderWidth:1, backgroundColor:'green'}}>
-                    <Text style={{color:'white'}}>Sim</Text>
-                </Pressable>
-
-                <Pressable onPress={() => setModalConfirmaFechamentoParcial(false)} style={{borderColor:'black', borderWidth:1, backgroundColor:'red'}}>
-                    <Text style={{color:'white'}}>Não</Text>
-                </Pressable>
-            </View>
-        );
-    }
-
-    const renderModalEscolhaFechamento = () => {
-        return(
-            <View style={styles.modalView}>
-                <Pressable onPress={() => {setModalFechamentoParcial(true), setModalEscolhaFechamento(false)}} style={{borderColor:'black', borderWidth:1, backgroundColor:'green'}}>
-                    <Text style={{color:'white'}}>Fechamento parcial</Text>
-                </Pressable>
-
-                <Pressable onPress={() =>{setModalFecharContaVisible(true), setModalEscolhaFechamento(false)}} style={{borderColor:'black', borderWidth:1, backgroundColor:'blue'}}>
-                    <Text style={{color:'white'}}>Fechamento completo</Text>
-                </Pressable>
-                
-                <Pressable onPress={() => setModalEscolhaFechamento(false)} style={{borderColor:'black', borderWidth:1, backgroundColor:'red'}}>
-                    <Text style={{color:'white'}}>X</Text>
-                </Pressable>
-            </View>
-        );
-    }
-
-    const renderModalFechamentoParcial = () => {
-        const renderPedidosFechamentoParcial = ({item}: {item: PedidosMesaDTO}) => {
-            if (item != null) {
-                return(
-                    <View>
-                        <Pressable onPress={() => {setModalFechamentoParcial(false), setModalFecharContaParcial(true), setPedidoFechamentoParcial(item)}} style={{borderColor:'black', borderWidth:2}}>
-                            <Text>cliente: {item.cpfClientePedido}</Text>
-                            <FlatList
-                                data={item.produtos}
-                                renderItem={renderProdutosFechamentoParcial}
-                                keyExtractor={(item) => item.idProduto}
-                            />
-                        </Pressable>
-                    </View>
-                );
-            } else {
-                return(
-                    <View></View>
-                );
-            }
-        }
-        const renderProdutosFechamentoParcial = ({item}: {item: ProductsMesaDTO}) => {
-            if (item != null) {
-                return(
-                    <View>
-                        <Text>{item.nomeProd} - x {item.quantidadeProduto}</Text>
-                        <Text>{formatToReais(item.precoProd)} - {formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
                     </View>
                 );
             } else {
                 return (
-                    <Text>Produtos vazios</Text>
+                    <Text>Não há pedidos para esta mesa.</Text>
                 );
             }
-        }
-        if (pedidos && pedidos !== null)
-        {
-            return(
-                <View style={styles.modalView}>
-                    <FlatList
-                        data={pedidos.pedidosMesa}
-                        renderItem={renderPedidosFechamentoParcial}
-                        keyExtractor={(item) => item.idPedido}
-                    />
-                </View>
-            );  
-        }
-    }
-
-    const renderModalFecharContaParcial = () => {
-        if (pedidoFechamentoParcial && pedidoFechamentoParcial != null) {
-            if (pedidos.pedidosMesa.length > 0) {
-                getMetodoPagamento();
-                return(
-                    <View style={styles.modalView}>
-                        <FlatList
-                            data={pedidos.pedidosMesa}
-                            renderItem={renderPedidosMesa}
-                            keyExtractor={(item) => item.idPedido}
-                        />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Dropdown
-                            style={styles.dropdown}
-                            placeholderStyle={styles.placeholder}
-                            selectedTextStyle={styles.selectedText}
-                            inputSearchStyle={styles.inputSearch}
-                            iconStyle={styles.icon}
-                            data={metodosPagamento}
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder="Forma de pagamento"
-                            value={formaDePagamentoEscolhida}
-                            onChange={(item) => {
-                                setFormaDePagamentoEscolhida(item.value);
-                            }}
-                        />
-                        <Pressable 
-                            style={{backgroundColor:'green', borderColor:'green', borderWidth:1}}
-                            onPress={() => setModalConfirmaFechamentoParcial(true)}
-                        >
-                            <Text style={{color:'white'}}>Gerar pagamento</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalFecharContaVisible(false)}>
-                            <Text style={{backgroundColor: 'blue', color:'white'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            } else {
-                return(
-                    <View style={styles.modalView}>
-                        <Text>Pedido não encontrado</Text>
-                        
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            }
+        } else {
+            return (
+                <Text>Não há pedidos disponíveis.</Text>
+            );
         }
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            {renderMenu()}
+        <SafeAreaView>
+            {mesas.map(mesa => (
+                <Pressable 
+                    key={mesa.idMesa}
+                    onPress={() => getMesaInformation(mesa.idMesa)}
+                    style={styles.mesaButton}
+                >
+                    <Image 
+                        style={{backgroundColor: 'red', width: 50, height: 50}}
+                        source={require('./assets/mesaIcon.png')}
+                    />
+                    <Text style={styles.mesaText}>Mesa {mesa.numeroMesa}</Text>
+                </Pressable>
+            ))}
+
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={modalFecharContaVisible}
-                onRequestClose={() => setModalFecharContaVisible(false)}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
             >
-                {renderModalFecharConta()}
+                {renderModal()}
             </Modal>
 
+            {renderModalFecharConta()}
 
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={modalEscolhaFechamento}
-                onRequestClose={() => setModalEscolhaFechamento(false)}
+                visible={modalSelecaoPedidoFechamento}
+                onRequestClose={() => setModalSelecaoPedidoFechamento(false)}
             >
-                {renderModalEscolhaFechamento()}
-            </Modal>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalFechamentoParcial}
-                onRequestClose={() => setModalFechamentoParcial(false)}
-            >
-                {renderModalFechamentoParcial()}
-            </Modal>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalFecharContaParcial}
-                onRequestClose={() => setModalFecharContaParcial(false)}
-            >
-                {renderModalFecharContaParcial()}
-            </Modal>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalConfirmaFechamentoCompleto}
-                onRequestClose={() => setModalConfirmaFechamentoCompleto(false)}
-            >
-                {renderModalConfirmaFechamentoCompleto()}
-            </Modal>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalConfirmaFechamentoParcial}
-                onRequestClose={() => setModalConfirmaFechamentoParcial(false)}
-            >
-                {renderModalConfirmaFechamentoParcial()}
+                <View style={styles.modalView}>
+                    <Text style={styles.selectedText}>Pedidos Selecionados: {contadorPedidosSelecionadosFechamento}</Text>
+                    <FlatList
+                        data={pedidos?.pedidosMesa || []}
+                        renderItem={({ item }) => (
+                            <View style={styles.pedidoContainer}>
+                                <Pressable
+                                    onPress={() => toggleSelectPedido(item)}
+                                    style={styles.checkbox}
+                                >
+                                    {pedidosSelecionadosFechamento.some(p => p.idPedido === item.idPedido) && (
+                                        <View style={styles.checkboxChecked} />
+                                    )}
+                                </Pressable>
+                                <View style={styles.pedidoContent}>
+                                    <Text style={styles.cpfText}>{item.cpfClientePedido}</Text>
+                                    {item.produtos.slice(0, 3).map((produto) => (
+                                        <Text key={produto.idProduto} style={styles.produtoText}>
+                                            {produto.nomeProd}
+                                        </Text>
+                                    ))}
+                                    {item.produtos.length > 3 && (
+                                        <Text style={styles.moreProductsText}>
+                                            ...e mais {item.produtos.length - 3} produtos
+                                        </Text>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.idPedido}
+                    />
+                    <Pressable
+                        style={styles.button}
+                        onPress={() => handleConfirmSelection()}
+                    >
+                        <Text style={styles.buttonText}>Confirmar Seleção</Text>
+                    </Pressable>
+                    <Pressable
+                        style={styles.button}
+                        onPress={() => setModalSelecaoPedidoFechamento(false)}
+                    >
+                        <Text style={styles.buttonText}>Fechar</Text>
+                    </Pressable>
+                </View>
             </Modal>
         </SafeAreaView>
     );
 }
 
-export default MenuMesa;
-
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    mesaButton: {
+        backgroundColor: '#f0f0f0',
         padding: 10,
-    },
-    mesaContainer: {
-        padding: 5,
-        alignItems: 'center',
+        marginVertical: 5,
+        borderRadius: 5,
     },
     mesaText: {
-        marginTop: 5,
-        textAlign: 'center',
-    },
-    noMesaText: {
-        textAlign: 'center',
-        marginTop: 20,
         fontSize: 16,
+        fontWeight: 'bold',
     },
     modalView: {
         margin: 20,
@@ -587,27 +364,113 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
       },
-      dropdown: {
+    pedidoButton: {
+        backgroundColor: '#e0e0e0',
+        padding: 10,
+        marginVertical: 5,
+        borderRadius: 5,
+    },
+    pedidoText: {
+        fontSize: 16,
+    },
+    confirmButton: {
+        backgroundColor: '#007BFF',
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+    },
+    confirmButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    closeButton: {
+        backgroundColor: '#FF0000',
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    dropdown: {
         height: 50,
-        borderColor: '#ccc',
-        borderWidth: 1,
+        borderColor: 'gray',
+        borderWidth: 0.5,
         borderRadius: 5,
         paddingHorizontal: 8,
-      },
-      placeholder: {
+        marginVertical: 10,
+    },
+    placeholder: {
         fontSize: 16,
-        color: '#999',
-      },
-      selectedText: {
+    },
+    selectedText: {
         fontSize: 16,
-        marginTop: 10,
-      },
-      inputSearch: {
+    },
+    inputSearch: {
         height: 40,
         fontSize: 16,
-      },
-      icon: {
+    },
+    icon: {
         width: 20,
         height: 20,
-      },
+    },
+    pedidoItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    pedidoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderWidth: 1,
+        borderColor: '#007BFF',
+        borderRadius: 3,
+        marginRight: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkboxChecked: {
+        width: 14,
+        height: 14,
+        backgroundColor: '#007BFF',
+        borderRadius: 2,
+    },
+    pedidoContent: {
+        flex: 1,
+    },
+    cpfText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    produtoText: {
+        fontSize: 14,
+    },
+    moreProductsText: {
+        fontSize: 12,
+        color: '#888',
+    },
+    button: {
+        backgroundColor: '#007BFF',
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+        width: '100%',
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+    },
 });
+
+export default MenuMesa;

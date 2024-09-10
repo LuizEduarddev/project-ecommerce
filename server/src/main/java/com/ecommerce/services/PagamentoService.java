@@ -65,35 +65,41 @@ public class PagamentoService {
 
 
 
-    public ResponseEntity<String> addPagamento(addPagamentoDTO dto)
-    {
-        if (dto.idPedido() == null && dto.pedido() == null)
-        {
+    public ResponseEntity<String> addPagamento(addPagamentoDTO dto) {
+        if (dto.idPedidos() == null && dto.pedido() == null) {
             throw new RuntimeException("Campos necessários não válidados.");
         }
-        try
-        {
-            if (dto.idPedido() == null)
-            {
+
+        List<String> issues = new ArrayList<>();
+
+        try {
+            if (dto.idPedidos() == null && dto.pedido().produtos() != null) {
                 Pedidos pedido = pedidosService.addPedidoAvulso(dto.pedido());
                 return generatePagamento(pedido, dto.metodoPagamento());
+            } else {
+                List<Pedidos> pedidos = pedidosService.getPedidoById(dto.idPedidos());
+                pedidos.forEach(pedido -> {
+                    try {
+                        pedido.setPedidoPago(true);
+                        generatePagamento(pedido, dto.metodoPagamento());
+                    } catch (Exception e) {
+                        issues.add("Falha ao gerar pagamento para o pedido ID: " + pedido.getIdPedido() + ". Erro: " + e.getMessage());
+                    }
+                });
             }
-            else
-            {
-                Pedidos pedido = pedidosService.getPedidoById(dto.idPedido());
-                pedido.setPedidoPago(true);
-                return generatePagamento(pedido, dto.metodoPagamento());
-            }
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Falha ao tentar gerar o pagamento\n" + e);
+        }
+
+        if (issues.isEmpty()) {
+            return ResponseEntity.ok("Pagamentos gerados com sucesso.");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erros encontrados:\n" + String.join("\n", issues));
         }
     }
 
-    private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento)
-    {
-        try{
+    private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento) {
+        try {
             Pagamentos pagamento = new Pagamentos();
             LocalTime currentTime = LocalTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -104,16 +110,16 @@ public class PagamentoService {
             pagamento.setPedido(pedido);
             pagamento.setCpfUserPagamento(pedido.getCpfClientePedido());
             repository.saveAndFlush(pagamento);
-            if (pedido.getMesa() != null)
-            {
+
+            if (pedido.getMesa() != null) {
                 checkMesaVazia(pedido.getMesa());
             }
-            return ResponseEntity.ok("pagamento efetuado com sucesso.");
-        }
-        catch (Exception e)
-        {
+
+            return ResponseEntity.ok("Pagamento efetuado com sucesso.");
+        } catch (Exception e) {
             throw new RuntimeException("Falha ao gerar o método de pagamento.\n" + e);
         }
     }
+
 
 }
