@@ -37,7 +37,7 @@ public class PagamentosController {
     }
 
     @PostMapping("/add")
-    public Object add(@RequestBody(required = false) addPagamentoDTO dto){
+    public Object add(@RequestBody addPagamentoDTO dto){
         return service.addPagamento(dto);
     }
 }

@@ -53,6 +53,27 @@ const MenuMesa = () => {
         getMetodoPagamento();
     }, []);
 
+    async function tryEfetuarPagamento()
+    {
+        const dataToSend = {
+            idPedidos: pedidosSelecionadosFechamento.map(pedido => pedido.idPedido),
+            metodoPagamento: formaDePagamentoEscolhida
+        }
+        api.post('api/pagamentos/add', dataToSend, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log(response.data);
+        })
+        .catch(error => {
+            console.log(error as string);
+        })
+    }
+
     async function getMetodoPagamento() {
         try {
             const response = await api.get('api/pagamentos/get-metodos', {
@@ -198,6 +219,14 @@ const MenuMesa = () => {
                                 >
                                     <Text style={styles.confirmButtonText}>Gerar pagamento</Text>
                                 </Pressable>
+                                <Modal
+                                    animationType="slide"
+                                    transparent={true}
+                                    visible={modalConfirmacao}
+                                    onRequestClose={() => setModalConfirmacao(false)}
+                                >
+                                    {renderModalConfirmacao()}
+                                </Modal>
                             </>
                     </View>
                 </Modal>
@@ -220,6 +249,44 @@ const MenuMesa = () => {
                 <View></View>
             );
         }
+    }
+
+    const renderModalConfirmacao = () =>{
+        return(
+            <View style={styles.modalView}>
+                <Text>Confirma pagamento?</Text>
+                <Pressable style={{
+                    backgroundColor: 'green',
+                    padding: 10,
+                    borderRadius: 5,
+                    marginVertical: 10,}}
+                    onPress={() => tryEfetuarPagamento()}
+                >
+                    <Text style={{
+                        color: 'white',
+                        fontSize: 16,
+                    }}
+                    >
+                        Sim
+                    </Text>
+                </Pressable>
+                <Pressable style={{
+                    backgroundColor: 'red',
+                    padding: 10,
+                    borderRadius: 5,
+                    marginVertical: 10,}}
+                    onPress={() => setModalConfirmacao(false)}
+                >
+                    <Text style={{
+                        color: 'white',
+                        fontSize: 16,
+                    }}
+                    >
+                        Não
+                    </Text>
+                </Pressable>
+            </View>
+        );
     }
 
     const renderModal = () => {

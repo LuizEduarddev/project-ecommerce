@@ -70,7 +70,7 @@ public class PedidosService {
         List<Pedidos> retorno = new ArrayList<>();
         listId.forEach(pedido -> {
             Pedidos pedido1 = repository.findById(pedido)
-                    .orElseThrow();
+                    .orElseThrow(() -> new RuntimeException("Pedido com id " + pedido + " não encontrado"));
             retorno.add(pedido1);
         });
         return retorno;
