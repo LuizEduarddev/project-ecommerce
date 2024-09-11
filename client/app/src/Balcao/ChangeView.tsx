@@ -102,3 +102,5 @@ const styles = StyleSheet.create({
         color: colors['bright-blue']
     }
 })
+
+export default ChangeView;
