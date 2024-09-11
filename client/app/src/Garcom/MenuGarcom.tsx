@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
+import Icon from 'react-native-vector-icons/FontAwesome6';
 
 type Mesa = {
     idMesa: string,
@@ -98,7 +99,7 @@ const MenuGarcom = () => {
         };
 
         fetchMesas();
-    }, [mesas]);
+    }, []);
 
     useEffect(() => {
         async function getCategorias() {
@@ -152,9 +153,10 @@ const MenuGarcom = () => {
     }
 
     const handleSearchPedidoCpf = (text: string) => {
-        if (text !== '' && text) {
+        const unformattedCPF = getUnformattedCpf(text);
+        if (unformattedCPF?.length <= 11) {
             setBuscaPorCpf(text);
-    
+
             if (getUnformattedCpf(text).length >= 11) {
                 findPedido(getUnformattedCpf(text));
             }
@@ -295,8 +297,8 @@ const MenuGarcom = () => {
                         >
                             <Text style={{ color: 'white' }}>Finalizar pedido</Text>
                         </Pressable>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue', color: 'white' }}>X</Text>
+                        <Pressable onPress={closeModal} style={{ position: 'absolute', top: 15, right: 15 }}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -304,8 +306,8 @@ const MenuGarcom = () => {
                 return (
                     <View style={styles.modalView}>
                         <Text>A mesa não possui pedidos</Text>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue' }}>X</Text>
+                        <Pressable onPress={closeModal} style={{ position: 'absolute', top: 15, right: 15 }}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -372,8 +374,8 @@ const MenuGarcom = () => {
                 <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => openModal('pedidoMesa')}>
                     <Text style={{ color: 'white' }}>Lançar pedido mesa</Text>
                 </Pressable>
-                <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => closeModal()}>
-                    <Text style={{ color: 'white' }}>X</Text>
+                <Pressable style={{ position: 'absolute', top: 15, right: 15 }} onPress={() => closeModal()}>
+                    <Icon name='x' size={15}></Icon>
                 </Pressable>
             </View>
         );
@@ -401,12 +403,12 @@ const MenuGarcom = () => {
     
     const renderProdutosLancar = ({item}:{item:ProductsMesaDTO}) => {
         return(
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
                     <Pressable onPress={() => decreaseQuantity(item.idProd)} >
                         <Text>-</Text>
                     </Pressable>
-                    <Text style={{ marginHorizontal: 10 }}>{item.quantidadeProduto}</Text> 
+                    <Text style={{ marginHorizontal: 15 }}>{item.quantidadeProduto}</Text> 
                     <Pressable onPress={() => increaseQuantity(item.idProd)} >
                         <Text>+</Text>
                     </Pressable>
@@ -505,8 +507,8 @@ const MenuGarcom = () => {
                             keyExtractor={(item) => item.idProd}
                         />
                         {valorTotal()}
-                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
-                            <Text style={{color:'white'}}>X</Text>
+                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{ position:'absolute', top:15, right:15 }}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                         <Pressable onPress={() => tryLancarPedido()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
                             <Text style={{color:'white'}}>Lançar pedido</Text>
@@ -526,8 +528,8 @@ const MenuGarcom = () => {
                 >
                     <View style={styles.modalView}>
                         <Text>Nenhum produto selecionado</Text>
-                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
-                            <Text style={{color:'white'}}>X</Text>
+                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{position:'absolute', top:15, right:15}}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 </Modal>
@@ -552,8 +554,8 @@ const MenuGarcom = () => {
                         renderItem={renderCategories}
                         keyExtractor={(item, index) => index.toString()}
                     />
-                    <Pressable onPress={() => closeModal()} style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }}>
-                        <Text style={{ color: 'white' }}>X</Text>
+                    <Pressable onPress={() => closeModal()} style={{ position: 'absolute', top: 15, right: 15 }}>
+                        <Icon name='x' size={15}></Icon>
                     </Pressable>
                     <Pressable onPress={() => setModalPedidosLancar(true)} style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }}>
                         <Text style={{ color: 'white' }}>Conferir Pedido</Text>
@@ -573,10 +575,10 @@ const MenuGarcom = () => {
     const renderMenu = () => {
         if (mesas.length > 0) {
             return (
-                <View>
+                <View style={{ padding: 20 }}>
                     <TextInput
-                        style={{borderColor:'gray', borderWidth: 1}}
-                        placeholder='Busca pedido por CPF'
+                        style={styles.input}
+                        placeholder='Busque o pedido pelo CPF'
                         onChangeText={handleSearchPedidoCpf}
                         value={buscaPorCpf}
                     />
@@ -644,8 +646,8 @@ const MenuGarcom = () => {
                         >
                             <Text style={{ color: 'white' }}>Finalizar pedido</Text>
                         </Pressable>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue', color: 'white' }}>X</Text>
+                        <Pressable onPress={closeModal} style={{ position: 'absolute', top: 15, right: 15 }}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -653,8 +655,8 @@ const MenuGarcom = () => {
                 return (
                     <View style={styles.modalView}>
                         <Text>A mesa não possui pedidos</Text>
-                        <Pressable onPress={closeModal}>
-                            <Text style={{ backgroundColor: 'blue' }}>X</Text>
+                        <Pressable onPress={closeModal} style={{ position: 'absolute', top: 15, right: 15 }}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -686,8 +688,8 @@ const MenuGarcom = () => {
                         renderItem={renderProdutosCategorias}
                         keyExtractor={(item) => item.idProd}
                     />
-                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{padding:5, borderColor:'black', borderWidth: 1, backgroundColor: 'blue'}}>
-                        <Text style={{color:'white'}}>X</Text>
+                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{position:'absolute', top:15, right:15}}>
+                        <Icon name='x' size={15}></Icon>
                     </Pressable>
                 </View>
             );
@@ -696,8 +698,8 @@ const MenuGarcom = () => {
             return(
                 <View style={styles.modalView}>
                     <Text>Nenhum produto desta categoria disponível.</Text>
-                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{padding:5, borderColor:'black', borderWidth: 1, backgroundColor: 'blue'}}>
-                        <Text style={{color:'white'}}>X</Text>
+                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{position:'absolute', top:15, right:15}}>
+                        <Icon name='x' size={15}></Icon>
                     </Pressable>
                 </View>
             );
@@ -714,8 +716,8 @@ const MenuGarcom = () => {
                         renderItem={renderPedidosMesa}
                         keyExtractor={(item) => item.idPedido}
                     />
-                    <Pressable onPress={() => closeModal()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
-                        <Text style={{color:'white'}}>X</Text>
+                    <Pressable onPress={() => closeModal()} style={{position:'absolute', top:15, right:15}}>
+                        <Icon name='x' size={15}></Icon>
                     </Pressable>
                 </View>
             );
@@ -724,8 +726,8 @@ const MenuGarcom = () => {
             return(
                 <View style={styles.modalView}>
                     <Text>Cliente não possui nenhum pedido.</Text>
-                    <Pressable onPress={() => closeModal()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
-                        <Text style={{color:'white'}}>X</Text>
+                    <Pressable onPress={() => closeModal()} style={{position:'absolute', top:15, right:15}}>
+                        <Icon name='x' size={15}></Icon>
                     </Pressable>
                 </View>
             );
@@ -820,10 +822,10 @@ const MenuGarcom = () => {
 const styles = StyleSheet.create({
     mesaContainer: {
         margin: 5,
-        padding: 10,
+        padding: 15,
         borderWidth: 1,
         borderColor: 'black',
-        borderRadius: 10,
+        borderRadius: 15,
         alignItems: 'center',
     },
     mesaText: {
@@ -870,11 +872,20 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         borderRadius: 5,
         padding: 5,
-        marginLeft: 10,
+        marginLeft: 15,
     },
     deleteButtonText: {
         color: 'white',
     },
+    input: {
+        backgroundColor: '#fff',
+        marginVertical: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+      },
 });
 
 export default MenuGarcom;

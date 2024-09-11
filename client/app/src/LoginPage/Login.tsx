@@ -104,6 +104,7 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        overflow: 'scroll'
     },
     topBlue: {
         flex: 1,

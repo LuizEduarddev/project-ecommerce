@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
+import Icon from 'react-native-vector-icons/FontAwesome6';
+import { colors } from '../../assets/colors';
 
 type Mesa = {
     idMesa: string,
@@ -31,6 +33,7 @@ type Pedidos = {
 type FormaDePagamento = 'pix' | 'crédito' | 'débito' | 'dinheiro';
 
 const formasDePagamento: { label: string; value: FormaDePagamento }[] = [
+  { label: '', value: null },
   { label: 'Pix', value: 'pix' },
   { label: 'Crédito', value: 'crédito' },
   { label: 'Débito', value: 'débito' },
@@ -47,11 +50,7 @@ const MenuMesa = () => {
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
-    const [modalFecharContaVisible, setModalFecharContaVisible] = useState<boolean>(false);
-    const [view, setView] = useState('mesas');
     const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState<'pix' | 'crédito' | 'débito' | 'dinheiro'>();
-
-    
 
     useEffect(() => {
         const fetchMesas = async () => {
@@ -72,7 +71,6 @@ const MenuMesa = () => {
         fetchMesas();
     }, []);
 
-
     async function getMesaInformation(idMesa: string) {
         const dataToSend = {
             idMesa: idMesa,
@@ -89,11 +87,18 @@ const MenuMesa = () => {
     }
 
     const renderProdutos = ({item}: {item: ProductsMesaDTO}) => {
+        //item.nomeProd
+        //item.quantidadeProduto
+        //formatToReais(item.precoProd)
+        //formatToReais(item.precoProd * item.quantidadeProduto)
         if (item != null) {
             return(
-                <View>
-                    <Text>{item.nomeProd} - x {item.quantidadeProduto}</Text>
-                    <Text>{formatToReais(item.precoProd)} - {formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
+                <View style={{flexDirection:'row', width:'100%', marginBottom:10}}>
+                    <View style={{flex:2}}>
+                        <Text style={{fontWeight:'bold', color: colors['raisin-black'], fontSize:14}}>{item.nomeProd}</Text>
+                        <Text style={{color: '#888', fontSize:12}}>{item.quantidadeProduto}x {formatToReais(item.precoProd)}</Text>
+                    </View>
+                    <Text style={{flex:1, alignSelf:'center', fontWeight: 'bold'}}>{formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
                 </View>
             );
         } else {
@@ -110,6 +115,7 @@ const MenuMesa = () => {
                     data={item.produtos}
                     renderItem={renderProdutos}
                     keyExtractor={(item) => item.idProduto}
+                    style={{width:'100%'}}
                 />
             );
         } else {
@@ -119,10 +125,8 @@ const MenuMesa = () => {
         }
     }
 
-    const finalizarPedido = () => 
-    {
-        setModalVisible(false);
-        setModalFecharContaVisible(true);
+    const finalizarPedido = () => {
+        //tem q fazer ainda
     }
 
     const renderModal = () => {
@@ -130,20 +134,48 @@ const MenuMesa = () => {
             if (pedidos.pedidosMesa.length > 0) {
                 return(
                     <View style={styles.modalView}>
+                        <View style={styles.tituloTabela}>
+                            <Text style={{flex:2, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Produtos</Text>
+                            <Text style={{flex:1, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Total</Text>
+                        </View>
                         <FlatList
                             data={pedidos.pedidosMesa}
                             renderItem={renderPedidosMesa}
                             keyExtractor={(item) => item.idPedido}
+                            style={{width:'100%'}}
                         />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
+                        <View style={styles.dashedLine}></View>
+                        <View style={{flexDirection:'row', justifyContent:'space-between', width:'100%'}}>
+                            <Text style={{fontWeight:'bold', fontSize:20, color: colors['raisin-black']}}>
+                                Total: {formatToReais(pedidos.valorTotal)}
+                            </Text>
+                            <Dropdown
+                            style={styles.dropdown}
+                            placeholderStyle={styles.placeholder}
+                            selectedTextStyle={styles.selectedText}
+                            inputSearchStyle={styles.inputSearch}
+                            iconStyle={styles.icon}
+                            data={formasDePagamento}
+                            maxHeight={300}
+                            labelField="label"
+                            valueField="value"
+                            placeholder="Forma de pagamento"
+                            value={formaDePagamentoEscolhida}
+                            onChange={(item) => {
+                                setFormaDePagamentoEscolhida(item.value);
+                            }}/>
+                            
+                        </View>
+                        <View>
                         <Pressable 
-                            style={{backgroundColor:'green', borderColor:'green', borderWidth:1}}
-                            onPress={() => {finalizarPedido()}}
-                        >
-                            <Text style={{color:'white'}}>Finalizar pedido</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue', color:'white'}}>X</Text>
+                                style={{backgroundColor:'#4CAF50', borderRadius:5, padding:10, marginTop: 15}}
+                                onPress={() => {finalizarPedido()}}
+                            >
+                                <Text style={{color:'white'}}>Finalizar pedido</Text>
+                            </Pressable>
+                        </View>
+                        <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -193,58 +225,6 @@ const MenuMesa = () => {
         }
     }
 
-    const renderModalFecharConta = () => {
-        if (pedidos && pedidos.pedidosMesa) {
-            if (pedidos.pedidosMesa.length > 0) {
-                return(
-                    <View style={styles.modalView}>
-                        <FlatList
-                            data={pedidos.pedidosMesa}
-                            renderItem={renderPedidosMesa}
-                            keyExtractor={(item) => item.idPedido}
-                        />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Dropdown
-                            style={styles.dropdown}
-                            placeholderStyle={styles.placeholder}
-                            selectedTextStyle={styles.selectedText}
-                            inputSearchStyle={styles.inputSearch}
-                            iconStyle={styles.icon}
-                            data={formasDePagamento}
-                            maxHeight={300}
-                            labelField="label"
-                            valueField="value"
-                            placeholder="Forma de pagamento"
-                            value={formaDePagamentoEscolhida}
-                            onChange={(item) => {
-                                setFormaDePagamentoEscolhida(item.value);
-                            }}
-                        />
-                        <Pressable 
-                            style={{backgroundColor:'green', borderColor:'green', borderWidth:1}}
-                            onPress={() => {finalizarPedido()}}
-                        >
-                            <Text style={{color:'white'}}>Finalizar pedido</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalFecharContaVisible(false)}>
-                            <Text style={{backgroundColor: 'blue', color:'white'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            } else {
-                return(
-                    <View style={styles.modalView}>
-                        <Text>A mesa não possui pedidos</Text>
-                        
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{backgroundColor: 'blue'}}>X</Text>
-                        </Pressable>
-                    </View>
-                );
-            }
-        }
-    }
-
     const renderMenu = () => {
         if (mesas.length > 0)
         {
@@ -278,14 +258,6 @@ const MenuMesa = () => {
     return (
         <SafeAreaView style={styles.container}>
             {renderMenu()}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalFecharContaVisible}
-                onRequestClose={() => setModalFecharContaVisible(false)}
-            >
-                {renderModalFecharConta()}
-            </Modal>
         </SafeAreaView>
     );
 }
@@ -311,7 +283,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     modalView: {
-        margin: 20,
+        width: 500,
+        marginTop: 40,
+        alignSelf: 'center',
         backgroundColor: 'white',
         borderRadius: 20,
         padding: 35,
@@ -326,11 +300,11 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
       dropdown: {
-        height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 5,
-        paddingHorizontal: 8,
+        padding: 5,
+        minWidth: 150
       },
       placeholder: {
         fontSize: 16,
@@ -338,7 +312,6 @@ const styles = StyleSheet.create({
       },
       selectedText: {
         fontSize: 16,
-        marginTop: 10,
       },
       inputSearch: {
         height: 40,
@@ -348,4 +321,22 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
       },
+      closeButton: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+      },
+      dashedLine: {
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: '#ccc', 
+        width: '100%',
+        height: 1,           
+        marginVertical: 10,
+      },
+      tituloTabela: {
+        flexDirection:'row', 
+        width:'100%',
+        marginBottom:10
+      }
 });
