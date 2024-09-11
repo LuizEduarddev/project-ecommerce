@@ -1,4 +1,4 @@
-import { Button, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useState } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
 
@@ -71,7 +71,7 @@ const MenuCadastroUsuario = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <Modal
         animationType="slide"
         transparent={true}
@@ -80,18 +80,34 @@ const MenuCadastroUsuario = () => {
       >
         {renderModalBlank()}
       </Modal>
-      <TextInput placeholder="Nome completo" onChangeText={setUserFullName} />
+      <TextInput 
+        placeholder="Nome completo" 
+        onChangeText={setUserFullName} 
+        style={styles.input}
+        />
       <TextInput
         placeholder="CPF"
         value={userCpf}
         onChangeText={formatCpf}
         keyboardType="numeric"
         maxLength={14}
+        style={styles.input}
       />
-      <TextInput placeholder="Endereço" onChangeText={setUserEndereco} />
-      <TextInput placeholder="Email" onChangeText={setUserEmail} />
-      <TextInput placeholder="Telefone" onChangeText={setUserTelefone} />
-      <Button title="Cadastrar usuário" onPress={cadastrarUsuario} />
+      <TextInput 
+        placeholder="Endereço" 
+        onChangeText={setUserEndereco} 
+        style={styles.input}/>
+      <TextInput 
+        placeholder="Email" 
+        onChangeText={setUserEmail} 
+        style={styles.input}/>
+      <TextInput 
+        placeholder="Telefone" 
+        onChangeText={setUserTelefone} 
+        style={styles.input} />
+      <Pressable style={styles.submitButton} onPress={cadastrarUsuario}>
+        <Text style={styles.submitButtonText}>Cadastrar Usuário</Text>
+      </Pressable>
     </View>
   );
 };
@@ -99,6 +115,9 @@ const MenuCadastroUsuario = () => {
 export default MenuCadastroUsuario;
 
 const styles = StyleSheet.create({
+  container: {
+    padding: 16
+  },
   modalView: {
     margin: 20,
     backgroundColor: 'white',
@@ -113,5 +132,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  input: {
+    backgroundColor: '#fff',
+    marginVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  submitButton: {
+    marginVertical: 8,
+    padding: 16,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

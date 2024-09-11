@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
+import Icon from 'react-native-vector-icons/FontAwesome6';
+import { colors } from '../../assets/colors';
 
 type Mesa = {
     idMesa: string,
@@ -158,10 +160,13 @@ const MenuMesa = () => {
 
     const renderProdutos = ({ item }: { item: ProductsMesaDTO }) => {
         if (item != null) {
-            return (
-                <View>
-                    <Text>{item.nomeProd} - x {item.quantidadeProduto}</Text>
-                    <Text>{formatToReais(item.precoProd)} - {formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
+            return(
+                <View style={{flexDirection:'row', width:'100%', marginBottom:10}}>
+                    <View style={{flex:2}}>
+                        <Text style={{fontWeight:'bold', color: colors['raisin-black'], fontSize:14}}>{item.nomeProd}</Text>
+                        <Text style={{color: '#888', fontSize:12}}>{item.quantidadeProduto}x {formatToReais(item.precoProd)}</Text>
+                    </View>
+                    <Text style={{flex:1, alignSelf:'center', fontWeight: 'bold'}}>{formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
                 </View>
             );
         } else {
@@ -242,6 +247,7 @@ const MenuMesa = () => {
                     data={item.produtos}
                     renderItem={renderProdutos}
                     keyExtractor={(item) => item.idProduto}
+                    style={{width:'100%'}}
                 />
             );
         } else {
@@ -294,20 +300,32 @@ const MenuMesa = () => {
             if (pedidos.pedidosMesa.length > 0) {
                 return (
                     <View style={styles.modalView}>
+                        <View style={styles.tituloTabela}>
+                            <Text style={{flex:2, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Produtos</Text>
+                            <Text style={{flex:1, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Total</Text>
+                        </View>
                         <FlatList
                             data={pedidos.pedidosMesa}
                             renderItem={renderPedidosMesa}
                             keyExtractor={(item) => item.idPedido}
+                            style={{width:'100%'}}
                         />
-                        <Text>Valor total: {formatToReais(pedidos.valorTotal)}</Text>
-                        <Pressable
-                            style={{ backgroundColor: 'green', borderColor: 'green', borderWidth: 1 }}
-                            onPress={() => setModalSelecaoPedidoFechamento(true)}
-                        >
-                            <Text style={{ color: 'white' }}>Fechamento</Text>
-                        </Pressable>
-                        <Pressable onPress={() => setModalVisible(false)}>
-                            <Text style={{ backgroundColor: 'red', color: 'white' }}>Fechar</Text>
+                        <View style={styles.dashedLine}></View>
+                        <View style={{flexDirection:'row', justifyContent:'space-between', width:'100%'}}>
+                            <Text style={{fontWeight:'bold', fontSize:20, color: colors['raisin-black']}}>
+                                Total: {formatToReais(pedidos.valorTotal)}
+                            </Text>
+                        </View>
+                        <View>
+                        <Pressable 
+                                style={{backgroundColor:'#4CAF50', borderRadius:5, padding:10, marginTop: 15}}
+                                onPress={() => {setModalSelecaoPedidoFechamento(true)}}
+                            >
+                                <Text style={{color:'white'}}>Finalizar pedido</Text>
+                            </Pressable>
+                        </View>
+                        <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                            <Icon name='x' size={15}></Icon>
                         </Pressable>
                     </View>
                 );
@@ -417,7 +435,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     modalView: {
-        margin: 20,
+        width: 500,
+        marginTop: 40,
+        alignSelf: 'center',
         backgroundColor: 'white',
         borderRadius: 20,
         padding: 35,
@@ -450,30 +470,23 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
-    closeButton: {
-        backgroundColor: '#FF0000',
-        padding: 10,
-        borderRadius: 5,
-        marginVertical: 10,
-    },
     closeButtonText: {
         color: 'white',
         fontSize: 16,
     },
     dropdown: {
-        height: 50,
-        borderColor: 'gray',
-        borderWidth: 0.5,
+        borderColor: '#ccc',
+        borderWidth: 1,
         borderRadius: 5,
-        paddingHorizontal: 8,
-        marginVertical: 10,
+        padding: 5,
+        minWidth: 150
     },
     placeholder: {
         fontSize: 16,
     },
     selectedText: {
         fontSize: 16,
-    },
+      },
     inputSearch: {
         height: 40,
         fontSize: 16,
@@ -538,6 +551,24 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
+    closeButton: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+    },
+    dashedLine: {
+      borderStyle: 'dashed',
+      borderWidth: 1,
+      borderColor: '#ccc', 
+      width: '100%',
+      height: 1,           
+      marginVertical: 10,
+    },
+    tituloTabela: {
+      flexDirection:'row', 
+      width:'100%',
+      marginBottom:10
+    }
 });
 
 export default MenuMesa;

@@ -49,7 +49,7 @@ const MenuPesquisarUsuario = () => {
         </View>
       );
     } else {
-      return <Text>Nenhum usuário encontrado</Text>;
+      return <Text style={{ alignSelf: 'center', marginVertical: 20 }}>Nenhum usuário encontrado</Text>;
     }
   };
 
@@ -95,11 +95,11 @@ const MenuPesquisarUsuario = () => {
       {viewMenuEditarUsuario === true ? (
         <MenuEditarUsuario user={usuarioResponse}/>
       ) : (
-        <View style={styles.modalView}>
+        <View style={styles.container}>
           <TextInput
             keyboardType="numeric"
             maxLength={14}
-            style={{ borderColor: 'gray', borderWidth: 1 }}
+            style={styles.input}
             placeholder="Busque por um cliente"
             onChangeText={handleSearchInputChange}
             value={buscaUsuario}
@@ -114,19 +114,14 @@ const MenuPesquisarUsuario = () => {
 export default MenuPesquisarUsuario;
 
 const styles = StyleSheet.create({
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  container: {
+    padding: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff'
   },
 });

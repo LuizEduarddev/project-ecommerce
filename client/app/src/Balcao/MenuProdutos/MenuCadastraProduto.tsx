@@ -131,7 +131,6 @@ const MenuCadastraProduto = () => {
     if (categorias) {
       return (
         <View>
-
           <Dropdown
             style={styles.dropdown}
             placeholderStyle={styles.placeholder}
@@ -141,10 +140,11 @@ const MenuCadastraProduto = () => {
             data={categorias}
             maxHeight={300}
             labelField="label"
-            valueField="value"
+            valueField="label"
             placeholder="Escolha uma categoria"
             value={categoriaProd}
             onChange={(item) => {
+              console.log(item)
               setCategoriaProd(item.label);
             }}
           />
@@ -158,7 +158,7 @@ const MenuCadastraProduto = () => {
   };
 
   return (
-    <View>
+    <View style={{padding: 16}}>
       <Modal
         animationType="slide"
         transparent={true}
@@ -167,13 +167,18 @@ const MenuCadastraProduto = () => {
       >
         {renderModalBlank()}
       </Modal>
-      <TextInput placeholder="Nome do produto" onChangeText={setNomeProduto} />
+      <TextInput 
+        placeholder="Nome do produto" 
+        onChangeText={setNomeProduto} 
+        style={styles.input}
+      />
       <TextInput
         keyboardType="numeric"
         placeholder="Preço do produto"
         value={precoProd}
         onChangeText={setPrecoProd}
         maxLength={15}
+        style={styles.input}
       />
       <Text>Promoção</Text>
       <Switch
@@ -189,6 +194,7 @@ const MenuCadastraProduto = () => {
           value={precoPromocao}
           onChangeText={setPrecoPromocao}
           maxLength={15}
+          style={styles.input}
         />
       )}
       <Text>Produto visível</Text>
@@ -205,11 +211,10 @@ const MenuCadastraProduto = () => {
       {imagemProduto && (
         <View>
           <Image source={{ uri: imagemProduto }} style={styles.image} />
-          <Text>Imagem anexada com sucesso.</Text>
         </View>
       )}
       <Pressable
-        style={{ backgroundColor: 'blue', borderWidth: 1 }}
+        style={styles.submitButton}
         onPress={handleSubmit}
       >
         <Text style={{ color: 'white', alignSelf: 'center' }}>Cadastrar produto</Text>
@@ -236,12 +241,32 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  input: {
+    backgroundColor: '#fff',
+    marginVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
   dropdown: {
-    height: 50,
+    height: 40,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 8,
+    marginTop: 10,
+    backgroundColor: '#fff',
+  },
+  submitButton: {
+    marginVertical: 8,
+    padding: 16,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    alignItems: 'center',
+    color: '#fff',
+    fontWeight: 'bold',
   },
   placeholder: {
     fontSize: 16,
@@ -249,7 +274,6 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     fontSize: 16,
-    marginTop: 10,
   },
   inputSearch: {
     height: 40,
@@ -266,12 +290,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
   image: {
     width: 100,
     height: 100,
-    marginTop: 10,
     borderWidth: 1,
     borderColor: '#ccc',
+    borderRadius: 5,
+    alignSelf: 'center'
   },
 });

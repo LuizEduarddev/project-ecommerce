@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
-import React, { useRef, useState } from 'react'
+import { Pressable, StyleSheet, Text, TextInput, View, FlatList, TouchableOpacity } from 'react-native'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
 import MenuEditarProduto from './MenuEditarProduto';
+import debounce from 'lodash.debounce'
 
 type Product = {
 	idProd:string,
@@ -22,25 +23,12 @@ const MenuPesquisaProduto = () => {
   
   const [viewMenuEditarProduto, setViewMenuEditarProduto] = useState<boolean>(false);
   const [buscaProduto, setBuscaProduto] = useState<string>('');
-  const [produtoResponse, setProdutoResponse] = useState<Product[] | null>(null);
+  const [produtoResponse, setProdutoResponse] = useState<Product[]>([]);
   const [produtoEditar, setProdutoEditar] = useState<Product | null>(null);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleClose = () => {
     setViewMenuEditarProduto(false);
     setProdutoEditar(null); 
-  };
-
-  const handleSearchInputChange = (text: string) => {
-    setBuscaProduto(text);
-
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    debounceTimeout.current = setTimeout(() => {
-      findProduto(buscaProduto); 
-    }, 600);
   };
 
   async function findProduto(query: string) {
@@ -69,65 +57,86 @@ const MenuPesquisaProduto = () => {
       });
     }
   }
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      if (query.length > 2) { 
+        findProduto(query);
+      } else {
+        setProdutoResponse([]); 
+      }
+    }, 600),
+    []
+  );
+  useEffect(() => {
+    debouncedSearch(buscaProduto);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [buscaProduto]);
   
   const screenEditarProduto = (produto: Product) => {
     setProdutoEditar(produto);
     setViewMenuEditarProduto(true);
   }
 
-  const renderPesquisa = () => {
-    if (produtoResponse && produtoResponse.length > 0) {
-        return produtoResponse.map(produto => (
-            <View 
-                key={produto.idProd}
-                style={{borderColor: 'black', borderWidth: 1}}
-            >
-                <Pressable onPress={() => screenEditarProduto(produto)}>
-                    <Text>{produto.nomeProd}</Text>
-                    <Text>{formatToReais(produto.precoProd)}</Text>
-                </Pressable>
-            </View>
-        ));
-    } else {
-        return <Text>Nenhum produto encontrado</Text>;
-    }
-};
+  const renderItem = ({ item }) => (
+      <Pressable onPress={() => screenEditarProduto(item)} style={styles.item}>
+          <Text>{item.nomeProd}</Text>
+          <Text>{formatToReais(item.precoProd)}</Text>
+      </Pressable>
+  );
 
   return (
-    <View>
+    <>
       {viewMenuEditarProduto === true ? (
         <MenuEditarProduto id={produtoEditar.idProd} onClose={handleClose}/>
       ) : (
-        <View style={styles.modalView}>
-          <TextInput
-            style={{ borderColor: 'gray', borderWidth: 1 }}
-            placeholder="Busque por um produto"
-            onChangeText={handleSearchInputChange}
-            value={buscaProduto}
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          value={buscaProduto}
+          placeholder="Busque por um produto"
+          onChangeText={setBuscaProduto}
+        />
+        {produtoResponse?.length > 0 &&
+          <FlatList
+            data={produtoResponse}
+            renderItem={renderItem}
+            keyExtractor={item => item.value}
+            style={styles.dropdown}
           />
-          {renderPesquisa()}
-        </View>
+        }
+      </View>
       )}
-    </View>
-  )
-}
+    </>
+  );
+};
 
-export default MenuPesquisaProduto
+export default MenuPesquisaProduto;
 
 const styles = StyleSheet.create({
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  container: {
+    padding: 16,
   },
-})
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff'
+  },
+  dropdown: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+  },
+  item: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+
+  },
+});

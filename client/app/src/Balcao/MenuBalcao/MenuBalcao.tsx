@@ -1,7 +1,9 @@
-import { Button, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View, Image } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { colors } from '../../assets/colors';
 
 type Product = {
     idProd: string;
@@ -109,18 +111,19 @@ const MenuBalcao = () => {
             )
         );
     };
-
+    
     const renderPesquisa = () => {
-        if (produtoResponse && produtoResponse.length > 0) {
+      if (produtoResponse && produtoResponse.length > 0) {
             return produtoResponse.map(produto => (
                 <View 
-                    key={produto.idProd}
-                    style={{borderColor: 'black', borderWidth: 1}}
+                  key={produto.idProd}
+                  style={styles.produtoContainer}
                 >
-                    <Pressable onPress={() => saveProduto(produto)}>
-                        <Text>{produto.nomeProd}</Text>
-                        <Text>{formatToReais(produto.precoProd)}</Text>
-                    </Pressable>
+                    <Text style={styles.itemProdutoContainer}>{produto.nomeProd}</Text>
+                    <Text style={{color: colors['raisin-black'], flex: 1, alignItems: 'center'}}>{formatToReais(produto.precoProd)}</Text>
+                    <View style={{flex: 1}}>
+                        <Pressable style={styles.button} onPress={() => saveProduto(produto)}>+</Pressable>
+                    </View>
                 </View>
             ));
         } else {
@@ -144,16 +147,20 @@ const MenuBalcao = () => {
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
-                    <Button title="-" onPress={() => decreaseQuantity(item.idProd)} />
+                    <Pressable onPress={() => decreaseQuantity(item.idProd)}>
+                        <Icon style={styles.botaoMudarQuantidade} name='minus-circle-outline'></Icon>
+                    </Pressable>
                     <Text style={{ marginHorizontal: 10 }}>{item.quantity}</Text> {/* Display quantity */}
-                    <Button title="+" onPress={() => increaseQuantity(item.idProd)} />
+                    <Pressable onPress={() => increaseQuantity(item.idProd)}>
+                        <Icon style={styles.botaoMudarQuantidade} name='plus-circle-outline'></Icon>
+                    </Pressable>
                 </View>
                 <View style={{ flex: 1 }}>
                     <Text>{item.nomeProd}</Text>
                     <Text>{formatToReais(item.precoProd * item.quantity)}</Text> {/* Display total price */}
                 </View>
                 <Pressable onPress={() => deleteProduto(item.idProd)} style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>Delete</Text>
+                    <Text style={styles.deleteButtonText}>Exluir</Text>
                 </Pressable>
             </View>
         );
@@ -212,31 +219,25 @@ const MenuBalcao = () => {
     }
 
     const renderProdutosSalvos = () => {
-        if (produtosBalcao.length > 0) {
-            return (
-                <View>
-                    <FlatList
-                        data={produtosBalcao}
-                        renderItem={renderProdutosBalcao}
-                        keyExtractor={(item) => item.idProd}
-                    />
-                    {valorTotal()}
-                    <Button
-                        title='Efetuar pagamento'
-                        onPress={() => setModalConfirmarPagamento(true)}
-                    />
-                </View>
-            );
-        } else {
-            return;
-        }
+        return (
+            <View style={styles.carrinho}>
+                <Text style={styles.tituloCarrinho}>Produtos selecionados ({produtosBalcao.length})</Text>
+                <FlatList
+                    data={produtosBalcao}
+                    renderItem={renderProdutosBalcao}
+                    keyExtractor={(item) => item.idProd}
+                />
+                {valorTotal()}
+                <br></br>
+                <Pressable style={styles.efetuarPagamento} onPress={() => setModalConfirmarPagamento(true)}>Efetuar pagamento</Pressable>
+            </View>
+        );
     };
 
     const renderMetodoPagamento = () => {
         if (metodosPagamento) {
           return (
             <View>
-    
               <Dropdown
                 style={styles.dropdown}
                 placeholderStyle={styles.placeholder}
@@ -284,32 +285,40 @@ const MenuBalcao = () => {
     }
 
     return (
-        <View>
-            <View style={styles.modalView}>
-                <TextInput
-                    style={{borderColor:'gray', borderWidth: 1}}
-                    placeholder='Busque por um produto'
-                    onChangeText={handleSearchInputChange}
-                    value={buscaProduto}
-                />
-                <TextInput
-                    style={{borderColor:'gray', borderWidth: 1}}
-                    placeholder='CPF do cliente'
-                    onChangeText={setClienteCPF}
-                    value={clienteCPF}
-                />
-                {renderPesquisa()}
-                {renderProdutosSalvos()}
-                {renderMetodoPagamento()}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalConfirmarPagamento}
-                    onRequestClose={() => setModalConfirmarPagamento(false)}
-                >
-                    {renderModalConfirmarPagamento()}
-                </Modal>
+        <View style={styles.modalView}>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Busque por um produto'
+              placeholderTextColor="#888"
+              value={buscaProduto}
+              onChangeText={handleSearchInputChange}
+            />
+            <Icon name="magnify" size={24} color="#333" style={styles.icon} />
+          </View>
+          <TextInput
+                style={{borderColor:'gray', borderWidth: 1}}
+                placeholder='CPF do cliente'
+                onChangeText={setClienteCPF}
+                value={clienteCPF}
+            />
+          <View style={{flexDirection: 'row', width: '100%', gap: 20}}>
+            <View style={styles.listaPesquisa}>
+              {renderPesquisa()}
             </View>
+            <View style={{width: 300}}>
+              {renderProdutosSalvos()}
+            </View>
+          </View>
+          {renderMetodoPagamento()}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalConfirmarPagamento}
+                onRequestClose={() => setModalConfirmarPagamento(false)}
+            >
+                {renderModalConfirmarPagamento()}
+            </Modal>
         </View>
     );
 };
@@ -317,29 +326,82 @@ const MenuBalcao = () => {
 export default MenuBalcao;
 
 const styles = StyleSheet.create({
-    modalView: {
-        margin: 20,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 35,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    deleteButton: {
-        backgroundColor: 'red',
-        borderRadius: 5,
-        padding: 5,
-        marginLeft: 10,
-    },
-    deleteButtonText: {
-        color: 'white',
+  input: {
+    borderRadius: 25,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    fontSize: 16,
+    color: '#333',
+    paddingHorizontal: 40,
+    paddingVertical: 10,
+    flex: 1,
+  },
+  searchContainer: {
+    width: '90%',
+    marginBottom: 20,
+  },
+  icon: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    color: '#888',
+  },
+  listaPesquisa: {
+    flex: 1,
+  },
+  modalView: {
+    width: '100%',
+    alignItems: 'center'
+  },
+  produtoContainer: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    paddingVertical: 15,
+    height: 120,
+    flex: 1,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    maxHeight: 70
+  },
+  itemProdutoContainer: {
+      flex: 1
+  },
+  button: {
+    color: 'white',
+    backgroundColor: colors['bright-blue'],
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    fontWeight: 'semibold',
+    alignSelf: 'flex-end',
+  },
+  efetuarPagamento: {
+    color: 'white',
+    backgroundColor: colors['bright-blue'],
+    borderRadius: 20,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    fontWeight: 'semibold',
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    borderRadius: 5,
+    padding: 5,
+    marginLeft: 10,
+  },
+  deleteButtonText: {
+    color: 'white',
     },
     dropdown: {
         height: 50,
@@ -347,21 +409,33 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 8,
-      },
-      placeholder: {
-        fontSize: 16,
-        color: '#999',
-      },
-      selectedText: {
-        fontSize: 16,
-        marginTop: 10,
-      },
-      inputSearch: {
-        height: 40,
-        fontSize: 16,
-      },
-      icon: {
-        width: 20,
-        height: 20,
-      },
+    },
+    placeholder: {
+    fontSize: 16,
+    color: '#999',
+    },
+    selectedText: {
+    fontSize: 16,
+    marginTop: 10,
+    },
+    inputSearch: {
+    height: 40,
+    fontSize: 16,
+    },
+  carrinho: {
+    borderWidth: 1,
+    padding: 15,
+    borderRadius: 10,
+    borderColor: colors['slate-gray'],
+  },
+  tituloCarrinho: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    alignSelf: 'center',
+    marginBottom: 10
+  },
+  botaoMudarQuantidade: {
+    color: colors['dim-gray'],
+    fontSize: 20,
+  },
 });

@@ -14,6 +14,8 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { Dropdown } from 'react-native-element-dropdown';
 import api from '../../../ApiConfigs/ApiRoute';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../../assets/colors';
+import Icon from 'react-native-vector-icons/FontAwesome6';
 
 const MenuEditarProduto = ({
   id,
@@ -38,7 +40,6 @@ const MenuEditarProduto = ({
 
   useEffect(() => {
     async function fetchProductData() {
-      console.log(precoProd);
       try {
         const response = await api.post('api/products/get-by-id', null, {
           params:{
@@ -94,12 +95,14 @@ const MenuEditarProduto = ({
 
   const handleImagePick = () => {
     launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
+      console.log(response)
       if (response.didCancel) {
         console.log('User canceled image picker');
       } else if (response.errorCode) {
         console.log('ImagePicker Error: ', response.errorCode);
       } else {
-        setImagemProduto(response.assets[0].uri);
+        const base64Image = response?.assets?.[0]?.uri?.split(',')[1];
+        setImagemProduto(base64Image);
       }
     });
   };
@@ -152,7 +155,6 @@ const MenuEditarProduto = ({
   }
 
   async function apiEditarProduto() {
-
     const formData = new FormData();
     formData.append('idProd', id);
     formData.append('nomeProd', nomeProduto);
@@ -219,7 +221,10 @@ const MenuEditarProduto = ({
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.container}>
-        <Text>Editar Produto</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
+          <Icon name='circle-arrow-left' color={colors['bright-blue']} size={15} onPress={onClose}></Icon>
+          <Text style={styles.title}>Editar Produto</Text>
+        </View>
         <TextInput
           placeholder="Nome do produto"
           value={nomeProduto}
@@ -262,7 +267,7 @@ const MenuEditarProduto = ({
         <View style={styles.imageContainer}>
           {imagemProduto ? (
             <>
-              <Image source={{ uri: imagemProduto }} style={styles.image} />
+              <Image source={{ uri: `data:image/png;base64,${imagemProduto}`}} style={styles.image} />
               <Pressable onPress={handleImagePick} style={styles.imageButton}>
                 <Text>Alterar Imagem</Text>
               </Pressable>
@@ -336,6 +341,11 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32, // Extra padding at the bottom
   },
+  title: {
+    color: colors['dim-gray'],
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   placeholder: {
     fontSize: 16,
     color: '#999',
@@ -352,6 +362,7 @@ const styles = StyleSheet.create({
     height: 20,
   },
   input: {
+    backgroundColor: '#fff',
     marginVertical: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
