@@ -233,7 +233,6 @@ public class AuthenticationService {
 		else {
 			if (data.userFullName() != null && data.userCpf() != null && data.userTelefone() != null && data.userEmail() != null && data.userEndereco() != null) {
 				try {
-					System.out.println("Registering User: " + data.userFullName() + ", " + data.userCpf() + "," + data.userTelefone() + "," + data.userEmail() + "," + data.userEndereco());
 
 					Users newUser = new Users(data.userFullName(), data.userCpf(), data.userTelefone(), data.userEmail(), data.userEndereco());
 					newUser.setUserRole(UserRole.USER);

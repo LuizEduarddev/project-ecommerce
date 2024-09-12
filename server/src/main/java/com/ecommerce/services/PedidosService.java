@@ -175,6 +175,7 @@ public class PedidosService {
                     pedido.setMesa(mesa);
                     pedido.setCpfClientePedido(dto.cpfClientePedido());
                     pedido.setHoraPronto(null);
+                    pedido.setLevouParaMesa(false);
 
                     mesaService.alterMesaEmUso(dto.idMesa());
 
@@ -229,6 +230,7 @@ public class PedidosService {
             pedido.setProdutos(productsPedidosDTOS);
             pedido.setUsers(dto.user());
             pedido.setMesa(null);
+            pedido.setLevouParaMesa(false);
 
             repository.saveAndFlush(pedido);
 
@@ -286,10 +288,17 @@ public class PedidosService {
                 if (hasBalcaoProducts && pedido.isPedidoProntoBalcao()) {
                     pedido.setPedidoPronto(true);
                     pedido.setPedidoProntoCozinha(true);
-                } else {
+                    setHoraPronto(pedido);
+                }
+                else if (!hasBalcaoProducts)
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoCozinha(true);
+                    setHoraPronto(pedido);
+                }
+                else {
                     pedido.setPedidoProntoCozinha(true);
                 }
-                setHoraPronto(pedido);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }
@@ -297,10 +306,17 @@ public class PedidosService {
                 if (hasCozinhaProducts && pedido.isPedidoProntoCozinha()) {
                     pedido.setPedidoPronto(true);
                     pedido.setPedidoProntoBalcao(true);
-                } else {
+                    setHoraPronto(pedido);
+                }
+                else if(!hasCozinhaProducts)
+                {
+                    pedido.setPedidoPronto(true);
+                    pedido.setPedidoProntoBalcao(true);
+                    setHoraPronto(pedido);
+                }
+                else {
                     pedido.setPedidoProntoBalcao(true);
                 }
-                setHoraPronto(pedido);
                 repository.saveAndFlush(pedido);
                 return ResponseEntity.ok("Pedido foi alterado para pronto.");
             }

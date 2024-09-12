@@ -41,6 +41,8 @@ public class Pedidos {
     @Column(name = "hora_pronto")
     private String horaPronto;
 
+    @Column(name = "levou_para_mesa")
+    private boolean levouParaMesa;
 
     @ElementCollection
     @CollectionTable(name = "pedido_produtos", joinColumns = @JoinColumn(name = "pedido_id"))
@@ -67,7 +69,7 @@ public class Pedidos {
         this.users = users;
     }
 
-    public Pedidos(String dataPedido, String horaPedido, String horaPronto, double totalPedido, boolean pedidoPago, boolean pedidoProntoCozinha, boolean pedidoProntoBalcao, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
+    public Pedidos(boolean levouParaMesa, String dataPedido, String horaPedido, String horaPronto, double totalPedido, boolean pedidoPago, boolean pedidoProntoCozinha, boolean pedidoProntoBalcao, boolean pedidoPronto, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, String cpfClientePedido) {
         this.dataPedido = dataPedido;
         this.horaPedido = horaPedido;
         this.horaPronto = horaPronto;
@@ -80,6 +82,7 @@ public class Pedidos {
         this.users = users;
         this.mesa = mesa;
         this.cpfClientePedido = cpfClientePedido;
+        this.levouParaMesa = levouParaMesa;
     }
 
     public Users getUsers() {
@@ -184,5 +187,13 @@ public class Pedidos {
 
     public void setPedidoPronto(boolean pedidoPronto) {
         this.pedidoPronto = pedidoPronto;
+    }
+
+    public boolean isLevouParaMesa() {
+        return levouParaMesa;
+    }
+
+    public void setLevouParaMesa(boolean levouParaMesa) {
+        this.levouParaMesa = levouParaMesa;
     }
 }

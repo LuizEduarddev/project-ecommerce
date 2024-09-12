@@ -22,7 +22,8 @@ type ProductsMesaDTO = {
 type PedidosMesaDTO = {
     idPedido: string,
     pedidoPronto: boolean,
-    produtos: ProductsMesaDTO[];
+    produtos: ProductsMesaDTO[],
+    cpfClientePedido: string
 };
 
 type Pedidos = {
@@ -323,6 +324,7 @@ const MenuGarcom = ({navigation}) => {
         if (item != null) {
             return (
                 <View>
+                    <Text>{item.cpfClientePedido}</Text>
                     <FlatList
                         data={item.produtos}
                         renderItem={renderProdutos}
@@ -363,10 +365,24 @@ const MenuGarcom = ({navigation}) => {
     const renderModalEscolha = () => {
         return (
             <View style={styles.modalView}>
-                <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => openModal('visualizarPedidosMesa')}>
+                <Pressable style={{
+                    backgroundColor: 'green',
+                    borderRadius: 5,
+                    padding: 5,
+                    marginLeft: 15
+                    }} 
+                    onPress={() => openModal('visualizarPedidosMesa')}
+                >
                     <Text style={{ color: 'white' }}>Ver pedidos da mesa</Text>
                 </Pressable>
-                <Pressable style={{ backgroundColor: 'blue', borderColor: 'black', borderWidth: 1 }} onPress={() => openModal('pedidoMesa')}>
+                <Pressable style={{
+                    backgroundColor: 'blue',
+                    borderRadius: 5,
+                    padding: 5,
+                    marginLeft: 15
+                    }}  
+                    onPress={() => openModal('pedidoMesa')}
+                >
                     <Text style={{ color: 'white' }}>Lançar pedido mesa</Text>
                 </Pressable>
                 <Pressable style={{ position: 'absolute', top: 15, right: 15 }} onPress={() => closeModal()}>

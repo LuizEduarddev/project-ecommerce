@@ -70,6 +70,9 @@ const MenuMesa = () => {
         })
         .then(response => {
             console.log(response.data);
+            setModalConfirmacao(false);
+            setModalVisible(false);
+            setModalFecharContaVisible(false);
         })
         .catch(error => {
             console.log(error as string);
@@ -243,12 +246,15 @@ const MenuMesa = () => {
     const renderPedidosMesa = ({ item }: { item: PedidosMesaDTO }) => {
         if (item != null) {
             return (
-                <FlatList
-                    data={item.produtos}
-                    renderItem={renderProdutos}
-                    keyExtractor={(item) => item.idProduto}
-                    style={{width:'100%'}}
-                />
+                <View>
+                    <Text>{item.cpfClientePedido}</Text>
+                    <FlatList
+                        data={item.produtos}
+                        renderItem={renderProdutos}
+                        keyExtractor={(item) => item.idProduto}
+                        style={{width:'100%'}}
+                    />
+                </View>
             );
         } else {
             return (
@@ -331,7 +337,12 @@ const MenuMesa = () => {
                 );
             } else {
                 return (
-                    <Text>Não há pedidos para esta mesa.</Text>
+                    <View style={styles.modalView}>
+                        <Text>Não há pedidos para esta mesa.</Text>
+                        <Pressable style={styles.confirmButton} onPress={() => setModalVisible(false)}>
+                            <Text style={styles.closeButtonText}>X</Text>
+                        </Pressable>
+                    </View>
                 );
             }
         } else {
