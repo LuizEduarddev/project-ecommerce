@@ -905,7 +905,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-        width: '40%',
     },
     categoria: {
         width: 80,
