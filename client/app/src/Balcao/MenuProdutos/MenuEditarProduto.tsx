@@ -16,6 +16,7 @@ import api from '../../../ApiConfigs/ApiRoute';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../assets/colors';
 import Icon from 'react-native-vector-icons/FontAwesome6';
+import { useToast } from 'react-native-toast-notifications';
 
 const MenuEditarProduto = ({
   id,
@@ -24,6 +25,7 @@ const MenuEditarProduto = ({
   id: string;
   onClose: () => void;
 }) => {
+  const toast = useToast();
   const [nomeProduto, setNomeProduto] = useState('');
   const [precoProd, setPrecoProd] = useState('');
   const [promoProd, setPromoProd] = useState(false);
@@ -35,8 +37,6 @@ const MenuEditarProduto = ({
     { label: string; value: string }[]
   >([]);
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
-  const [modalBlankVisible, setModalBlankVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     async function fetchProductData() {
@@ -53,14 +53,19 @@ const MenuEditarProduto = ({
         });
         const product = response.data;
         setNomeProduto(product.nomeProd);
-        setPrecoProd(product.precoProd.toString()); // Adjusting for display
+        setPrecoProd(product.precoProd.toString()); 
         setPromoProd(product.promoProd);
         setCategoriaProd(product.categoriaProd);
-        setPrecoPromocao(product.precoPromocao.toString()); // Adjusting for display
+        setPrecoPromocao(product.precoPromocao.toString());
         setVisible(product.visible);
         setImagemProduto(product.imagemProduto);
       } catch (error) {
-        console.error('Error fetching product data:', error);
+        toast.show("Erro ao tentar buscar o produto", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
   
@@ -86,7 +91,12 @@ const MenuEditarProduto = ({
         );
         setCategorias(formattedCategories);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        toast.show("Erro ao tentar buscar as categorias.", {
+          type: "warning",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
 
@@ -95,11 +105,15 @@ const MenuEditarProduto = ({
 
   const handleImagePick = () => {
     launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
-      console.log(response)
       if (response.didCancel) {
-        console.log('User canceled image picker');
+        return;
       } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorCode);
+        toast.show("Erro ao tentar carregar a imagem", {
+          type: "warning",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       } else {
         const base64Image = response?.assets?.[0]?.uri?.split(',')[1];
         setImagemProduto(base64Image);
@@ -121,18 +135,24 @@ const MenuEditarProduto = ({
       categoriaProd === null ||
       (promoProd && !precoPromocao)
     ) {
-      setErrorMessage('Por favor, preencha todos os campos obrigatórios.');
+      toast.show("Por favor, preencha todos os campos", {
+        type: "warning",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
       return false;
     }
 
     if (promoProd && promocao >= preco) {
-      setErrorMessage(
-        'O preço da promoção deve ser menor que o preço original.'
-      );
+      toast.show("O preço da promoção deve ser menor do que o preço original.", {
+        type: "warning",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
       return false;
     }
-
-    setErrorMessage('');
     return true;
   };
 
@@ -147,10 +167,20 @@ const MenuEditarProduto = ({
           'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
       }
       });
-      console.log('Delete successful');
-      onClose(); // Close the page after successful delete
+      toast.show("Produto deletado com sucesso", {
+        type: "success",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
+      onClose(); 
     } catch (error) {
-      console.error('Error deleting product:', error);
+      toast.show("Erro ao tentar deletar o produto", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     }
   }
 
@@ -170,7 +200,12 @@ const MenuEditarProduto = ({
 
         formData.append('file', blob, nomeProduto + '.png');
       } catch (error) {
-        console.error('Error converting image to Blob:', error);
+        toast.show("Erro ao tentar converter a imagem. Contate o administrador", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
     api
@@ -182,16 +217,25 @@ const MenuEditarProduto = ({
       }
       })
       .then((response) => {
-        console.log(response.data);
+        toast.show("Produto editado com sucesso", {
+          type: "success",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       })
       .catch((error) => {
-        console.log(error);
+        toast.show("Falha ao tentar editar o produto.", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       });
   }
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      setModalBlankVisible(true);
       return;
     }
     apiEditarProduto();
@@ -309,23 +353,6 @@ const MenuEditarProduto = ({
                   <Text>Deletar</Text>
                 </Pressable>
               </View>
-            </View>
-          </View>
-        </Modal>
-        <Modal
-          visible={modalBlankVisible}
-          transparent={true}
-          animationType="slide"
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text>{errorMessage}</Text>
-              <Pressable
-                onPress={() => setModalBlankVisible(false)}
-                style={styles.modalButton}
-              >
-                <Text>OK</Text>
-              </Pressable>
             </View>
           </View>
         </Modal>

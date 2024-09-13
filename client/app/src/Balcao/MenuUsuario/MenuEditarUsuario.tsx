@@ -1,6 +1,7 @@
-import { Button, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useState } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
+import { useToast } from 'react-native-toast-notifications';
 
 type UserDTO = {
   userFullName: string,
@@ -11,12 +12,12 @@ type UserDTO = {
 };
 
 const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
+  const toast = useToast();
   const [userFullName, setUserFullName] = useState<string>(user.userFullName);
   const [userCpf, setUserCpf] = useState<string>(user.userCpf);
   const [userTelefone, setUserTelefone] = useState<string>(user.userTelefone);
   const [userEndereco, setUserEndereco] = useState<string>(user.userEndereco);
   const [userEmail, setUserEmail] = useState<string>(user.userEmail);
-  const [modalBlankVisible, setModalBlankVisible] = useState<boolean>(false);
   const [modalCpfVisible, setModalCpfVisible] = useState<boolean>(false);
 
   const formatCpf = (text: string) => {
@@ -50,24 +51,6 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
 
   const getUnformattedCpf = (cpf: string) => cpf.replace(/\D/g, '');
 
-  const renderModalBlank = () => {
-    return (
-      <View style={styles.modalView}>
-        <Text>Nenhum campo pode ficar em branco</Text>
-        <Button title="X" onPress={() => setModalBlankVisible(false)} />
-      </View>
-    );
-  };
-
-  const renderModalCpf = () => {
-    return (
-      <View style={styles.modalView}>
-        <Text>Cpf tem que ter no mínimo 11 dígitos.</Text>
-        <Button title="X" onPress={() => setModalCpfVisible(false)} />
-      </View>
-    );
-  };
-
   async function cadastrarUsuario() {
     if (
       (!userFullName.trim() && !user.userFullName.trim()) ||
@@ -76,7 +59,12 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
       (!userEndereco.trim() && !user.userEndereco.trim()) ||
       (!userEmail.trim() && !user.userEmail.trim())
     ) {
-      setModalBlankVisible(true);
+      toast.show("Preencha todos os campos", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     } else {
       if (getUnformattedCpf(userCpf).length === 11) {
         const dataToSend = {
@@ -93,57 +81,64 @@ const MenuEditarUsuario = ({ user }: { user: UserDTO }) => {
         }
         })
           .then(response => {
-            console.log(response.data);
+            toast.show("Usuário alterado com sucesso.", {
+              type: "success",
+              placement: "top",
+              duration: 4000,
+              animationType: "slide-in",
+            });
           })
           .catch(error => {
-            console.log(error.response.data);
+            toast.show("Erro ao editar o usuário", {
+              type: "danger",
+              placement: "top",
+              duration: 4000,
+              animationType: "slide-in",
+            });
           });
       } else {
-        setModalCpfVisible(true);
+        toast.show("CPF precisa ter 11 digitos.", {
+          type: "warning",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
   }
 
   return (
     <View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalBlankVisible}
-        onRequestClose={() => setModalBlankVisible(false)}
-      >
-        {renderModalBlank()}
-      </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalCpfVisible}
-        onRequestClose={() => setModalCpfVisible(false)}
-      >
-        {renderModalCpf()}
-      </Modal>
-      <TextInput
-        placeholder={user.userFullName}
-        value={userFullName}
-        onChangeText={setUserFullName}
-      />
-      <Text>{formatCpfAsync(user.userCpf)}</Text>
-      <TextInput
-        placeholder={user.userEndereco}
-        value={userEndereco}
-        onChangeText={setUserEndereco}
-      />
-      <TextInput
-        placeholder={user.userEmail}
-        value={userEmail}
-        onChangeText={setUserEmail}
-      />
-      <TextInput
-        placeholder={user.userTelefone}
-        value={userTelefone}
-        onChangeText={setUserTelefone}
-      />
-      <Button title="Alterar usuário" onPress={cadastrarUsuario} />
+      <View style={styles.container}>
+        <TextInput
+          placeholder={user.userFullName}
+          value={userFullName}
+          onChangeText={setUserFullName}
+          style={styles.input}
+        />
+        <Text style={styles.input}>{formatCpfAsync(user.userCpf)}</Text>
+        <TextInput
+          placeholder={user.userEndereco}
+          value={userEndereco}
+          onChangeText={setUserEndereco}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder={user.userEmail}
+          value={userEmail}
+          onChangeText={setUserEmail}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder={user.userTelefone}
+          value={userTelefone}
+          onChangeText={setUserTelefone}
+          style={styles.input}
+        />
+        <Pressable style={styles.submitButton} onPress={cadastrarUsuario}>
+        <Text style={styles.submitButtonText}>Alterar usuario</Text>
+      </Pressable>
+      </View>
     </View>
   );
 };
@@ -165,5 +160,28 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  container: {
+    padding: 16
+  },
+  input: {
+    backgroundColor: '#fff',
+    marginVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  submitButton: {
+    marginVertical: 8,
+    padding: 16,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

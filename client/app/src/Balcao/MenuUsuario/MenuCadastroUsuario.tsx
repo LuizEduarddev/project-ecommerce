@@ -1,14 +1,15 @@
 import { Button, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import React, { useState } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
+import { useToast } from 'react-native-toast-notifications';
 
 const MenuCadastroUsuario = () => {
+  const toast = useToast();
   const [userFullName, setUserFullName] = useState<string>('');
   const [userCpf, setUserCpf] = useState<string>('');
   const [userTelefone, setUserTelefone] = useState<string>('');
   const [userEndereco, setUserEndereco] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
-  const [modalBlankVisible, setModalBlankVisible] = useState<boolean>(false);
   const [view, setView] = useState<string>();
 
   const formatCpf = (text: string) => {
@@ -37,7 +38,12 @@ const MenuCadastroUsuario = () => {
       !userEndereco.trim() ||
       !userEmail.trim()
     ) {
-      setModalBlankVisible(true);
+      toast.show("Por favor, preencha todos os campos", {
+        type: "warning",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     } else {
       const dataToSend = {
         userFullName,
@@ -53,33 +59,37 @@ const MenuCadastroUsuario = () => {
       }
       })
       .then(response => {
-        console.log(response.data);
+        toast.show("Usuário registrado com sucesso", {
+          type: "success",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       })
       .catch(error => {
-        console.log(error.response.data);
+        if (!error.response)
+        {
+          toast.show("Falha no servidor", {
+            type: "danger",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
+        }
+        else{
+          toast.show("CPF já existente.", {
+            type: "warning",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
+        }
       })
     }
   }
 
-  const renderModalBlank = () => {
-    return (
-      <View style={styles.modalView}>
-        <Text>Nenhum campo pode ficar em branco</Text>
-        <Button title="X" onPress={() => setModalBlankVisible(false)} />
-      </View>
-    );
-  };
-
   return (
     <View style={styles.container}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalBlankVisible}
-        onRequestClose={() => setModalBlankVisible(false)}
-      >
-        {renderModalBlank()}
-      </Modal>
       <TextInput 
         placeholder="Nome completo" 
         onChangeText={setUserFullName} 

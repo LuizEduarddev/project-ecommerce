@@ -12,27 +12,30 @@ import ChangeView from "./app/src/Balcao/ChangeView";
 import MenuGarcom from "./app/src/Garcom/MenuGarcom";
 import MenuCozinha from "./app/src/Cozinha/MenuCozinha";
 import MenuBalcaoDePreparo from "./app/src/BalcaoDePreparo/MenuBalcaoDePreparo";
+import { ToastProvider } from 'react-native-toast-notifications'
 
 const Stack = createNativeStackNavigator();
 
 export default function App()
 {
   return(
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false }} />
-        <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
-        <Stack.Screen name="MenuProfile" component={Menu} options={{ headerShown: false }} />
-        <Stack.Screen name="PedidosCliente" component={PedidosCli} options={{ headerShown: false }} />
-        <Stack.Screen name="barra_de_pesquisa" component={SearchBar} options={{ headerShown: true }} />
-        <Stack.Screen name="Pendencias" component={Pendencias} options={{ headerShown: false }} />
-        <Stack.Screen name="ChangeView" component={ChangeView} options={{ headerShown: false }} />
-        <Stack.Screen name="MenuGarcom" component={MenuGarcom} options={{ headerShown: false }} />
-        <Stack.Screen name="MenuCozinha" component={MenuCozinha} options={{ headerShown: false }} />
-        <Stack.Screen name="MenuBalcaoDePreparo" component={MenuBalcaoDePreparo} options={{ headerShown: false }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ToastProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen name="Home" component={Home} options={{ headerShown: false }} />
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+          <Stack.Screen name="Cart" component={Cart} options={{ headerShown: false }} />
+          <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
+          <Stack.Screen name="MenuProfile" component={Menu} options={{ headerShown: false }} />
+          <Stack.Screen name="PedidosCliente" component={PedidosCli} options={{ headerShown: false }} />
+          <Stack.Screen name="barra_de_pesquisa" component={SearchBar} options={{ headerShown: true }} />
+          <Stack.Screen name="Pendencias" component={Pendencias} options={{ headerShown: false }} />
+          <Stack.Screen name="ChangeView" component={ChangeView} options={{ headerShown: false }} />
+          <Stack.Screen name="MenuGarcom" component={MenuGarcom} options={{ headerShown: false }} />
+          <Stack.Screen name="MenuCozinha" component={MenuCozinha} options={{ headerShown: false }} />
+          <Stack.Screen name="MenuBalcaoDePreparo" component={MenuBalcaoDePreparo} options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ToastProvider>
   );
 }

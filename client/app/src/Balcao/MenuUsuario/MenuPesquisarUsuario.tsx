@@ -2,6 +2,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 import React, { useRef, useState } from 'react';
 import api from '../../../ApiConfigs/ApiRoute';
 import MenuEditarUsuario from './MenuEditarUsuario';
+import { useToast } from 'react-native-toast-notifications';
 
 type UserDTO = {
   userFullName: string,
@@ -12,6 +13,7 @@ type UserDTO = {
 };
 
 const MenuPesquisarUsuario = () => {
+  const toast = useToast();
   const [buscaUsuario, setBuscaUsuario] = useState('');
   const [usuarioResponse, setUsuarioResponse] = useState<UserDTO | null>(null);
   const [viewMenuEditarUsuario, setViewMenuEditarUsuario] = useState<boolean>(false);
@@ -64,13 +66,23 @@ const MenuPesquisarUsuario = () => {
       })
       .then((response) => {
         if (response.data === null) {
-          Alert.alert('Usuário não encontrado no sistema.');
+          toast.show("Usuário não encontrado no sistema.", {
+            type: "warning",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
         } else {
           setUsuarioResponse(response.data);
         }
       })
       .catch((error) => {
-        console.log(error);
+        toast.show("Erro ao tentar buscar o usuário", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       });
     }
   }
@@ -85,7 +97,7 @@ const MenuPesquisarUsuario = () => {
       }
 
       debounceTimeout.current = setTimeout(() => {
-        findCliente(getUnformattedCpf(formattedCpf)); // Pass unformatted CPF to the API
+        findCliente(getUnformattedCpf(formattedCpf)); 
       }, 600);
     }
   };
