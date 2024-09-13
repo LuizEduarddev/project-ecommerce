@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
 import Icon from 'react-native-vector-icons/FontAwesome6';
+import { useToast } from 'react-native-toast-notifications';
 
 type Mesa = {
     idMesa: string,
@@ -31,24 +32,15 @@ type Pedidos = {
     valorTotal: number;
 };
 
-type FormaDePagamento = 'pix' | 'crédito' | 'débito' | 'dinheiro';
-
-const formasDePagamento: { label: string; value: FormaDePagamento }[] = [
-    { label: 'Pix', value: 'pix' },
-    { label: 'Crédito', value: 'crédito' },
-    { label: 'Débito', value: 'débito' },
-    { label: 'Dinheiro', value: 'dinheiro' },
-];
-
 const formatToReais = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
 
 const MenuGarcom = ({navigation}) => {
+    const toast = useToast();
     const [categorias, setCategorias] = useState<{ label: string, value: number }[] | null>(null);
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
-    const [formaDePagamentoEscolhida, setFormaDePagamentoEscolhida] = useState<FormaDePagamento | undefined>();
     const [activeModal, setActiveModal] = useState<'none' | 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf'>('none');
     const [produtosCategorias, setProdutosCategorias] = useState<ProductsMesaDTO[] | null>(null);
     const [categoriaPesquisa, setCategoriaPesquisa] = useState<string>('');
@@ -74,18 +66,48 @@ const MenuGarcom = ({navigation}) => {
             .catch(error => {
                 if (error.response) {
                     if (error.response.status === 403) {
+                        toast.show("Falha ao tentar capturar o token", {
+                            type: "danger",
+                            placement: "top",
+                            duration: 4000,
+                            animationType: "slide-in",
+                          });
                         navigation.navigate('Login')
                     } else {
-                        console.log('Other error response:', error.response.data);
+                        toast.show("Falha ao tentar capturar o token", {
+                            type: "danger",
+                            placement: "top",
+                            duration: 4000,
+                            animationType: "slide-in",
+                          });
+                        navigation.navigate('Login')
                     }
                 } else if (error.request) {
-                    console.log('No response received:', error.request);
+                    toast.show("Falha ao tentar capturar o token", {
+                        type: "danger",
+                        placement: "top",
+                        duration: 4000,
+                        animationType: "slide-in",
+                      });
+                    navigation.navigate('Login')
                 } else {
-                    console.log('Error message:', error.message);
+                    toast.show("Falha ao tentar capturar o token", {
+                        type: "danger",
+                        placement: "top",
+                        duration: 4000,
+                        animationType: "slide-in",
+                      });
+                    navigation.navigate('Login')
                 }
             });
         } else {
-            navigation.navigate('Login');
+            toast.show("Falha ao tentar capturar o token", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
+            navigation.navigate('Login')
         }
     }, []);
 
@@ -101,7 +123,12 @@ const MenuGarcom = ({navigation}) => {
             setProdutosCategorias(response.data);
         })
         .catch(error => {
-            console.log(error as string);
+            toast.show("Falha ao tentar capturar os pedidos por categoria", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         })
     }
 
@@ -125,7 +152,12 @@ const MenuGarcom = ({navigation}) => {
                     setMesas(response.data);
                 })
                 .catch(error => {
-                    console.log(error as string);
+                    toast.show("Falha ao tentar capturar as mesas", {
+                        type: "danger",
+                        placement: "top",
+                        duration: 4000,
+                        animationType: "slide-in",
+                      });
                 });
         };
 
@@ -149,7 +181,12 @@ const MenuGarcom = ({navigation}) => {
                     setCategorias(formattedCategories);
                 })
                 .catch(error => {
-                    console.log(error);
+                    toast.show("Falha ao tentar capturar as categorias", {
+                        type: "danger",
+                        placement: "top",
+                        duration: 4000,
+                        animationType: "slide-in",
+                      });
                 });
         }
 
@@ -174,7 +211,12 @@ const MenuGarcom = ({navigation}) => {
                 setProdutoResponse(response.data);
             })
             .catch(error => {
-                console.log(error);
+                toast.show("Falha ao tentar buscar o produto", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             });
         }
     }
@@ -198,7 +240,12 @@ const MenuGarcom = ({navigation}) => {
                 openModal('pedidosClienteCpf')
             })
             .catch(error => {
-                console.log(error);
+                toast.show("Falha ao buscar o pedido pelo CPF", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             });
         }
     }
@@ -231,6 +278,12 @@ const MenuGarcom = ({navigation}) => {
     
         setBuscaProduto('');
         setProdutoResponse([]);
+        toast.show("Produto salvo com sucesso", {
+            type: "success",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
     };
     
     
@@ -238,6 +291,12 @@ const MenuGarcom = ({navigation}) => {
     const deleteProduto = (id: string) => {
         setProdutosLancar(prevProducts => {
             const updatedProducts = prevProducts.filter(produto => produto.idProd !== id);
+            toast.show("Produto deletado com sucesso", {
+                type: "success",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
             return updatedProducts;
         });
     };
@@ -335,7 +394,7 @@ const MenuGarcom = ({navigation}) => {
             );
         } else {
             return (
-                <View></View>
+                <></>
             );
         }
     };
@@ -358,7 +417,12 @@ const MenuGarcom = ({navigation}) => {
                 openModal('menu');
             })
             .catch(error => {
-                console.log(error as string);
+                toast.show("Falha ao tentar buscar os pedidos pela mesa", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             });
     }
 
@@ -468,7 +532,12 @@ const MenuGarcom = ({navigation}) => {
         
         if (getUnformattedCpf(userCpf).length < 11)
         {
-            console.log('Cpf precisa ter 11 caracteres.\nCPF: ');
+            toast.show("Cpf precisa ter 11 caracteres.", {
+                type: "warning",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
         else{
             const produtos = produtosLancar.map(productMesa => ({
@@ -490,12 +559,22 @@ const MenuGarcom = ({navigation}) => {
                 }
             })
             .then(response => {
-                console.log(response.data);
                 closeModal();
                 setProdutosLancar([]);
+                toast.show("Pedido lançado com sucesso.", {
+                    type: "success",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             })
             .catch(error => {
-                console.log(error as string);
+                toast.show("Falha ao tentar lançar o pedido", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             })
         }
     }
