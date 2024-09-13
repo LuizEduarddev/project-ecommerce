@@ -284,9 +284,9 @@ const MenuGarcom = ({navigation}) => {
 
     const renderCategories = ({ item }: { item: { label: string, value: number } }) => {
         return (
-            <View>
-                <Pressable style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }} onPress={() => openProdutosCategoria(item.label)}>
-                    <Text style={{ color: 'white' }}>{item.label}</Text>
+            <View style={{margin: 5}}>
+                <Pressable style={styles.categoria} onPress={() => openProdutosCategoria(item.label)}>
+                    <Text style={{ color: '#18acd9' }}>{item.label}</Text>
                 </Pressable>
                 <Modal
                     animationType="slide"
@@ -397,9 +397,9 @@ const MenuGarcom = ({navigation}) => {
             return produtoResponse.map(produto => (
                 <View 
                     key={produto.idProd}
-                    style={{borderColor: 'black', borderWidth: 1}}
+                    style={{width: '40%'}}
                 >
-                    <Pressable onPress={() => saveProduto(produto)}>
+                    <Pressable style={styles.item}>
                         <Text>{produto.nomeProd}</Text>
                         <Text>{formatToReais(produto.precoProd)}</Text>
                     </Pressable>
@@ -557,9 +557,9 @@ const MenuGarcom = ({navigation}) => {
     const renderModalPedidoMesa = () => {
         if (categorias && categorias.length > 0) {
             return (
-                <View style={styles.modalView}>
+                <View style={styles.modalPesquisarProduto}>
                     <TextInput
-                        style={{borderColor:'gray', borderWidth: 1}}
+                        style={styles.input}
                         placeholder='Busque por um produto'
                         onChangeText={handleSearchInputChange}
                         value={buscaProduto}
@@ -567,14 +567,15 @@ const MenuGarcom = ({navigation}) => {
                     {renderPesquisa()}
                     <FlatList
                         data={categorias}
-                        horizontal={true}
+                        key={'_categorias'}
                         renderItem={renderCategories}
                         keyExtractor={(item, index) => index.toString()}
+                        numColumns={2}
                     />
                     <Pressable onPress={() => closeModal()} style={{ position: 'absolute', top: 15, right: 15 }}>
                         <Icon name='x' size={15}></Icon>
                     </Pressable>
-                    <Pressable onPress={() => setModalPedidosLancar(true)} style={{ padding: 5, backgroundColor: 'blue', borderColor: 'black', borderWidth: 1, borderRadius: 15 }}>
+                    <Pressable onPress={() => setModalPedidosLancar(true)} style={styles.botaoConferirPedido}>
                         <Text style={{ color: 'white' }}>Conferir Pedido</Text>
                     </Pressable>
                     {renderModalConferirPedido()}
@@ -677,13 +678,13 @@ const MenuGarcom = ({navigation}) => {
 
     const renderProdutosCategorias = ({ item }: { item: ProductsMesaDTO }) => {
         return (
-            <View>
+            <View style={{width: '100%'}}>
                 <Pressable
                     onPress={() => saveProduto(item)}
-                    style={{borderColor:'black', borderWidth:1}}
-                >
-                    
-                    <Text>{item.nomeProd} - {formatToReais(item.precoProd)}</Text>
+                    style={styles.item}
+                >   
+                    <Text>{item.nomeProd}</Text>
+                    <Text>{formatToReais(item.precoProd)}</Text>
                 </Pressable>
             </View>
         );
@@ -698,6 +699,7 @@ const MenuGarcom = ({navigation}) => {
                         data={produtosCategorias}
                         renderItem={renderProdutosCategorias}
                         keyExtractor={(item) => item.idProd}
+                        style={{width: '60%'}}
                     />
                     <Pressable onPress={() => setModalProdutosCategoria(false)} style={{position:'absolute', top:15, right:15}}>
                         <Icon name='x' size={15}></Icon>
@@ -787,6 +789,7 @@ const MenuGarcom = ({navigation}) => {
                         transparent={true}
                         visible={true}
                         onRequestClose={closeModal}
+                        style={{ backgroundColor: 'red' }}
                     >
                         {renderModalPedidoMesa()}
                     </Modal>
@@ -847,6 +850,23 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    modalPesquisarProduto: {
+        marginVertical: 20,
+        marginHorizontal: 'auto',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        width: 600,
+    },
     dropdown: {
         height: 50,
         borderColor: 'gray',
@@ -885,7 +905,33 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 5,
-      },
+        width: '40%',
+    },
+    categoria: {
+        width: 80,
+        height: 80,
+        backgroundColor: 'rgba(24, 172, 217, 0.2)',
+        borderColor: '#18acd9',
+        borderWidth: 2,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 15
+    },
+    botaoConferirPedido: {
+        borderRadius: 30,
+        padding: 10,
+        backgroundColor: '#18acd9',
+        marginTop: 10,
+    },
+    item: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
 });
 
 export default MenuGarcom;
