@@ -122,7 +122,9 @@ const MenuBalcao = () => {
                     <Text style={styles.itemProdutoContainer}>{produto.nomeProd}</Text>
                     <Text style={{color: colors['raisin-black'], flex: 1, alignItems: 'center'}}>{formatToReais(produto.precoProd)}</Text>
                     <View style={{flex: 1}}>
-                        <Pressable style={styles.button} onPress={() => saveProduto(produto)}>+</Pressable>
+                        <Pressable style={styles.button} onPress={() => saveProduto(produto)}>
+                            <Text style={{color: 'white'}}>+</Text>
+                        </Pressable>
                     </View>
                 </View>
             ));
@@ -229,32 +231,88 @@ const MenuBalcao = () => {
                 />
                 {valorTotal()}
                 <br></br>
-                <Pressable style={styles.efetuarPagamento} onPress={() => setModalConfirmarPagamento(true)}>Efetuar pagamento</Pressable>
+                <Pressable style={styles.efetuarPagamento} onPress={() => setModalConfirmarPagamento(true)}>
+                    <Text style={{color:'white'}}>Efetuar pagamento</Text>
+                </Pressable>
             </View>
         );
     };
 
+    const renderProdutosPagamento = ({item}: {item: Product}) => {
+        return(
+            <View style={{flexDirection:'row', width:'100%', marginBottom:10}}>
+                <View style={{flex:2}}>
+                    <Text style={{fontWeight:'bold', color: colors['raisin-black'], fontSize:14}}>{item.nomeProd}</Text>
+                    <Text style={{color: '#888', fontSize:12}}>{item.quantity}x {formatToReais(item.precoProd)}</Text>
+                </View>
+                <Text style={{flex:1, alignSelf:'center', fontWeight: 'bold'}}>{formatToReais(item.precoProd * item.quantity)}</Text>
+            </View>
+        )
+    }
+
     const renderMetodoPagamento = () => {
         if (metodosPagamento) {
           return (
-            <View>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={styles.placeholder}
-                selectedTextStyle={styles.selectedText}
-                inputSearchStyle={styles.inputSearch}
-                iconStyle={styles.icon}
-                data={metodosPagamento}
-                maxHeight={300}
-                labelField="label"
-                valueField="value"
-                placeholder="Escolha um metodo de pagamento"
-                value={metodoEscolhido}
-                onChange={(item) => {
-                  setMetodoEscolhido(item.label);
-                }}
-              />
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalConfirmarPagamento}
+                onRequestClose={() => setModalConfirmarPagamento(false)}
+            >
+                <View style={styles.modalView}>
+                <View style={styles.tituloTabela}>
+                    <Text style={{flex:2, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Produtos</Text>
+                    <Text style={{flex:1, fontWeight:'bold', fontSize:18, color: colors['raisin-black']}}>Total</Text>
+                </View>
+                <FlatList
+                    data={produtosBalcao}
+                    renderItem={renderProdutosPagamento}
+                    keyExtractor={(item) => item.idProd}
+                    style={{width:'100%'}}
+                />
+                <View style={styles.dashedLine}></View>
+                <View style={{flexDirection:'row', justifyContent:'space-between', width:'100%'}}>
+                    <Text style={{fontWeight:'bold', fontSize:20, color: colors['raisin-black']}}>
+                        Total: {valorTotal()}
+                    </Text>
+                </View>
+                <View>
+                    <Dropdown
+                        style={styles.dropdown}
+                        placeholderStyle={styles.placeholder}
+                        selectedTextStyle={styles.selectedText}
+                        inputSearchStyle={styles.inputSearch}
+                        iconStyle={styles.dropdownIcon}
+                        data={metodosPagamento}
+                        maxHeight={300}
+                        labelField="label"
+                        valueField="label"
+                        placeholder="Escolha um metodo de pagamento"
+                        value={metodoEscolhido}
+                        onChange={(item) => {
+                            setMetodoEscolhido(item.label);
+                        }}
+                    />
+                    <TextInput
+                        style={styles.inputCPF}
+                        placeholder='CPF do cliente'
+                        onChangeText={setClienteCPF}
+                        value={clienteCPF}
+                    />
+                </View>
+                <Pressable 
+                    style={styles.confirmButton}
+                    onPress={() => {
+                        //oq faz aq
+                    }}
+                >
+                    <Text style={styles.confirmButtonText}>Confirmar pagamento</Text>
+                </Pressable>
+                <Pressable style={styles.closeButton} onPress={() => setModalConfirmarPagamento(false)}>
+                    <Icon name='close' size={15}></Icon>
+                </Pressable>
             </View>
+            </Modal>
           );
         } else {
           return (
@@ -263,11 +321,11 @@ const MenuBalcao = () => {
         }
     };
 
-    if (modalConfirmarPagamento === true && ((clienteCPF.length > 0 &&clienteCPF.length < 11) || metodoEscolhido === null))
-    {
-        setModalConfirmarPagamento(false);
-        console.log('Faltam preencher alguns campos.');
-    }
+    // if (modalConfirmarPagamento === true && ((clienteCPF.length > 0 && clienteCPF.length < 11) || metodoEscolhido === null))
+    // {
+    //     setModalConfirmarPagamento(false);
+    //     console.log('Faltam preencher alguns campos.');
+    // }
 
     const renderModalConfirmarPagamento = () => {
         return(
@@ -285,7 +343,7 @@ const MenuBalcao = () => {
     }
 
     return (
-        <View style={styles.modalView}>
+        <View style={styles.container}>
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.input}
@@ -296,12 +354,6 @@ const MenuBalcao = () => {
             />
             <Icon name="magnify" size={24} color="#333" style={styles.icon} />
           </View>
-          <TextInput
-                style={{borderColor:'gray', borderWidth: 1}}
-                placeholder='CPF do cliente'
-                onChangeText={setClienteCPF}
-                value={clienteCPF}
-            />
           <View style={{flexDirection: 'row', width: '100%', gap: 20}}>
             <View style={styles.listaPesquisa}>
               {renderPesquisa()}
@@ -311,14 +363,14 @@ const MenuBalcao = () => {
             </View>
           </View>
           {renderMetodoPagamento()}
-            <Modal
+            {/* <Modal
                 animationType="slide"
-                transparent={true}
+                transparent={false}
                 visible={modalConfirmarPagamento}
                 onRequestClose={() => setModalConfirmarPagamento(false)}
             >
                 {renderModalConfirmarPagamento()}
-            </Modal>
+            </Modal> */}
         </View>
     );
 };
@@ -326,116 +378,173 @@ const MenuBalcao = () => {
 export default MenuBalcao;
 
 const styles = StyleSheet.create({
-  input: {
-    borderRadius: 25,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    fontSize: 16,
-    color: '#333',
-    paddingHorizontal: 40,
-    paddingVertical: 10,
-    flex: 1,
-  },
-  searchContainer: {
-    width: '90%',
-    marginBottom: 20,
-  },
-  icon: {
-    position: 'absolute',
-    left: 10,
-    top: 10,
-    color: '#888',
-  },
-  listaPesquisa: {
-    flex: 1,
-  },
-  modalView: {
-    width: '100%',
-    alignItems: 'center'
-  },
-  produtoContainer: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-    paddingVertical: 15,
-    height: 120,
-    flex: 1,
-    flexDirection: 'row',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    maxHeight: 70
-  },
-  itemProdutoContainer: {
-      flex: 1
-  },
-  button: {
-    color: 'white',
-    backgroundColor: colors['bright-blue'],
-    borderRadius: 20,
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-    width: 40,
-    fontWeight: 'semibold',
-    alignSelf: 'flex-end',
-  },
-  efetuarPagamento: {
-    color: 'white',
-    backgroundColor: colors['bright-blue'],
-    borderRadius: 20,
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-    fontWeight: 'semibold',
-  },
-  deleteButton: {
-    backgroundColor: 'red',
-    borderRadius: 5,
-    padding: 5,
-    marginLeft: 10,
-  },
-  deleteButtonText: {
-    color: 'white',
+    container: {
+        width: '100%',
+        alignItems: 'center'
+    },
+    confirmButton: {
+        backgroundColor: 'rgb(76, 175, 80)',
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+        alignItems: 'center',
+    },
+    confirmButtonText: {
+        color: 'white',
+        fontSize: 16,
+    },
+    dashedLine: {
+        borderStyle: 'dashed',
+        borderWidth: 1,
+        borderColor: '#ccc', 
+        width: '100%',
+        height: 1,           
+        marginVertical: 10,
+    },
+    inputCPF: {
+        width: '100%',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 5,
+        borderRadius: 5,
+        backgroundColor: '#fff',
+        marginTop: 10
+    },
+    input: {
+        borderRadius: 25,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+        fontSize: 16,
+        color: '#333',
+        paddingHorizontal: 40,
+        paddingVertical: 10,
+        flex: 1,
+    },
+    searchContainer: {
+        width: '90%',
+        marginBottom: 20,
+    },
+    icon: {
+        position: 'absolute',
+        left: 10,
+        top: 10,
+        color: '#888',
+    },
+    dropdownIcon: {
+        width: 20,
+        height: 20,
+    },
+    tituloTabela: {
+        flexDirection:'row', 
+        width:'100%',
+        marginBottom:10
+    },
+    listaPesquisa: {
+        flex: 1,
+    },
+    modalView: {
+        width: 500,
+        marginTop: 40,
+        alignSelf: 'center',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        padding: 35,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+        width: 0,
+        height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    produtoContainer: {
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+        paddingVertical: 15,
+        height: 120,
+        flex: 1,
+        flexDirection: 'row',
+        overflow: 'hidden',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        maxHeight: 70
+    },
+    itemProdutoContainer: {
+        flex: 1
+    },
+    button: {
+        color: 'white',
+        backgroundColor: colors['bright-blue'],
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40,
+        width: 40,
+        fontWeight: 'semibold',
+        alignSelf: 'flex-end',
+    },
+    efetuarPagamento: {
+        color: 'white',
+        backgroundColor: colors['bright-blue'],
+        borderRadius: 20,
+        padding: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 40,
+        fontWeight: 'semibold',
+    },
+    deleteButton: {
+        backgroundColor: 'red',
+        borderRadius: 5,
+        padding: 5,
+        marginLeft: 10,
+    },
+    deleteButtonText: {
+        color: 'white',
     },
     dropdown: {
-        height: 50,
         borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 5,
-        paddingHorizontal: 8,
+        padding: 5,
+        width: 300,
+        marginTop: 15
     },
     placeholder: {
-    fontSize: 16,
-    color: '#999',
+        fontSize: 16,
     },
     selectedText: {
-    fontSize: 16,
-    marginTop: 10,
+        fontSize: 16,
     },
     inputSearch: {
-    height: 40,
-    fontSize: 16,
+        height: 40,
+        fontSize: 16,
     },
-  carrinho: {
-    borderWidth: 1,
-    padding: 15,
-    borderRadius: 10,
-    borderColor: colors['slate-gray'],
-  },
-  tituloCarrinho: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    alignSelf: 'center',
-    marginBottom: 10
-  },
-  botaoMudarQuantidade: {
-    color: colors['dim-gray'],
-    fontSize: 20,
-  },
+    carrinho: {
+        borderWidth: 1,
+        padding: 15,
+        borderRadius: 10,
+        borderColor: colors['slate-gray'],
+    },
+    tituloCarrinho: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        alignSelf: 'center',
+        marginBottom: 10
+    },
+    botaoMudarQuantidade: {
+        color: colors['dim-gray'],
+        fontSize: 20,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+    },
 });

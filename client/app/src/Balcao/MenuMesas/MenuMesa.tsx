@@ -353,7 +353,7 @@ const MenuMesa = () => {
     }
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{flexDirection: 'row'}}>
             {mesas.map(mesa => (
                 <Pressable 
                     key={mesa.idMesa}
@@ -361,7 +361,7 @@ const MenuMesa = () => {
                     style={styles.mesaButton}
                 >
                     <Image 
-                        style={{backgroundColor: 'red', width: 50, height: 50}}
+                        style={{backgroundColor: mesa.emUso ? 'red' : '', width: 50, height: 50}}
                         source={require('./assets/mesaIcon.png')}
                     />
                     <Text style={styles.mesaText}>Mesa {mesa.numeroMesa}</Text>
