@@ -7,8 +7,10 @@ import MenuProdutos from './MenuProdutos/MenuProdutos';
 import api from '../../ApiConfigs/ApiRoute';
 import { colors } from '../assets/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useToast } from 'react-native-toast-notifications';
 
 const ChangeView = ({ navigation }) => {
+    const toast = useToast();
     const [view, setView] = useState('Mesas');
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +33,12 @@ const ChangeView = ({ navigation }) => {
                         setLoading(false);
                     }
                 } catch (error) {
-                    console.log('Error during authorization check:', error);
+                    toast.show("Erro ao checar o token.", {
+                        type: "danger",
+                        placement: "top",
+                        duration: 4000,
+                        animationType: "slide-in",
+                      });
                     navigation.navigate('Login'); 
                 }
             }

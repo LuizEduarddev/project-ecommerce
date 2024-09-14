@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 import { launchImageLibrary } from 'react-native-image-picker';
 import api from '../../../ApiConfigs/ApiRoute';
+import { useToast } from 'react-native-toast-notifications';
 
 const MenuCadastraProduto = () => {
-  const [modalBlankVisible, setModalBlankVisible] = useState<boolean>(false);
+  const toast = useToast();
   const [categorias, setCategorias] = useState<string[]>();
   const [nomeProduto, setNomeProduto] = useState<string>('');
   const [precoProd, setPrecoProd] = useState<string>('');
@@ -14,7 +15,6 @@ const MenuCadastraProduto = () => {
   const [precoPromocao, setPrecoPromocao] = useState<string>('');
   const [visible, setVisible] = useState<boolean>(true);
   const [imagemProduto, setImagemProduto] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const toggleSwitchPromocao = () => setPromoProd(previousState => !previousState);
   const toggleSwitchVisible = () => setVisible(previousState => !previousState);
@@ -36,7 +36,12 @@ const MenuCadastraProduto = () => {
           setCategorias(formattedCategories);
         })
         .catch(error => {
-          console.log(error);
+          toast.show("Erro ao tentar buscar as categorias.", {
+            type: "warning",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
         });
     }
 
@@ -50,22 +55,29 @@ const MenuCadastraProduto = () => {
     const promocao = parseFloat(precoPromocao.replace(/[^\d,]/g, '').replace(',', '.'));
 
     if (!nomeProduto || !precoProd || categoriaProd === null ||(promoProd && !precoPromocao)) {
-      setErrorMessage('Por favor, preencha todos os campos obrigatórios.');
+      toast.show("Por favor, preencha todos os campos", {
+        type: "warning",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
       return false;
     }
 
     if (promoProd && promocao >= preco) {
-      setErrorMessage('O preço da promoção deve ser menor que o preço original.');
+      toast.show("O preço da promoção deve ser menor do que o preço original.", {
+        type: "warning",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
       return false;
     }
-
-    setErrorMessage('');
     return true;
   };
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      setModalBlankVisible(true);
       return;
     }
     apiCriarProduto();
@@ -86,7 +98,12 @@ const MenuCadastraProduto = () => {
   
         formData.append('file', blob, nomeProduto + '.png');
       } catch (error) {
-        console.error('Error converting image to Blob:', error);
+        toast.show("Erro ao tentar converter a imagem", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
     api
@@ -98,29 +115,34 @@ const MenuCadastraProduto = () => {
         }
       })
       .then(response => {
-        console.log(response.data);
+        toast.show("Produto adicionado com sucesso", {
+          type: "success",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       })
       .catch(error => {
-        console.log(error);
+        toast.show("Falha ao tentar adicionar o produto", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       });
   }
-  
-
-  const renderModalBlank = () => (
-    <View style={styles.modalView}>
-      <Text>{errorMessage || 'Nenhum campo pode ficar em branco'}</Text>
-      <Pressable style={{backgroundColor:'blue'}}onPress={() => setModalBlankVisible(false)}>
-        <Text style={{color:'white'}}>X</Text>
-      </Pressable>
-    </View>
-  );
 
   const handleImagePick = () => {
     launchImageLibrary({ mediaType: 'photo', quality: 1 }, response => {
       if (response.didCancel) {
-        console.log('User canceled image picker');
+        return;
       } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorCode);
+        toast.show("Erro ao tentar pegar a imagem.", {
+          type: "warning",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       } else {
         setImagemProduto(response.assets[0].uri);
       }
@@ -144,7 +166,6 @@ const MenuCadastraProduto = () => {
             placeholder="Escolha uma categoria"
             value={categoriaProd}
             onChange={(item) => {
-              console.log(item)
               setCategoriaProd(item.label);
             }}
           />
@@ -159,14 +180,6 @@ const MenuCadastraProduto = () => {
 
   return (
     <View style={{padding: 16}}>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalBlankVisible}
-        onRequestClose={() => setModalBlankVisible(false)}
-      >
-        {renderModalBlank()}
-      </Modal>
       <TextInput 
         placeholder="Nome do produto" 
         onChangeText={setNomeProduto} 

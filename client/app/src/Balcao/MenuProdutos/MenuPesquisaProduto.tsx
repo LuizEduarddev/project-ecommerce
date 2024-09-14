@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
 import MenuEditarProduto from './MenuEditarProduto';
 import debounce from 'lodash.debounce'
+import { useToast } from 'react-native-toast-notifications';
 
 type Product = {
 	idProd:string,
@@ -20,7 +21,7 @@ const formatToReais = (value: number) => {
 };
 
 const MenuPesquisaProduto = () => {
-  
+  const toast = useToast();
   const [viewMenuEditarProduto, setViewMenuEditarProduto] = useState<boolean>(false);
   const [buscaProduto, setBuscaProduto] = useState<string>('');
   const [produtoResponse, setProdutoResponse] = useState<Product[]>([]);
@@ -47,13 +48,23 @@ const MenuPesquisaProduto = () => {
     })
       .then((response) => {
         if (response.data === null) {
-          console.log('Produto não encontrado no sistema.');
+          toast.show("Produto não encontrado", {
+            type: "warning",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
         } else {
           setProdutoResponse(response.data);
         }
       })
       .catch((error) => {
-        console.log(error);
+        toast.show("Falha no servidor.", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       });
     }
   }

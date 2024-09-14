@@ -1,6 +1,7 @@
 import { Text, TextInput, View, StyleSheet, TouchableOpacity, SafeAreaView, Alert } from "react-native";
 import { useState } from "react";
 import api from "../../ApiConfigs/ApiRoute";
+import { useToast } from "react-native-toast-notifications";
 
 interface GrantedAuthority {
     authority: string;
@@ -8,7 +9,10 @@ interface GrantedAuthority {
 
 type Authorities = GrantedAuthority[];
 
+
+
 export default function Login({ navigation }) {
+    const toast = useToast();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -16,7 +20,12 @@ export default function Login({ navigation }) {
         try {
             await localStorage.setItem('session-token', token);
         } catch (error) {
-            console.log(error);
+            toast.show("Erro ao salvar o token. Poderá resultar em problemas.", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
     }
 
@@ -41,25 +50,55 @@ export default function Login({ navigation }) {
     }
 
     async function tryLogin() {
-        const dataLogin = {
-            login: username,
-            password: password
-        };
-
-        try
+        if ((username === null || username === '')|| (password === null || password === ''))
         {
-            api.post('/api/auth/login', dataLogin)
-            .then(response => {
-                storeData(response.data.token);
-                directUser(response.data.authorities);
-            })
-            .catch(error => {
-                console.log('Usuario ou senha incorretos');
-            });
+            toast.show("Preencha todos os campos", {
+                type: "warning",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
-        catch(error)
-        {
-            Alert.alert('Falha ao tentar se conectar com o servidor.');
+        else{
+            const dataLogin = {
+                login: username,
+                password: password
+            };
+    
+            try
+            {
+                api.post('/api/auth/login', dataLogin)
+                .then(response => {
+                    storeData(response.data.token);
+                    directUser(response.data.authorities);
+                })
+                .catch(error => {
+                    if (!error.response) {
+                        toast.show("Falha ao tentar se conectar ao servidor.", {
+                            type: "danger",
+                            placement: "top",
+                            duration: 4000,
+                            animationType: "slide-in",
+                        });
+                    } else {
+                        toast.show("Usuário ou senha incorretos", {
+                            type: "warning",
+                            placement: "top",
+                            duration: 4000,
+                            animationType: "slide-in",
+                        });
+                    }
+                });
+            }
+            catch(error)
+            {
+                toast.show("Erro", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                });
+            }
         }
     }
 

@@ -4,12 +4,13 @@ import api from '../../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors } from '../../assets/colors';
+import { useToast } from "react-native-toast-notifications";
 
 type Product = {
     idProd: string;
     nomeProd: string;
     precoProd: number;
-    quantity: number; // Add quantity field
+    quantity: number;
 };
 
 const formatToReais = (value: number) => {
@@ -17,6 +18,7 @@ const formatToReais = (value: number) => {
 };
 
 const MenuBalcao = () => {
+    const toast = useToast();
     const [buscaProduto, setBuscaProduto] = useState('');
     const [produtoResponse, setProdutoResponse] = useState<Product[] | null>(null);
     const [produtosBalcao, setProdutosBalcao] = useState<Product[]>([]);
@@ -42,7 +44,12 @@ const MenuBalcao = () => {
             setMetodosPagamento(formattedCategories);
           })
         .catch(error => {
-        console.log(error);
+            toast.show("Falha ao pegar os métodos de pagamento", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         });
     }, [])
 
@@ -64,7 +71,12 @@ const MenuBalcao = () => {
                 setProdutoResponse(response.data);
             })
             .catch(error => {
-                console.log(error);
+                toast.show("Produto não encontrado", {
+                    type: "warning",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             });
         }
     }
@@ -182,11 +194,21 @@ const MenuBalcao = () => {
     {
         if (clienteCPF.length > 1 &&clienteCPF.length < 11)
         {
-            console.log('cpf tem que ter mais que 11 letras');
+            toast.show("CPF tem que ter mais de 11 letras", {
+                type: "warning",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
         else if (metodoEscolhido === null)
         {
-            console.log('escolha um metodo de pagamento')
+            toast.show("Escolha um método de pagamento", {
+                type: "warning",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
         else{
 
@@ -211,11 +233,21 @@ const MenuBalcao = () => {
                 }
             })
             .then(response => {
-                console.log(response.data);
+                toast.show("Pagamento efetuado com sucesso", {
+                    type: "success",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
                 setModalConfirmarPagamento(false);
             })
             .catch(error => {
-                console.log(error as string);
+                toast.show("Falha ao efetuar o pagamento", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             })
         }
     }
@@ -321,11 +353,16 @@ const MenuBalcao = () => {
         }
     };
 
-    // if (modalConfirmarPagamento === true && ((clienteCPF.length > 0 && clienteCPF.length < 11) || metodoEscolhido === null))
-    // {
-    //     setModalConfirmarPagamento(false);
-    //     console.log('Faltam preencher alguns campos.');
-    // }
+    if (modalConfirmarPagamento === true && ((clienteCPF.length > 0 &&clienteCPF.length < 11) || metodoEscolhido === null))
+    {
+        setModalConfirmarPagamento(false);
+        toast.show("Faltam preencher alguns campos", {
+            type: "warning",
+            placement: "top",
+            duration: 4000,
+            animationType: "slide-in",
+          });
+    }
 
     const renderModalConfirmarPagamento = () => {
         return(

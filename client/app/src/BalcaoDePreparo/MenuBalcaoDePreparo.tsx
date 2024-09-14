@@ -2,6 +2,7 @@ import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from '
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import api from '../../ApiConfigs/ApiRoute'
+import { useToast } from 'react-native-toast-notifications'
 
 type PedidoCozinhaProdutosDTO = {
   idProduto: string,
@@ -18,6 +19,7 @@ type PedidoCozinhaDTO = {
 }
 
 const MenuBalcaoDePreparo = ({navigation}) => {
+  const toast = useToast();
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
@@ -37,12 +39,30 @@ const MenuBalcaoDePreparo = ({navigation}) => {
                 if (error.response.status === 403) {
                   navigation.navigate('Login')
                 } else {
-                    console.log('Other error response:', error.response.data);
+                  toast.show("Falha ao tentar capturar o token", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
+                  navigation.navigate('Login');
                 }
             } else if (error.request) {
-                console.log('No response received:', error.request);
+                toast.show("Falha ao tentar capturar o token", {
+                  type: "danger",
+                  placement: "top",
+                  duration: 4000,
+                  animationType: "slide-in",
+                });
+                navigation.navigate('Login');
             } else {
-                console.log('Error message:', error.message);
+                toast.show("Falha ao tentar capturar o token", {
+                  type: "danger",
+                  placement: "top",
+                  duration: 4000,
+                  animationType: "slide-in",
+                });
+                navigation.navigate('Login');
             }
         });
     } else {
@@ -59,7 +79,6 @@ const MenuBalcaoDePreparo = ({navigation}) => {
           'Content-Type': 'application/json',
       }
       });
-      console.log(response.data);
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
@@ -69,7 +88,12 @@ const MenuBalcaoDePreparo = ({navigation}) => {
       setPedidosProntos(pedidosProntos);
       setPedidosNaoProntos(pedidosNaoProntos);
     } catch (error) {
-      console.log(error as string);
+        toast.show("Falha ao tentar capturar os pedidos.", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
     }
   };
 
@@ -96,7 +120,12 @@ const MenuBalcaoDePreparo = ({navigation}) => {
         setModalPedidoId(null);
         fetchPedidos();
     } catch (error) {
-      console.log(error as string);
+      toast.show("Falha ao tentar mudar o estado do pedido.", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     }
   }
 

@@ -2,6 +2,7 @@ import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from '
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import api from '../../ApiConfigs/ApiRoute'
+import { useToast } from 'react-native-toast-notifications'
 
 type PedidoCozinhaProdutosDTO = {
   idProduto: string,
@@ -19,6 +20,7 @@ type PedidoCozinhaDTO = {
 }
 
 const MenuCozinha = ({navigation}) => {
+  const toast = useToast();
   const [pedidosProntos, setPedidosProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [pedidosNaoProntos, setPedidosNaoProntos] = useState<PedidoCozinhaDTO[]>([]);
   const [allPedidos, setAllPedidos] = useState<PedidoCozinhaDTO[]>([]);
@@ -38,16 +40,40 @@ const MenuCozinha = ({navigation}) => {
                 if (error.response.status === 403) {
                     navigation.navigate('Login')
                 } else {
-                    console.log('Other error response:', error.response.data);
+                  toast.show("Falha ao tentar capturar o token", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
+                  navigation.navigate('Login');
                 }
             } else if (error.request) {
-                console.log('No response received:', error.request);
+              toast.show("Falha ao tentar capturar o token", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
+              navigation.navigate('Login');
             } else {
-                console.log('Error message:', error.message);
+              toast.show("Falha ao tentar capturar o token", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
+              navigation.navigate('Login');
             }
         });
     } else {
-        navigation.navigate('Login');
+      toast.show("Falha ao tentar capturar o token", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
+      navigation.navigate('Login');
     }
 }, []);
 
@@ -67,7 +93,12 @@ const MenuCozinha = ({navigation}) => {
       setPedidosProntos(pedidosProntos);
       setPedidosNaoProntos(pedidosNaoProntos);
     } catch (error) {
-      console.log(error as string);
+      toast.show("Falha ao tentar capturar os pedidos", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     }
   };
 
@@ -93,7 +124,12 @@ const MenuCozinha = ({navigation}) => {
       setModalPedidoId(null);
       fetchPedidos();
     } catch (error) {
-      console.log(error as string);
+      toast.show("Falha ao tentar capturar os pedidos", {
+        type: "danger",
+        placement: "top",
+        duration: 4000,
+        animationType: "slide-in",
+      });
     }
   }
 
@@ -133,12 +169,12 @@ const MenuCozinha = ({navigation}) => {
       <View style={styles.modalView}>
         {pedido.pedidoPronto ? (
           <View>
-            <Text>{pedido.numeroMesa != null ? pedido.numeroMesa : "viagem"}</Text>
+            <Text>{pedido.numeroMesa != null ? "mesa " + pedido.numeroMesa : "viagem"}</Text>
             <Text style={[styles.pedidoContainer, { backgroundColor: 'green' }]}>Pronto às: {pedido.horaPronto}</Text>
           </View>
         ) : (
           <View>
-            <Text>{pedido.numeroMesa != null ? pedido.numeroMesa : "viagem"}</Text>
+            <Text>{pedido.numeroMesa != null ? "mesa " + pedido.numeroMesa : "viagem"}</Text>
             <Text style={[styles.pedidoContainer, { backgroundColor }]}>{pedido.horaPedido}</Text>
           </View>
         )}
@@ -171,12 +207,12 @@ const MenuCozinha = ({navigation}) => {
         <Pressable onPress={() => setModalPedidoId(item.idPedido)}>
           {item.pedidoPronto ? (
             <View>
-              <Text>{item.numeroMesa != null ? item.numeroMesa : "viagem"}</Text>
+              <Text>{item.numeroMesa != null ? "mesa " + item.numeroMesa : "viagem"}</Text>
               <Text>Pronto às: {item.horaPronto}</Text>
             </View>
           ) : (
             <View>
-              <Text>{item.numeroMesa != null ? item.numeroMesa : "viagem"}</Text>
+              <Text>{item.numeroMesa != null ? "mesa " + item.numeroMesa : "viagem"}</Text>
               <Text style={[styles.pedidoContainer, { backgroundColor }]}>{item.horaPedido}</Text>
             </View>
           )}

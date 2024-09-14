@@ -5,6 +5,7 @@ import api from '../../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import { colors } from '../../assets/colors';
+import { useToast } from 'react-native-toast-notifications';
 
 type Mesa = {
     idMesa: string,
@@ -37,6 +38,7 @@ const formatToReais = (value: number) => {
 };
 
 const MenuMesa = () => {
+    const toast = useToast();
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
@@ -69,13 +71,23 @@ const MenuMesa = () => {
             }
         })
         .then(response => {
-            console.log(response.data);
+            toast.show("Pagamento efetuado com sucesso", {
+                type: "success",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
             setModalConfirmacao(false);
             setModalVisible(false);
             setModalFecharContaVisible(false);
         })
         .catch(error => {
-            console.log(error as string);
+            toast.show("Falha ao tentar efetuar o pagamento.", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         })
     }
 
@@ -95,7 +107,12 @@ const MenuMesa = () => {
             setMetodosPagamento(formattedCategories);
             setMetodosPagamentoCarregados(true);
         } catch (error) {
-            console.error(error);
+            toast.show("Falha ao tentar capturar os métodos de pagamento.", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
     }
 
@@ -111,7 +128,12 @@ const MenuMesa = () => {
                 });
                 setMesas(response.data);
             } catch (error) {
-                console.error(error);
+                toast.show("Falha ao capturar as mesas", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                  });
             }
         };
 
@@ -157,7 +179,12 @@ const MenuMesa = () => {
             setPedidos(response.data);
             setModalVisible(true);
         } catch (error) {
-            console.error(error);
+            toast.show("Falha ao resgatar o pedido.", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+              });
         }
     }
 
