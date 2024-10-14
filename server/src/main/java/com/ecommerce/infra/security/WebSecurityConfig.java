@@ -30,6 +30,7 @@ public class WebSecurityConfig {
 	public SecurityFilterChain security(HttpSecurity http) throws Exception
 	{
 		return http
+				/*
 				.cors(AbstractHttpConfigurer::disable)
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -140,7 +141,10 @@ public class WebSecurityConfig {
 								String.valueOf(UserRole.BALCAO)
 						)
 
+
 						.anyRequest().permitAll())
+						
+				 */
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
