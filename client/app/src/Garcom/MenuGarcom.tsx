@@ -5,6 +5,8 @@ import api from '../../ApiConfigs/ApiRoute';
 import { Dropdown } from 'react-native-element-dropdown';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import { useToast } from 'react-native-toast-notifications';
+import PesquisarPedidoCpf from './PesquisarPedidoCpf';
+import MenuMesasGarcom from './MenuMesasGarcom';
 
 type Mesa = {
     idMesa: string,
@@ -32,6 +34,18 @@ type Pedidos = {
     valorTotal: number;
 };
 
+type ProdutoQuantidadeDTO = {
+    idProduto: string,
+    nomeProduto: string,
+    quantidade: number
+}
+
+type PedidosProntosGarcomDTO = {
+    idPedido: string,
+    produtoDTO: ProdutoQuantidadeDTO[],
+    numeroMesa: number
+}
+
 const formatToReais = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 };
@@ -41,7 +55,7 @@ const MenuGarcom = ({navigation}) => {
     const [categorias, setCategorias] = useState<{ label: string, value: number }[] | null>(null);
     const [mesas, setMesas] = useState<Mesa[]>([]);
     const [pedidos, setPedidos] = useState<Pedidos | null>(null);
-    const [activeModal, setActiveModal] = useState<'none' | 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf'>('none');
+    const [activeModal, setActiveModal] = useState<'none' | 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf' | 'pedidosProntos'>('none');
     const [produtosCategorias, setProdutosCategorias] = useState<ProductsMesaDTO[] | null>(null);
     const [categoriaPesquisa, setCategoriaPesquisa] = useState<string>('');
     const [modalProdutosCategoria, setModalProdutosCategoria] = useState<boolean>(false);
@@ -52,9 +66,9 @@ const MenuGarcom = ({navigation}) => {
     const [modalPedidosLancar, setModalPedidosLancar] = useState<boolean>(false);
     const [userCpf, setUserCpf] = useState<string>('');
     const [mesaSelecionada, setMesaSelecionada] = useState('');
-    const [buscaPorCpf, setBuscaPorCpf] = useState('');
-    const [pedidoCpf, setPedidoCpf] = useState<Pedidos | null>(null);
-
+    const [pedidosProntos, setPedidosProntos] = useState<PedidosProntosGarcomDTO[]>([]);
+    const [notificacaoPedidoPronto, setNotificacaoPedidoPronto] = useState(false);
+    /*
     useEffect(() => {
         const token = localStorage.getItem('session-token');
         if (token) {
@@ -111,16 +125,16 @@ const MenuGarcom = ({navigation}) => {
         }
     }, []);
 
+    */
+
     async function getProdutos()
     {
         api.post('api/products/get-by-categoria', null,{
-            params:{categoria: categoriaPesquisa},
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-            }
+            params:{categoria: categoriaPesquisa}
         })
         .then(response => {
             setProdutosCategorias(response.data);
+            setNotificacaoPedidoPronto(true);
         })
         .catch(error => {
             toast.show("Falha ao tentar capturar os pedidos por categoria", {
@@ -132,6 +146,26 @@ const MenuGarcom = ({navigation}) => {
         })
     }
 
+    const fetchPedidos = async () => {
+        api.get('api/pedidos/pronto')
+        .then(response => {
+            setPedidosProntos(response.data);
+        })
+        .catch(error => {
+            toast.show("Falha ao tentar capturar os pedidos prontos.", {
+                type: "danger",
+                placement: "top",
+                duration: 4000,
+                animationType: "slide-in",
+            });
+        })
+    }
+
+    useEffect(() => {
+        fetchPedidos();
+        const interval = setInterval(fetchPedidos, 60000);
+        return () => clearInterval(interval);
+      }, []);
 
     useEffect(() => {
         if (modalProdutosCategoria) {
@@ -141,13 +175,7 @@ const MenuGarcom = ({navigation}) => {
     
     useEffect(() => {
         const fetchMesas = async () => {
-            api.get('api/mesa/get-all', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            })
+            api.get('api/mesa/get-all')
                 .then(response => {
                     setMesas(response.data);
                 })
@@ -166,13 +194,7 @@ const MenuGarcom = ({navigation}) => {
 
     useEffect(() => {
         async function getCategorias() {
-            api.get('api/products/get-categories', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            })
+            api.get('api/products/get-categories')
                 .then(response => {
                     const formattedCategories = response.data.map((category, index) => ({
                         label: category,
@@ -193,176 +215,15 @@ const MenuGarcom = ({navigation}) => {
         getCategorias();
     }, []);
 
-    async function findProduto(query: string) {
-        if (query === "") {
-            return;
-        } else {
-            api.post('api/products/search', null, {
-                params:{
-                    pesquisa:query
-                },
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                setProdutoResponse(response.data);
-            })
-            .catch(error => {
-                toast.show("Falha ao tentar buscar o produto", {
-                    type: "danger",
-                    placement: "top",
-                    duration: 4000,
-                    animationType: "slide-in",
-                  });
-            });
-        }
-    }
-
-    async function findPedido(query: string) {
-        if (query === "") {
-            return;
-        } else {
-            api.post('api/pedidos/get-by-cpf', null, {
-                params: {
-                    cpf: query
-                },
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                setPedidoCpf(response.data);
-                openModal('pedidosClienteCpf')
-            })
-            .catch(error => {
-                toast.show("Falha ao buscar o pedido pelo CPF", {
-                    type: "danger",
-                    placement: "top",
-                    duration: 4000,
-                    animationType: "slide-in",
-                  });
-            });
-        }
-    }
-
-    const handleSearchPedidoCpf = (text: string) => {
-        const unformattedCPF = getUnformattedCpf(text);
-        if (unformattedCPF?.length <= 11) {
-            setBuscaPorCpf(text);
-
-            if (getUnformattedCpf(text).length >= 11) {
-                findPedido(getUnformattedCpf(text));
-            }
-        }
-    };
-
-    const saveProduto = (produto: ProductsMesaDTO) => {
-        setProdutosLancar(prevProducts => {
-            const existingProduct = prevProducts.find(p => p.idProd === produto.idProd);
-            
-            if (existingProduct) {
-                return prevProducts.map(p =>
-                    p.idProd === produto.idProd
-                        ? { ...p, quantidadeProduto: p.quantidadeProduto + 1 }
-                        : p
-                );
-            } else {
-                return [...prevProducts, { ...produto, quantidadeProduto: 1 }];
-            }
-        });
-    
-        setBuscaProduto('');
-        setProdutoResponse([]);
-        toast.show("Produto salvo com sucesso", {
-            type: "success",
-            placement: "top",
-            duration: 4000,
-            animationType: "slide-in",
-          });
-    };
-    
     
 
-    const deleteProduto = (id: string) => {
-        setProdutosLancar(prevProducts => {
-            const updatedProducts = prevProducts.filter(produto => produto.idProd !== id);
-            toast.show("Produto deletado com sucesso", {
-                type: "success",
-                placement: "top",
-                duration: 4000,
-                animationType: "slide-in",
-              });
-            return updatedProducts;
-        });
-    };
-
-    const increaseQuantity = (id: string) => {
-        setProdutosLancar(prevProducts =>
-            prevProducts.map(produto =>
-                produto.idProd === id
-                    ? { ...produto, quantidadeProduto: produto.quantidadeProduto + 1 }
-                    : produto
-            )
-        );
-    };
-
-    const decreaseQuantity = (id: string) => {
-        setProdutosLancar(prevProducts =>
-            prevProducts.map(produto =>
-                produto.idProd === id && produto.quantidadeProduto > 1
-                    ? { ...produto, quantidadeProduto: produto.quantidadeProduto - 1 }
-                    : produto
-            )
-        );
-    };
-
-    const handleSearchInputChange = (text: string) => {
-        setBuscaProduto(text);
-
-        if (debounceTimeout.current) {
-            clearTimeout(debounceTimeout.current);
-        }
-
-        debounceTimeout.current = setTimeout(() => {
-            findProduto(text);
-        }, 600); 
-    };
-
-    const openModal = (modalName: 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf') => {
+    const openModal = (modalName: 'menu' | 'fecharConta' | 'escolha' | 'pedidoMesa' | 'visualizarPedidosMesa' | 'produtosCategoria' | 'pedidosClienteCpf' | 'pedidosProntos') => {
         setActiveModal(modalName);
     };
 
     const closeModal = () => {
         setActiveModal('none');
     };
-
-    const renderCategories = ({ item }: { item: { label: string, value: number } }) => {
-        return (
-            <View style={{margin: 5}}>
-                <Pressable style={styles.categoria} onPress={() => openProdutosCategoria(item.label)}>
-                    <Text style={{ color: '#18acd9' }}>{item.label}</Text>
-                </Pressable>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalProdutosCategoria}
-                    onRequestClose={() => setModalProdutosCategoria(false)}
-                >
-                    {renderModalProdutosCategoria()}
-                </Modal>
-            </View>
-        );
-    };
-
-    const openProdutosCategoria = (item: string) => {
-        setCategoriaPesquisa(item);
-        setModalProdutosCategoria(true);
-    }
 
     const renderProdutos = ({ item }: { item: ProductsMesaDTO }) => {
         if (item != null) {
@@ -404,13 +265,7 @@ const MenuGarcom = ({navigation}) => {
             idMesa: idMesa,
             token: ''
         };
-        api.post('api/pedidos/get-by-mesa', dataToSend, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-            }
-        })
+        api.post('api/pedidos/get-by-mesa', dataToSend)
             .then(response => {
                 setMesaSelecionada(idMesa);
                 setPedidos(response.data);
@@ -456,235 +311,13 @@ const MenuGarcom = ({navigation}) => {
         );
     };
 
-    const renderPesquisa = () => {
-        if (buscaProduto && produtoResponse && produtoResponse.length > 0) {
-            return produtoResponse.map(produto => (
-                <View 
-                    key={produto.idProd}
-                    style={{width: '40%'}}
-                >
-                    <Pressable style={styles.item}>
-                        <Text>{produto.nomeProd}</Text>
-                        <Text>{formatToReais(produto.precoProd)}</Text>
-                    </Pressable>
-                </View>
-            ));
-        } else if (buscaProduto && produtoResponse && produtoResponse.length === 0) {
-            return <Text>Nenhum produto encontrado</Text>;
-        } else {
-            return null; 
-        }
-    };
     
-    const renderProdutosLancar = ({item}:{item:ProductsMesaDTO}) => {
-        return(
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-                    <Pressable onPress={() => decreaseQuantity(item.idProd)} >
-                        <Text>-</Text>
-                    </Pressable>
-                    <Text style={{ marginHorizontal: 15 }}>{item.quantidadeProduto}</Text> 
-                    <Pressable onPress={() => increaseQuantity(item.idProd)} >
-                        <Text>+</Text>
-                    </Pressable>
-                </View>
-                <View style={{ flex: 1 }}>
-                    <Text>{item.nomeProd}</Text>
-                    <Text>{formatToReais(item.precoProd * item.quantidadeProduto)}</Text>
-                </View>
-                <Pressable onPress={() => deleteProduto(item.idProd)} style={styles.deleteButton}>
-                    <Text style={styles.deleteButtonText}>Delete</Text>
-                </Pressable>
-            </View>
-        );
-    }
-
-    const formatCpf = (text: string) => {
-        let cpf = text.replace(/\D/g, '');
-    
-        if (cpf.length <= 3) {
-          cpf = cpf.replace(/(\d{0,3})/, '$1');
-        } else if (cpf.length <= 6) {
-          cpf = cpf.replace(/(\d{3})(\d{0,3})/, '$1.$2');
-        } else if (cpf.length <= 9) {
-          cpf = cpf.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
-        } else {
-          cpf = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
-        }
-    
-        setUserCpf(cpf);
-    };
-
-    const valorTotal = () => {
-        if (produtosLancar.length > 0) {
-            let soma = 0;
-            produtosLancar.forEach(produto => soma += produto.precoProd * produto.quantidadeProduto); // Calculate total based on quantity
-            return <Text>Total: {formatToReais(soma)}</Text>;
-        } else {
-            return;
-        }
-    };
-
-    const getUnformattedCpf = (userCpf: string) => userCpf.replace(/\D/g, '');
-
-    async function tryLancarPedido()
-    {
-        
-        if (getUnformattedCpf(userCpf).length < 11)
-        {
-            toast.show("Cpf precisa ter 11 caracteres.", {
-                type: "warning",
-                placement: "top",
-                duration: 4000,
-                animationType: "slide-in",
-              });
-        }
-        else{
-            const produtos = produtosLancar.map(productMesa => ({
-                idProd: productMesa.idProd,
-                quantidade: productMesa.quantidadeProduto
-              }));
-            const dataToSend = {
-                produtos: produtos,
-                token: "",
-                idMesa: mesaSelecionada,
-                cpfClientePedido: getUnformattedCpf(userCpf)
-            }
-
-            api.post('api/pedidos/add', dataToSend, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                closeModal();
-                setProdutosLancar([]);
-                toast.show("Pedido lançado com sucesso.", {
-                    type: "success",
-                    placement: "top",
-                    duration: 4000,
-                    animationType: "slide-in",
-                  });
-            })
-            .catch(error => {
-                toast.show("Falha ao tentar lançar o pedido", {
-                    type: "danger",
-                    placement: "top",
-                    duration: 4000,
-                    animationType: "slide-in",
-                  });
-            })
-        }
-    }
-
-    const renderModalConferirPedido = () => {
-        if (produtosLancar && produtosLancar.length > 0)
-        {
-            return(
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalPedidosLancar}
-                    onRequestClose={() => setModalPedidosLancar(false)}
-                >
-                    <View style={styles.modalView}>
-                        <TextInput
-                            placeholder="CPF"
-                            value={userCpf}
-                            onChangeText={formatCpf}
-                            keyboardType="numeric"
-                            maxLength={14}
-                        />
-                        <FlatList
-                            data={produtosLancar}
-                            renderItem={renderProdutosLancar}
-                            keyExtractor={(item) => item.idProd}
-                        />
-                        {valorTotal()}
-                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{ position:'absolute', top:15, right:15 }}>
-                            <Icon name='x' size={15}></Icon>
-                        </Pressable>
-                        <Pressable onPress={() => tryLancarPedido()} style={{backgroundColor:'blue', borderColor:'black', borderWidth:1}}>
-                            <Text style={{color:'white'}}>Lançar pedido</Text>
-                        </Pressable>
-                    </View>
-                </Modal>
-            );
-        }
-        else{
-            return(
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalPedidosLancar}
-                    onRequestClose={() => setModalPedidosLancar(false)}
-                    
-                >
-                    <View style={styles.modalView}>
-                        <Text>Nenhum produto selecionado</Text>
-                        <Pressable onPress={() => setModalPedidosLancar(false)} style={{position:'absolute', top:15, right:15}}>
-                            <Icon name='x' size={15}></Icon>
-                        </Pressable>
-                    </View>
-                </Modal>
-            );
-        }
-    }
-
-    const renderModalPedidoMesa = () => {
-        if (categorias && categorias.length > 0) {
-            return (
-                <View style={styles.modalPesquisarProduto}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder='Busque por um produto'
-                        onChangeText={handleSearchInputChange}
-                        value={buscaProduto}
-                    />
-                    {renderPesquisa()}
-                    <FlatList
-                        data={categorias}
-                        key={'_categorias'}
-                        renderItem={renderCategories}
-                        keyExtractor={(item, index) => index.toString()}
-                        numColumns={2}
-                    />
-                    <Pressable onPress={() => closeModal()} style={{ position: 'absolute', top: 15, right: 15 }}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
-                    <Pressable onPress={() => setModalPedidosLancar(true)} style={styles.botaoConferirPedido}>
-                        <Text style={{ color: 'white' }}>Conferir Pedido</Text>
-                    </Pressable>
-                    {renderModalConferirPedido()}
-                </View>
-            );
-        } else {
-            return (
-                <View>
-                    <Text>Ocorreu um erro ao tentar renderizar as categorias.</Text>
-                </View>
-            );
-        }
-    };
-
     const renderMenu = () => {
         if (mesas.length > 0) {
             return (
                 <View style={{ padding: 20 }}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder='Busque o pedido pelo CPF'
-                        onChangeText={handleSearchPedidoCpf}
-                        value={buscaPorCpf}
-                    />
-                    <FlatList
-                        data={mesas}
-                        horizontal={true}
-                        renderItem={renderMesa}
-                        keyExtractor={(item) => item.idMesa}
-                    />
+                    <PesquisarPedidoCpf/>
+                    <MenuMesasGarcom/>
                 </View>
             );
         } else {
@@ -755,69 +388,49 @@ const MenuGarcom = ({navigation}) => {
         }
     }
 
-    const renderProdutosCategorias = ({ item }: { item: ProductsMesaDTO }) => {
-        return (
-            <View style={{width: '100%'}}>
-                <Pressable
-                    onPress={() => saveProduto(item)}
-                    style={styles.item}
-                >   
-                    <Text>{item.nomeProd}</Text>
-                    <Text>{formatToReais(item.precoProd)}</Text>
+    const renderProdutosProntos = ({item}: {item: ProdutoQuantidadeDTO}) => {
+        return(
+            <View>
+                <Text>{item.nomeProduto} x ({item.quantidade})</Text>
+            </View>
+        )
+    }
+
+    const renderPedidosProntos = ({ item }: { item: PedidosProntosGarcomDTO }) => {
+        return(
+            <View style={{borderWidth:1, borderColor:'black'}}>
+                <FlatList
+                    data={item.produtoDTO}
+                    renderItem={renderProdutosProntos}
+                    keyExtractor={(item) => item.idProduto}
+                    style={{width: '60%'}}
+                />
+                <Text>Numero da mesa: {item.numeroMesa}</Text>
+                <Pressable style={{borderRadius:10, backgroundColor:'green'}}>
+                    <Text style={{color:'white'}}>Entregue</Text>
                 </Pressable>
             </View>
         );
-    };
-
-    const renderModalProdutosCategoria = () => {
-        if (produtosCategorias && produtosCategorias.length > 0)
+    }
+    const renderModalPedidosProntos = () => {
+        if (pedidosProntos.length > 0 && pedidosProntos)
         {
+            //setNotificacaoPedidoPronto(false);
             return(
                 <View style={styles.modalView}>
                     <FlatList
-                        data={produtosCategorias}
-                        renderItem={renderProdutosCategorias}
-                        keyExtractor={(item) => item.idProd}
+                        data={pedidosProntos}
+                        renderItem={renderPedidosProntos}
+                        keyExtractor={(item) => item.idPedido}
                         style={{width: '60%'}}
                     />
-                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{position:'absolute', top:15, right:15}}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
                 </View>
             );
         }
         else{
             return(
                 <View style={styles.modalView}>
-                    <Text>Nenhum produto desta categoria disponível.</Text>
-                    <Pressable onPress={() => setModalProdutosCategoria(false)} style={{position:'absolute', top:15, right:15}}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
-                </View>
-            );
-        }
-    }
-
-    const renderModalPedidosCpf = () => {
-        if (pedidoCpf.pedidosMesa.length > 0 && pedidoCpf)
-        {
-            return(
-                <View style={styles.modalView}>
-                    <FlatList
-                        data={pedidoCpf.pedidosMesa}
-                        renderItem={renderPedidosMesa}
-                        keyExtractor={(item) => item.idPedido}
-                    />
-                    <Pressable onPress={() => closeModal()} style={{position:'absolute', top:15, right:15}}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
-                </View>
-            );
-        }
-        else{
-            return(
-                <View style={styles.modalView}>
-                    <Text>Cliente não possui nenhum pedido.</Text>
+                    <Text>Nenhum pedido pronto no momento</Text>
                     <Pressable onPress={() => closeModal()} style={{position:'absolute', top:15, right:15}}>
                         <Icon name='x' size={15}></Icon>
                     </Pressable>
@@ -861,38 +474,45 @@ const MenuGarcom = ({navigation}) => {
                         {renderModalEscolha()}
                     </Modal>
                 );
-            case 'pedidoMesa':
-                return (
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={true}
-                        onRequestClose={closeModal}
-                        style={{ backgroundColor: 'red' }}
-                    >
-                        {renderModalPedidoMesa()}
-                    </Modal>
-                );
-            case 'pedidosClienteCpf':
-            return (
+            case 'pedidosProntos':
+            return(
                 <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={true}
-                    onRequestClose={closeModal}
+                animationType="slide"
+                transparent={true}
+                visible={true}
+                onRequestClose={closeModal}
                 >
-                    {renderModalPedidosCpf()}
+                    {renderModalPedidosProntos()}
                 </Modal>
-                );
+            )
             default:
                 return null;
         }
     };
 
+    const renderBell = () => {
+        if (notificacaoPedidoPronto === true)
+        {
+            return(
+                <Pressable onPress={() => openModal('pedidosProntos')} style={{borderColor:'green'}}>
+                    <Icon name='bell' size={40}></Icon>
+                </Pressable>
+            );
+        }
+        else{
+            return(
+                <Pressable onPress={() => openModal('pedidosProntos')}>
+                    <Icon name='bell' size={40}></Icon>
+                </Pressable>
+            );
+        }
+    }
+
     return (
         <SafeAreaView>
             <ScrollView>
                 <View>
+                    {renderBell()}
                     {renderMenu()}
                     {renderModals()}
                 </View>

@@ -29,13 +29,7 @@ const MenuBalcao = () => {
     const [modalConfirmarPagamento, setModalConfirmarPagamento] = useState<boolean>(false);
 
     useEffect(() => {
-        api.get('api/pagamentos/get-metodos', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-                }
-        })
+        api.get('api/pagamentos/get-metodos')
         .then(response => {
             const formattedCategories = response.data.map((category, index) => ({
               label: category,
@@ -60,11 +54,6 @@ const MenuBalcao = () => {
             api.post('api/products/search', null , {
                 params:{
                     pesquisa:query
-                },
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
                 }
             })
             .then(response => {
@@ -225,13 +214,7 @@ const MenuBalcao = () => {
                 metodoPagamento: metodoEscolhido
             };
             
-            api.post('api/pagamentos/add', dataToSend, {
-                headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-                }
-            })
+            api.post('api/pagamentos/add', dataToSend)
             .then(response => {
                 toast.show("Pagamento efetuado com sucesso", {
                     type: "success",

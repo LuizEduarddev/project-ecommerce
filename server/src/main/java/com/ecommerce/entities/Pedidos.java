@@ -48,12 +48,15 @@ public class Pedidos {
     @CollectionTable(name = "pedido_produtos", joinColumns = @JoinColumn(name = "pedido_id"))
     private List<ProductsPedidosDTO> produtos = new ArrayList<>();
 
-
     @ManyToOne
     private Users users;
 
     @ManyToOne
     private Mesa mesa;
+
+    @OneToOne
+    @JoinColumn(nullable = false)
+    private Empresas empresa;
 
     public Pedidos(){}
 
@@ -83,6 +86,23 @@ public class Pedidos {
         this.mesa = mesa;
         this.cpfClientePedido = cpfClientePedido;
         this.levouParaMesa = levouParaMesa;
+    }
+
+    public Pedidos(String cpfClientePedido, String dataPedido, String horaPedido, double totalPedido, boolean pedidoPago, boolean pedidoProntoCozinha, boolean pedidoProntoBalcao, boolean pedidoPronto, String horaPronto, boolean levouParaMesa, List<ProductsPedidosDTO> produtos, Users users, Mesa mesa, Empresas empresa) {
+        this.cpfClientePedido = cpfClientePedido;
+        this.dataPedido = dataPedido;
+        this.horaPedido = horaPedido;
+        this.totalPedido = totalPedido;
+        this.pedidoPago = pedidoPago;
+        this.pedidoProntoCozinha = pedidoProntoCozinha;
+        this.pedidoProntoBalcao = pedidoProntoBalcao;
+        this.pedidoPronto = pedidoPronto;
+        this.horaPronto = horaPronto;
+        this.levouParaMesa = levouParaMesa;
+        this.produtos = produtos;
+        this.users = users;
+        this.mesa = mesa;
+        this.empresa = empresa;
     }
 
     public Users getUsers() {
@@ -195,5 +215,13 @@ public class Pedidos {
 
     public void setLevouParaMesa(boolean levouParaMesa) {
         this.levouParaMesa = levouParaMesa;
+    }
+
+    public Empresas getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresas empresa) {
+        this.empresa = empresa;
     }
 }

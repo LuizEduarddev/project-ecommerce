@@ -2,7 +2,6 @@ package com.ecommerce.controllers;
 
 import java.util.List;
 
-import com.ecommerce.entities.CategoriaProd;
 import com.ecommerce.entities.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,13 +37,13 @@ public class ProductsController {
 	}
 
 	@PostMapping("/search")
-	public List<Products> search(@RequestParam String pesquisa){
-		return service.searchProduct(pesquisa);
+	public List<Products> search(@RequestParam PesquisaProdutoDTO dto){
+		return service.searchProduct(dto);
 	}
 
 	//ESTA FUNCAO E NECESSARIA POIS AQUI PUXA TODOS OS PRODUTOS MESMO QUE SEJAM VISIBLE == FALSE
 	@PostMapping("/search/balcao")
-	public List<Products> searchBalcao(@RequestParam String pesquisa){
+	public List<Products> searchBalcao(@RequestParam PesquisaProdutoDTO pesquisa){
 		return service.searchProductBalcao(pesquisa);
 	}
 
@@ -55,22 +54,23 @@ public class ProductsController {
 	}
 
 	@PostMapping("/get-by-categoria")
-	public List<ProductsCategoriaDTO> getByCategoria(@RequestParam String categoria) throws Exception
+	public List<ProductsCategoriaDTO> getByCategoria(@RequestBody CategoriariaProdutoDTO dto) throws Exception
 	{
-		return service.getProductByCategoria(categoria);
+		return service.getProductByCategoria(dto);
 	}
 
 	@PostMapping("/add")
 	public ResponseEntity<String> add(
 			@RequestParam("nomeProd") String nomeProd,
 			@RequestParam("precoProd") double precoProd,
-			@RequestParam("promoProd") boolean promoProd,
-			@RequestParam("categoriaProd") CategoriaProd categoriaProd,
+			@RequestParam("promoProd")	 boolean promoProd,
+			@RequestParam("categoriaProd") String categoriaProd,
 			@RequestParam("precoPromocao") double precoPromocao,
 			@RequestPart(value = "file", required = false) MultipartFile file,
-			@RequestParam("visible") boolean visible
+			@RequestParam("visible") boolean visible,
+			@RequestParam("token") String token
 	) {
-		CreateProductDTO novoProduto = new CreateProductDTO(nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible);
+		CreateProductDTO novoProduto = new CreateProductDTO(nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible, token);
 		return service.addProduct(novoProduto);
 	}
 	
@@ -79,12 +79,13 @@ public class ProductsController {
 										@RequestParam("nomeProd") String nomeProd,
 										@RequestParam("precoProd") double precoProd,
 										@RequestParam("promoProd") boolean promoProd,
-										@RequestParam("categoriaProd") CategoriaProd categoriaProd,
+										@RequestParam("categoriaProd") String categoriaProd,
 										@RequestParam("precoPromocao") double precoPromocao,
 										@RequestPart(value = "file", required = false) MultipartFile file,
-										@RequestParam("visible") boolean visible
+										@RequestParam("visible") boolean visible,
+										@RequestParam("visible") String token
 	) throws Exception {
-		EditarProductDTO novoProduto = new EditarProductDTO(idProd,nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible);
+		EditarProductDTO novoProduto = new EditarProductDTO(idProd,nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible, token);
 		return service.alterProduct(novoProduto);
 	}
 	

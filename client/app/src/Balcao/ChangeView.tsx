@@ -8,12 +8,14 @@ import api from '../../ApiConfigs/ApiRoute';
 import { colors } from '../assets/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useToast } from 'react-native-toast-notifications';
+import MenuAdministrador from './MenuAdministrador/MenuAdministrador';
 
 const ChangeView = ({ navigation }) => {
     const toast = useToast();
     const [view, setView] = useState('Mesas');
     const [loading, setLoading] = useState(true);
 
+    /*
     useEffect(() => {
         async function initialization() {
             const token = await localStorage.getItem('session-token'); 
@@ -45,7 +47,7 @@ const ChangeView = ({ navigation }) => {
         }
         initialization();
     }, [navigation]); // Depend on navigation to trigger useEffect when the component mounts
-
+    */
     return (
         <View style={styles.container}>
             <View style={styles.menu}>
@@ -61,6 +63,9 @@ const ChangeView = ({ navigation }) => {
                     <Icon name="account-plus" color="white" size={40}/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Produtos')}>
+                    <Icon name="dropbox" color="white" size={40}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Administrador')}>
                     <Icon name="store" color="white" size={40}/>
                 </TouchableOpacity>
             </View>
@@ -75,6 +80,8 @@ const ChangeView = ({ navigation }) => {
                         <MenuUsuario/>
                     ) : view === 'Menu Produtos' ? (
                         <MenuProdutos/>
+                    ) : view === 'Menu Administrador' ? (
+                        <MenuAdministrador/>
                     ) :
                     (<Text>Nada para mostrar no momento.</Text>)
                 }

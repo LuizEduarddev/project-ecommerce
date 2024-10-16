@@ -30,6 +30,12 @@ public class PedidosController {
         return service.getPedidosPendentes(token);
     }
 
+    @PostMapping("/pronto/garcom")
+    public List<PedidosProntoGarcomDTO> pedidoProntoGarcom(String token)
+    {
+        return service.pedidoProntoGarcom(token);
+    }
+
     @PostMapping("/pronto")
     public ResponseEntity<String> pedidoPronto(@RequestBody SetPedidoProntoDTO dto)
     {
@@ -62,16 +68,16 @@ public class PedidosController {
         return service.getPedidoByMesaDTO(dto);
     }
 
-    @GetMapping("/get-for-cozinha")
-    public List<PedidoCozinhaDTO> getForCozinha()
+    @PostMapping("/get-for-cozinha")
+    public List<PedidoCozinhaDTO> getForCozinha(String token)
     {
-        return service.getPedidoForCozinha();
+        return service.getPedidoForCozinha(token);
     }
 
-    @GetMapping("/get-for-balcao-preparo")
-    public List<PedidoCozinhaDTO> getForBalcaoPreparo()
+    @PostMapping("/get-for-balcao-preparo")
+    public List<PedidoCozinhaDTO> getForBalcaoPreparo(String token)
     {
-        return service.getPedidoForBalcaoPreparo();
+        return service.getPedidoForBalcaoPreparo(token);
     }
 
     @PostMapping("/get-by-cpf")

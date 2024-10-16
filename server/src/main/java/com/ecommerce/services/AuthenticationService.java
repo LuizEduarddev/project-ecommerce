@@ -1,7 +1,9 @@
 package com.ecommerce.services;
 
+import com.ecommerce.entities.Empresas;
 import com.ecommerce.entities.UserRole;
 import com.ecommerce.entities.dto.*;
+import com.ecommerce.entities.errors.EmpresasException;
 import com.ecommerce.infra.security.SecurityFilter;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,25 @@ public class AuthenticationService {
 	{
 		return repository.findById(idUser)
 				.orElseThrow();
+	}
+
+	public Empresas getEmpresaByToken(String token)
+	{
+		try
+		{
+			Users user = repository.findByLoginUser(getUserName(token));
+			if (user != null)
+			{
+				return user.getEmpresa();
+			}
+			else{
+				throw new EmpresasException("Empresa não encontrada no sistema.");
+			}
+		}
+		catch(Exception e)
+		{
+			throw new EmpresasException("Erro ao tentar buscar a empresa." + e);
+		}
 	}
 
 	@Transactional

@@ -1,7 +1,6 @@
 package com.ecommerce.entities;
 
 import jakarta.persistence.*;
-import org.apache.catalina.User;
 
 import java.util.List;
 
@@ -25,7 +24,19 @@ public class Mesa {
     @OneToMany
     private List<Users> users;
 
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Empresas empresas;
+
     public Mesa(){}
+
+    public Mesa(int numeroMesa, boolean emUso, boolean mesaSuja, List<Users> users, Empresas empresas) {
+        this.numeroMesa = numeroMesa;
+        this.emUso = emUso;
+        this.mesaSuja = mesaSuja;
+        this.users = users;
+        this.empresas = empresas;
+    }
 
     public Mesa(int numeroMesa, boolean emUso, boolean mesaSuja) {
         this.numeroMesa = numeroMesa;
@@ -78,5 +89,13 @@ public class Mesa {
 
     public void setIdUsers(List<Users> idUsers) {
         this.users = idUsers;
+    }
+
+    public Empresas getEmpresas() {
+        return empresas;
+    }
+
+    public void setEmpresas(Empresas empresas) {
+        this.empresas = empresas;
     }
 }

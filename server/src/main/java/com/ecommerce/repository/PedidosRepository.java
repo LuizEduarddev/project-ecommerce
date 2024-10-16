@@ -1,5 +1,6 @@
 package com.ecommerce.repository;
 
+import com.ecommerce.entities.Empresas;
 import com.ecommerce.entities.Mesa;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Users;
@@ -14,4 +15,6 @@ public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByUsersAndMesa(Users users, Mesa mesa);
     List<Pedidos> findByUsersAndMesaAndPedidoPagoFalse(Users user, Mesa mesa);
     List<Pedidos> findByCpfClientePedido(String cpfClientePedido);
+    List<Pedidos> findByDataPedido(String dataPedido);
+    List<Pedidos> findByEmpresa(Empresas empresa);
 }

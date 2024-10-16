@@ -26,6 +26,7 @@ const MenuBalcaoDePreparo = ({navigation}) => {
   const [modalPedidoId, setModalPedidoId] = useState<string | null>(null);
   const [modalConfirmarPedidoPronto, setModalConfirmarPedidoPronto] = useState<boolean>(false);
 
+  /*
   useEffect(() => {
     const token = localStorage.getItem('session-token');
     if (token) {
@@ -69,16 +70,10 @@ const MenuBalcaoDePreparo = ({navigation}) => {
         navigation.navigate('Login');
     }
 }, []);
-
+  */ 
   const fetchPedidos = async () => {
     try {
-      const response = await api.get('api/pedidos/get-for-balcao-preparo', {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-          'Content-Type': 'application/json',
-      }
-      });
+      const response = await api.get('api/pedidos/get-for-balcao-preparo');
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
@@ -109,13 +104,7 @@ const MenuBalcaoDePreparo = ({navigation}) => {
           idPedido: pedido.idPedido,
           token:localStorage.getItem('session-token')
         }
-        const response = await api.post('api/pedidos/pronto', dataToSend, {
-              headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-            }
-          });
+        const response = await api.post('api/pedidos/pronto', dataToSend);
         setModalConfirmarPedidoPronto(false);
         setModalPedidoId(null);
         fetchPedidos();

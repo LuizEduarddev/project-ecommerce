@@ -39,11 +39,6 @@ const MenuPesquisaProduto = () => {
       api.post('api/products/search/balcao',null , {
         params:{
             pesquisa:query
-        },
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-            'Content-Type': 'application/json',
         }
     })
       .then((response) => {

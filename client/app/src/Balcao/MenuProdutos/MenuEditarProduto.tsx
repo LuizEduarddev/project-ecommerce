@@ -44,11 +44,6 @@ const MenuEditarProduto = ({
         const response = await api.post('api/products/get-by-id', null, {
           params:{
             idProduto:id
-          },
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-            'Content-Type': 'application/json',
           }
         });
         const product = response.data;
@@ -76,13 +71,7 @@ const MenuEditarProduto = ({
   useEffect(() => {
     async function getCategorias() {
       try {
-        const response = await api.get('api/products/get-categories', {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-            'Content-Type': 'application/json',
-          }
-        });
+        const response = await api.get('api/products/get-categories');
         const formattedCategories = response.data.map(
           (category: string, index: number) => ({
             label: category,
@@ -162,10 +151,7 @@ const MenuEditarProduto = ({
       await api.delete('api/products/delete', {
         params: {
           idProduto: id,
-        },
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-      }
+        }
       });
       toast.show("Produto deletado com sucesso", {
         type: "success",
@@ -209,13 +195,7 @@ const MenuEditarProduto = ({
       }
     }
     api
-      .put('api/products/editar', formData, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-          'Content-Type': 'multipart/form-data',
-      }
-      })
+      .put('api/products/editar', formData)
       .then((response) => {
         toast.show("Produto editado com sucesso", {
           type: "success",

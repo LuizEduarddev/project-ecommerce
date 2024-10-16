@@ -20,10 +20,8 @@ public class Products {
 	@Column(name = "promo_prod")
 	private boolean promoProd;
 
-	@Column(name = "categoria_prod")
-	@Enumerated(EnumType.STRING)
-	private CategoriaProd categoriaProd;
-
+	@OneToOne
+	private CategoriasEmpresas categoriaProd;
 
 	@Column(name = "preco_promocao")
 	private double precoPromocao;
@@ -35,11 +33,15 @@ public class Products {
 	@Column(name = "visible")
 	private boolean visible;
 
+	@ManyToOne
+	@JoinColumn(nullable = false)
+	private Empresas empresa;
+
 	// Default constructor
 	public Products() {
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd,double precoPromocao, byte[] imagemProduto, boolean visible) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd,double precoPromocao, byte[] imagemProduto, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -49,7 +51,7 @@ public class Products {
 		this.visible = visible;
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriaProd categoriaProd, double precoPromocao, boolean visible) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd, double precoPromocao, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
@@ -58,11 +60,22 @@ public class Products {
 		this.visible = visible;
 	}
 
-	public CategoriaProd getCategoriaProd() {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd, double precoPromocao, byte[] imagemProduto, boolean visible, Empresas empresa) {
+		this.nomeProd = nomeProd;
+		this.precoProd = precoProd;
+		this.promoProd = promoProd;
+		this.categoriaProd = categoriaProd;
+		this.precoPromocao = precoPromocao;
+		this.imagemProduto = imagemProduto;
+		this.visible = visible;
+		this.empresa = empresa;
+	}
+
+	public CategoriasEmpresas getCategoriaProd() {
 		return categoriaProd;
 	}
 
-	public void setCategoriaProd(CategoriaProd categoriaProd) {
+	public void setCategoriaProd(CategoriasEmpresas categoriaProd) {
 		this.categoriaProd = categoriaProd;
 	}
 
@@ -121,5 +134,13 @@ public class Products {
 
 	public void setVisible(boolean visible) {
 		this.visible = visible;
+	}
+
+	public Empresas getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Empresas empresa) {
+		this.empresa = empresa;
 	}
 }

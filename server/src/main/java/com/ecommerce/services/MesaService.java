@@ -1,11 +1,13 @@
 package com.ecommerce.services;
 
+import com.ecommerce.entities.Empresas;
 import com.ecommerce.entities.Mesa;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Users;
 import com.ecommerce.entities.dto.MesaBalcaoDTO;
 import com.ecommerce.entities.dto.MesaDTO;
 import com.ecommerce.entities.dto.PedidosMesaDTO;
+import com.ecommerce.entities.errors.MesaException;
 import com.ecommerce.repository.MesaRepository;
 import com.ecommerce.repository.UsersRepository;
 import jakarta.transaction.Transactional;
@@ -40,17 +42,6 @@ public class MesaService {
 
     public List<MesaBalcaoDTO> getAllMesa()
     {
-        //PERMISSAO FUNCTIONANDO
-        /*
-        Collection<? extends GrantedAuthority> permission = authenticationService.getPermission(token);
-        for (GrantedAuthority permissao : permission) {
-            if (permissao.equals("USER_CAFE")) {
-                return repository.findAll();
-            }
-        }
-        throw new RuntimeException("Necessária uma permissão maior.");
-        return repository.findAll();Starting pgAdmin 4...
-         */
         List<MesaBalcaoDTO> mesaDTO = new ArrayList<>();
         List<Mesa> mesaList = repository.findAll();
 
@@ -69,42 +60,30 @@ public class MesaService {
 
     public ResponseEntity<String> addMesa(int numeroMesa, String token)
     {
-            try
+        try
+        {
+            Empresas empresa = authenticationService.getEmpresaByToken(token);
+            if (empresa != null)
             {
                 Mesa mesa = new Mesa();
+                mesa.setEmpresas(empresa);
                 mesa.setNumeroMesa(numeroMesa);
                 mesa.setEmUso(false);
                 mesa.setMesaSuja(false);
                 repository.saveAndFlush(mesa);
                 return ResponseEntity.ok("Mesa criada com sucesso.");
             }
-            catch (Exception e)
-            {
-                return ResponseEntity.badRequest().body("Um problema ocorreu ao tentar criar a mesa.\nError: " + e);
-            }
-        //VERIFICAÇÃO DE AUTORIDADE NO SISTEMA PRONTA
-        /*
-        try
-        {
-            if (authenticationService.getUser(token).getAuthorities().contains("USER_ADMIN"))
-            {
-                mesa.setEmUso(false);
-                mesa.setMesaSuja(false);
-                repository.saveAndFlush(mesa);
-                return ResponseEntity.ok("Mesa criada com sucesso.");
-            }
             else{
-                return ResponseEntity.ok("É necessário uma hierárquia maior.");
+                throw new MesaException("É necessário uma empresa para criar uma mesa.");
             }
         }
         catch (Exception e)
         {
-            return ResponseEntity.badRequest().body("Um problema ocorreu ao tentar criar a mesa.\nError: " + e);
+            throw new MesaException("Um problema ocorreu ao tentar criar a mesa.");
         }
-
-         */
     }
 
+    /*
     @Transactional
     public ResponseEntity<String> addClienteMesa(String idMesa, String token)
     {
@@ -145,11 +124,14 @@ public class MesaService {
         }
     }
 
+     */
+
     public Mesa getMesaFullById(String idMesa)
     {
        return repository.findById(idMesa).orElseThrow();
     }
 
+    /*
     public ResponseEntity<String> deleteUser(String idMesa, String token)
     {
         try
@@ -191,6 +173,9 @@ public class MesaService {
 
     }
 
+     */
+
+    /*
     public ResponseEntity<String> deleteAllUser(String idMesa)
     {
         try
@@ -211,6 +196,8 @@ public class MesaService {
             return ResponseEntity.badRequest().body("Um erro ocorreu ao tentar finalizar a mesa.\nError: " + e);
         }
     }
+
+     */
 
     public void alterMesaEmUso(String idMesa) {
         Mesa mesa = repository.findById(idMesa).orElseThrow();

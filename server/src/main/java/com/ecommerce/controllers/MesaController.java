@@ -37,22 +37,4 @@ public class MesaController {
     {
         return service.addMesa(dto.numeroMesa(), dto.token());
     }
-
-    @PutMapping("/add/cliente")
-    public ResponseEntity<String> addCliente(@RequestBody addClienteDTO dto)
-    {
-        return service.addClienteMesa(dto.idMesa(), dto.token());
-    }
-
-    @DeleteMapping("/cliente/delete")
-    public ResponseEntity<String> deleteCliente(@RequestBody deleteMesaDTO dto)
-    {
-        return service.deleteUser(dto.idMesa(), dto.token());
-    }
-
-    @DeleteMapping("/delete-all-user/{idMesa}")
-    public ResponseEntity<String> deleteAll(@PathVariable String idMesa)
-    {
-        return service.deleteAllUser(idMesa);
-    }
 }

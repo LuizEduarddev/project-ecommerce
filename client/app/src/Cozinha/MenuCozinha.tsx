@@ -27,6 +27,7 @@ const MenuCozinha = ({navigation}) => {
   const [modalPedidoId, setModalPedidoId] = useState<string | null>(null);
   const [modalConfirmarPedidoPronto, setModalConfirmarPedidoPronto] = useState<boolean>(false);
 
+  /*
   useEffect(() => {
     const token = localStorage.getItem('session-token');
     if (token) {
@@ -76,14 +77,10 @@ const MenuCozinha = ({navigation}) => {
       navigation.navigate('Login');
     }
 }, []);
-
+  */
   const fetchPedidos = async () => {
     try {
-      const response = await api.get('api/pedidos/get-for-cozinha', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-      }
-      });
+      const response = await api.get('api/pedidos/get-for-cozinha');
       const pedidos = response.data;
 
       const pedidosProntos = pedidos.filter(pedido => pedido.pedidoPronto === true);
@@ -114,12 +111,7 @@ const MenuCozinha = ({navigation}) => {
         idPedido: pedido.idPedido,
         token: localStorage.getItem('session-token')
     }
-    const response = await api.post('api/pedidos/pronto', dataToSend, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-        }
-      });
+    const response = await api.post('api/pedidos/pronto', dataToSend);
       setModalConfirmarPedidoPronto(false);
       setModalPedidoId(null);
       fetchPedidos();

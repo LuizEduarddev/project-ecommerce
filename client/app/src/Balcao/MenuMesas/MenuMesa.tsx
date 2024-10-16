@@ -63,13 +63,7 @@ const MenuMesa = () => {
             idPedidos: pedidosSelecionadosFechamento.map(pedido => pedido.idPedido),
             metodoPagamento: formaDePagamentoEscolhida
         }
-        api.post('api/pagamentos/add', dataToSend, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                'Content-Type': 'application/json',
-            }
-        })
+        api.post('api/pagamentos/add', dataToSend)
         .then(response => {
             toast.show("Pagamento efetuado com sucesso", {
                 type: "success",
@@ -93,13 +87,7 @@ const MenuMesa = () => {
 
     async function getMetodoPagamento() {
         try {
-            const response = await api.get('api/pagamentos/get-metodos', {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json',
-                }
-            });
+            const response = await api.get('api/pagamentos/get-metodos');
             const formattedCategories = response.data.map((category: string, index: number) => ({
                 label: category,
                 value: category,
@@ -119,13 +107,7 @@ const MenuMesa = () => {
     useEffect(() => {
         const fetchMesas = async () => {
             try {
-                const response = await api.get('api/mesa/get-all', {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
+                const response = await api.get('api/mesa/get-all');
                 setMesas(response.data);
             } catch (error) {
                 toast.show("Falha ao capturar as mesas", {
@@ -170,12 +152,7 @@ const MenuMesa = () => {
             token: ''
         };
         try {
-            const response = await api.post('api/pedidos/get-by-mesa', dataToSend, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await api.post('api/pedidos/get-by-mesa', dataToSend);
             setPedidos(response.data);
             setModalVisible(true);
         } catch (error) {

@@ -49,6 +49,9 @@ public class Users implements UserDetails {
 	@Column(name = "imagem_usuario")
 	private byte[] imagemUsuario;
 
+	@OneToOne
+	private Empresas empresa;
+
 	public Users() {
 	}
 
@@ -90,6 +93,20 @@ public class Users implements UserDetails {
 		this.userEmail = userEmail;
 		this.pontosCupcake = pontosCupcake;
 		this.imagemUsuario = imagemUsuario;
+	}
+
+	public Users(String loginUser, String passwordUser, UserRole userRole, String userFullName, String userTelefone, String userCpf, String userEndereco, String userEmail, int pontosCupcake, byte[] imagemUsuario, Empresas empresa) {
+		this.loginUser = loginUser;
+		this.passwordUser = passwordUser;
+		this.userRole = userRole;
+		this.userFullName = userFullName;
+		this.userTelefone = userTelefone;
+		this.userCpf = userCpf;
+		this.userEndereco = userEndereco;
+		this.userEmail = userEmail;
+		this.pontosCupcake = pontosCupcake;
+		this.imagemUsuario = imagemUsuario;
+		this.empresa = empresa;
 	}
 
 	@Override
@@ -205,5 +222,13 @@ public class Users implements UserDetails {
 
 	public void setUserRole(UserRole userRole) {
 		this.userRole = userRole;
+	}
+
+	public Empresas getEmpresa() {
+		return empresa;
+	}
+
+	public void setEmpresa(Empresas empresa) {
+		this.empresa = empresa;
 	}
 }

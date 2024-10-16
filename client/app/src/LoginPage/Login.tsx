@@ -32,7 +32,6 @@ export default function Login({ navigation }) {
     async function directUser(authorities:Authorities)
     {
         if (authorities.some((item) => item.authority === 'ROLE_BALCAO')) {
-            console.log('entrou aqui');
             navigation.navigate('ChangeView');
         } 
         else if (authorities.some((item) => item.authority === 'ROLE_GARCOM')) {
@@ -70,7 +69,7 @@ export default function Login({ navigation }) {
                 api.post('/api/auth/login', dataLogin)
                 .then(response => {
                     storeData(response.data.token);
-                    directUser(response.data.authorities);
+                    //directUser(response.data.authorities);
                 })
                 .catch(error => {
                     if (!error.response) {
@@ -125,6 +124,31 @@ export default function Login({ navigation }) {
                         onPress={() => tryLogin()}
                     >
                         <Text style={styles.textButtonLogin}>Entrar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate('ChangeView')}
+                    >
+                        <Text style={styles.textButtonLogin}>ChangeView</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate('MenuGarcom')}
+                    >
+                        <Text style={styles.textButtonLogin}>MenuGarcom</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate('MenuBalcaoDePreparo')}
+                    >
+                        <Text style={styles.textButtonLogin}>MenuBalcaoDePreparo</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.buttonLogin}
+                        onPress={() => navigation.navigate('MenuCozinha')}
+                    >
+                        <Text style={styles.textButtonLogin}>MenuCozinha</Text>
                     </TouchableOpacity>
                 </View>
             </View>

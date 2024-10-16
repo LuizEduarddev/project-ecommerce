@@ -30,12 +30,12 @@ public class WebSecurityConfig {
 	public SecurityFilterChain security(HttpSecurity http) throws Exception
 	{
 		return http
-				/*
 				.cors(AbstractHttpConfigurer::disable)
 				.csrf(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
 						//AUTH REQUESTS
+						/*
 						.requestMatchers(HttpMethod.POST, "/api/auth/register").hasAnyRole(String.valueOf(UserRole.ADMIN))//permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/auth/garcom").hasRole(String.valueOf(UserRole.GARCOM))
@@ -140,12 +140,12 @@ public class WebSecurityConfig {
 								String.valueOf(UserRole.GARCOM),
 								String.valueOf(UserRole.BALCAO)
 						)
-
+						*/
 
 						.anyRequest().permitAll())
 						
-				 */
-				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+
+				//.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 	

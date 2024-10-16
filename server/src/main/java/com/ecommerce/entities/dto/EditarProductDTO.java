@@ -1,6 +1,6 @@
 package com.ecommerce.entities.dto;
 
-import com.ecommerce.entities.CategoriaProd;
+import com.ecommerce.entities.CategoriasEmpresas;
 import org.springframework.web.multipart.MultipartFile;
 
 public class EditarProductDTO {
@@ -8,17 +8,18 @@ public class EditarProductDTO {
     private String nomeProd;
     private double precoProd;
     private boolean promoProd;
-    private CategoriaProd categoriaProd;
+    private String categoriaProd;
     private double precoPromocao;
     private MultipartFile file;
     private boolean visible;
+    private String token;
 
     // Default constructor
     public EditarProductDTO() {}
 
     // Parameterized constructor
     public EditarProductDTO(String idProduto,String nomeProd, double precoProd, boolean promoProd,
-                            CategoriaProd categoriaProd, double precoPromocao, MultipartFile file, boolean visible) {
+                            String categoriaProd, double precoPromocao, MultipartFile file, boolean visible, String token) {
         this.idProduto = idProduto;
         this.nomeProd = nomeProd;
         this.precoProd = precoProd;
@@ -27,6 +28,7 @@ public class EditarProductDTO {
         this.precoPromocao = precoPromocao;
         this.file = file;
         this.visible = visible;
+        this.token = token;
     }
 
     public String getIdProduto() {
@@ -61,11 +63,11 @@ public class EditarProductDTO {
         this.promoProd = promoProd;
     }
 
-    public CategoriaProd getCategoriaProd() {
+    public String getCategoriaProd() {
         return categoriaProd;
     }
 
-    public void setCategoriaProd(CategoriaProd categoriaProd) {
+    public void setCategoriaProd(String categoriaProd) {
         this.categoriaProd = categoriaProd;
     }
 
@@ -91,5 +93,13 @@ public class EditarProductDTO {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

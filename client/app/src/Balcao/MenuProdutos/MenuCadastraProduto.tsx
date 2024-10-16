@@ -21,13 +21,7 @@ const MenuCadastraProduto = () => {
 
   useEffect(() => {
     async function getCategorias() {
-      api.get('api/products/get-categories', {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-          'Content-Type': 'application/json',
-        }
-      })
+      api.get('api/products/get-categories')
         .then(response => {
           const formattedCategories = response.data.map((category, index) => ({
             label: category,
@@ -107,13 +101,7 @@ const MenuCadastraProduto = () => {
       }
     }
     api
-      .post('api/products/add', formData, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('session-token')}`,
-          'Content-Type': 'multipart/form-data',
-        }
-      })
+      .post('api/products/add', formData)
       .then(response => {
         toast.show("Produto adicionado com sucesso", {
           type: "success",

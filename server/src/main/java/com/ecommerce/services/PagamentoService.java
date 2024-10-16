@@ -64,7 +64,7 @@ public class PagamentoService {
     }
 
 
-
+    /*
     public ResponseEntity<String> addPagamento(addPagamentoDTO dto) {
         if (dto.idPedidos() == null && dto.pedido() == null) {
             throw new RuntimeException("Campos necessários não válidados.");
@@ -103,6 +103,8 @@ public class PagamentoService {
         }
 
     }
+
+     */
 
     private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento) {
         try {

@@ -36,8 +36,10 @@ public class PagamentosController {
         return MetodoPagamento.allCategorias();
     }
 
+    /*
     @PostMapping("/add")
     public Object add(@RequestBody addPagamentoDTO dto){
         return service.addPagamento(dto);
     }
+     */
 }
