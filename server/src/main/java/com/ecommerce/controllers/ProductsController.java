@@ -18,22 +18,16 @@ public class ProductsController {
 	@Autowired
 	private ProductsService service;
 
-	@GetMapping("/get-categories")
-	public List<String> getAllCategories()
-	{
-		return service.getCategories();
-	}
-
 	@GetMapping("/get-all")
 	public List<Products> getAll()
 	{
 		return service.getAllProducts();
 	}
 
-	@GetMapping("/get-promotion")
-	public List<Products> getPromotion()
+	@PostMapping("/get-promotion")
+	public List<Products> getPromotion(String token)
 	{
-		return service.getProductsPromotion();
+		return service.getProductsPromotion(token);
 	}
 
 	@PostMapping("/search")
@@ -57,6 +51,12 @@ public class ProductsController {
 	public List<ProductsCategoriaDTO> getByCategoria(@RequestBody CategoriariaProdutoDTO dto) throws Exception
 	{
 		return service.getProductByCategoria(dto);
+	}
+
+	@PostMapping("/get-by-empresa")
+	public List<Products> getByEmpresa(@RequestParam String token)
+	{
+		return service.getProductByEmpresa(token);
 	}
 
 	@PostMapping("/add")
@@ -83,7 +83,7 @@ public class ProductsController {
 										@RequestParam("precoPromocao") double precoPromocao,
 										@RequestPart(value = "file", required = false) MultipartFile file,
 										@RequestParam("visible") boolean visible,
-										@RequestParam("visible") String token
+										@RequestParam("token") String token
 	) throws Exception {
 		EditarProductDTO novoProduto = new EditarProductDTO(idProd,nomeProd, precoProd, promoProd, categoriaProd, precoPromocao, file, visible, token);
 		return service.alterProduct(novoProduto);

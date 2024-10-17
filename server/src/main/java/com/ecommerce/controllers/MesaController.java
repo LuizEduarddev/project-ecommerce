@@ -17,6 +17,12 @@ public class MesaController {
     @Autowired
     private MesaService service;
 
+    @GetMapping("/get")
+    public List<MesaBalcaoDTO> getByEmpresa(@RequestParam String token)
+    {
+        return service.getMesaByEmpresa(token);
+    }
+
     @GetMapping("/get-all")
     public List<MesaBalcaoDTO> getAll()
     {

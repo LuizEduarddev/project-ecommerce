@@ -106,20 +106,33 @@ const MenuMesa = () => {
 
     useEffect(() => {
         const fetchMesas = async () => {
-            try {
-                const response = await api.get('api/mesa/get-all');
+            api.get('api/mesa/get', {
+                params: {
+                    token: token,
+                },
+            })
+            .then(response => {
                 setMesas(response.data);
-            } catch (error) {
+            })
+            .catch(error => {
                 toast.show("Falha ao capturar as mesas", {
                     type: "danger",
                     placement: "top",
-                    duration: 4000,
+                    duration: 2000,
                     animationType: "slide-in",
-                  });
-            }
+                });
+            })
         };
 
-        fetchMesas();
+        const token = localStorage.getItem('session-token');
+        if (token !== null)
+        {
+            fetchMesas();
+        }
+        else{
+            window.location.reload();
+        }
+
     }, []);
 
     const toggleSelectPedido = (pedido: PedidosMesaDTO) => {
@@ -147,21 +160,29 @@ const MenuMesa = () => {
     };
 
     async function getMesaInformation(idMesa: string) {
-        const dataToSend = {
-            idMesa: idMesa,
-            token: ''
-        };
-        try {
-            const response = await api.post('api/pedidos/get-by-mesa', dataToSend);
-            setPedidos(response.data);
-            setModalVisible(true);
-        } catch (error) {
-            toast.show("Falha ao resgatar o pedido.", {
-                type: "danger",
-                placement: "top",
-                duration: 4000,
-                animationType: "slide-in",
-              });
+        const token = localStorage.getItem('session-token');
+        if (!token)
+        {
+            window.location.reload();
+        }
+        else{
+            const dataToSend = {
+                idMesa: idMesa,
+                token: token
+            };
+            api.post('api/pedidos/get-by-mesa', dataToSend)
+            .then(response => {
+                setPedidos(response.data);
+                setModalVisible(true);
+            })
+            .catch(error => {
+                toast.show("Falha ao resgatar o pedido.", {
+                    type: "danger",
+                    placement: "top",
+                    duration: 4000,
+                    animationType: "slide-in",
+                });
+            })
         }
     }
 

@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByUsers(Users token);
-    List<Pedidos> findByMesa(Mesa mesa);
+    List<Pedidos> findByMesaAndEmpresa(Mesa mesa, Empresas empresa);
     List<Pedidos> findByUsersAndMesa(Users users, Mesa mesa);
     List<Pedidos> findByUsersAndMesaAndPedidoPagoFalse(Users user, Mesa mesa);
-    List<Pedidos> findByCpfClientePedido(String cpfClientePedido);
+    List<Pedidos> findByCpfClientePedidoAndEmpresa(String cpfClientePedido, Empresas empresa);
     List<Pedidos> findByDataPedido(String dataPedido);
     List<Pedidos> findByEmpresa(Empresas empresa);
 }
