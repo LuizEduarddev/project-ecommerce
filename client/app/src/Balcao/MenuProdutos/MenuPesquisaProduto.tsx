@@ -33,14 +33,16 @@ const MenuPesquisaProduto = () => {
   };
 
   async function findProduto(query: string) {
+    const token = localStorage.getItem('session-token');
+    if (token === null) window.location.reload();
     if (query === '') {
       return;
     } else {
-      api.post('api/products/search/balcao',null , {
-        params:{
-            pesquisa:query
-        }
-    })
+      const dto = {
+        pesquisa:query,
+        token: token
+      }
+      api.post('api/products/search/balcao', dto)
       .then((response) => {
         if (response.data === null) {
           toast.show("Produto não encontrado", {

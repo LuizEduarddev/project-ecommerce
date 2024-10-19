@@ -1,7 +1,9 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
 import { useToast } from 'react-native-toast-notifications';
+import MenuEditarProduto from './MenuEditarProduto';
+import { colors } from '../../assets/colors';
 
 type Products = {
     idProduto: string,
@@ -16,6 +18,8 @@ type Products = {
 const TabelaProdutos = () => {
     const toast = useToast();
     const [produtosEmpresa, setProdutosEmpresa] = useState<Products[]>([]);
+    const [modalEditarProduto, setModalEditarProduto] = useState<boolean>(false);
+    const [idProdutoEditar, setIdProdutoEditar] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('session-token');
@@ -50,11 +54,12 @@ const TabelaProdutos = () => {
                             <Text style={[styles.cell, styles.header]}>Promoção</Text>
                             <Text style={[styles.cell, styles.header]}>Categoria</Text>
                             <Text style={[styles.cell, styles.header]}>Preço Promo</Text>
-                            <Text style={[styles.cell, styles.header]}>Imagem</Text>
                         </View>
     
                         {produtosEmpresa.map((product) => (
-                            <Pressable key={product.idProduto} style={styles.row}>
+                            <Pressable key={product.idProduto} style={styles.row} onPress={() => {
+                                setIdProdutoEditar(product.idProduto), setModalEditarProduto(true)
+                                }}>
                                 <Text style={styles.cell}>{product.idProduto}</Text>
                                 <Text style={styles.cell}>{product.nomeProd}</Text>
                                 <Text style={styles.cell}>{product.precoProd}</Text>
@@ -76,7 +81,24 @@ const TabelaProdutos = () => {
     };
 
     return (
-        loadProdutosEmpresa()  
+        <View>
+            {loadProdutosEmpresa()}  
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalEditarProduto}
+                onRequestClose={() => setModalEditarProduto(false)} 
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <MenuEditarProduto id={idProdutoEditar}/>
+                        <Pressable onPress={() => setModalEditarProduto(false)} style={styles.closeButton}>
+                            <Text style={styles.closeButtonText}>Fechar</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
+        </View>
     );
 }
 
@@ -102,5 +124,35 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#f4f4f4',
         fontWeight: 'bold',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    },
+    modalContent: {
+        width: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: colors['bright-blue'],
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: colors['white'],
     },
 })

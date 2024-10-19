@@ -81,6 +81,8 @@ const MenuCadastraProduto = () => {
   };
 
   async function apiCriarProduto() {
+    const token = localStorage.getItem('session-token');
+    if (token === null) window.location.reload();
     const formData = new FormData();
     formData.append('nomeProd', nomeProduto);
     formData.append('precoProd', precoProd.toString());
@@ -88,6 +90,7 @@ const MenuCadastraProduto = () => {
     formData.append('categoriaProd', categoriaProd.toString());
     formData.append('precoPromocao', precoPromocao ? precoPromocao.toString() : '0');
     formData.append('visible', visible.toString());
+    formData.append('token', token);
     if (imagemProduto) {
       try {
         const response = await fetch(imagemProduto);
@@ -172,7 +175,7 @@ const MenuCadastraProduto = () => {
             <Text>As categorias não foram carregadas corretamente, tente novamente mais tarde.</Text>
         );
     }
-};
+  };
 
 
   return (

@@ -18,13 +18,7 @@ import { colors } from '../../assets/colors';
 import Icon from 'react-native-vector-icons/FontAwesome6';
 import { useToast } from 'react-native-toast-notifications';
 
-const MenuEditarProduto = ({
-  id,
-  onClose,
-}: {
-  id: string;
-  onClose: () => void;
-}) => {
+const MenuEditarProduto = ({ id }: { id: string }) => {
   const toast = useToast();
   const [nomeProduto, setNomeProduto] = useState('');
   const [precoProd, setPrecoProd] = useState('');
@@ -33,63 +27,62 @@ const MenuEditarProduto = ({
   const [precoPromocao, setPrecoPromocao] = useState('');
   const [visible, setVisible] = useState(false);
   const [imagemProduto, setImagemProduto] = useState('');
-  const [categorias, setCategorias] = useState<
-    { label: string; value: string }[]
-  >([]);
+  const [categorias, setCategorias] = useState<string[]>();
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
 
   useEffect(() => {
     async function fetchProductData() {
       try {
         const response = await api.post('api/products/get-by-id', null, {
-          params:{
-            idProduto:id
-          }
+          params: {
+            idProduto: id,
+          },
         });
         const product = response.data;
         setNomeProduto(product.nomeProd);
-        setPrecoProd(product.precoProd.toString()); 
+        setPrecoProd(product.precoProd.toString());
         setPromoProd(product.promoProd);
         setCategoriaProd(product.categoriaProd);
         setPrecoPromocao(product.precoPromocao.toString());
         setVisible(product.visible);
         setImagemProduto(product.imagemProduto);
       } catch (error) {
-        toast.show("Erro ao tentar buscar o produto", {
-          type: "danger",
-          placement: "top",
+        toast.show('Erro ao tentar buscar o produto', {
+          type: 'danger',
+          placement: 'top',
           duration: 4000,
-          animationType: "slide-in",
+          animationType: 'slide-in',
         });
       }
     }
-  
+
     fetchProductData();
   }, [id]);
-  
 
   useEffect(() => {
-    async function getCategorias() {
-      try {
-        const response = await api.get('api/products/get-categories');
-        const formattedCategories = response.data.map(
-          (category: string, index: number) => ({
-            label: category,
-            value: index,
-          })
-        );
-        setCategorias(formattedCategories);
-      } catch (error) {
+    const token = localStorage.getItem('session-token');
+    if (token !== null)
+    {
+      api.get('api/empresas/categorias/get-by-empresa', {
+        params:{
+          token:token
+        }
+      })
+      .then(response => {
+        setCategorias(response.data);
+      })
+      .catch(error => {
         toast.show("Erro ao tentar buscar as categorias.", {
           type: "warning",
           placement: "top",
           duration: 4000,
           animationType: "slide-in",
         });
-      }
+      });
     }
-
-    getCategorias();
+    else{
+      window.location.reload();
+    }
   }, []);
 
   const handleImagePick = () => {
@@ -97,11 +90,11 @@ const MenuEditarProduto = ({
       if (response.didCancel) {
         return;
       } else if (response.errorCode) {
-        toast.show("Erro ao tentar carregar a imagem", {
-          type: "warning",
-          placement: "top",
+        toast.show('Erro ao tentar carregar a imagem', {
+          type: 'warning',
+          placement: 'top',
           duration: 4000,
-          animationType: "slide-in",
+          animationType: 'slide-in',
         });
       } else {
         const base64Image = response?.assets?.[0]?.uri?.split(',')[1];
@@ -124,22 +117,25 @@ const MenuEditarProduto = ({
       categoriaProd === null ||
       (promoProd && !precoPromocao)
     ) {
-      toast.show("Por favor, preencha todos os campos", {
-        type: "warning",
-        placement: "top",
+      toast.show('Por favor, preencha todos os campos', {
+        type: 'warning',
+        placement: 'top',
         duration: 4000,
-        animationType: "slide-in",
+        animationType: 'slide-in',
       });
       return false;
     }
 
     if (promoProd && promocao >= preco) {
-      toast.show("O preço da promoção deve ser menor do que o preço original.", {
-        type: "warning",
-        placement: "top",
-        duration: 4000,
-        animationType: "slide-in",
-      });
+      toast.show(
+        'O preço da promoção deve ser menor do que o preço original.',
+        {
+          type: 'warning',
+          placement: 'top',
+          duration: 4000,
+          animationType: 'slide-in',
+        }
+      );
       return false;
     }
     return true;
@@ -151,21 +147,20 @@ const MenuEditarProduto = ({
       await api.delete('api/products/delete', {
         params: {
           idProduto: id,
-        }
+        },
       });
-      toast.show("Produto deletado com sucesso", {
-        type: "success",
-        placement: "top",
+      toast.show('Produto deletado com sucesso', {
+        type: 'success',
+        placement: 'top',
         duration: 4000,
-        animationType: "slide-in",
+        animationType: 'slide-in',
       });
-      onClose(); 
     } catch (error) {
-      toast.show("Erro ao tentar deletar o produto", {
-        type: "danger",
-        placement: "top",
+      toast.show('Erro ao tentar deletar o produto', {
+        type: 'danger',
+        placement: 'top',
         duration: 4000,
-        animationType: "slide-in",
+        animationType: 'slide-in',
       });
     }
   }
@@ -177,7 +172,7 @@ const MenuEditarProduto = ({
     formData.append('precoProd', precoProd);
     formData.append('promoProd', promoProd.toString());
     formData.append('categoriaProd', categoriaProd.toString());
-    formData.append('precoPromocao',precoPromocao.toString());
+    formData.append('precoPromocao', precoPromocao.toString());
     formData.append('visible', visible.toString());
     if (imagemProduto) {
       try {
@@ -186,30 +181,33 @@ const MenuEditarProduto = ({
 
         formData.append('file', blob, nomeProduto + '.png');
       } catch (error) {
-        toast.show("Erro ao tentar converter a imagem. Contate o administrador", {
-          type: "danger",
-          placement: "top",
-          duration: 4000,
-          animationType: "slide-in",
-        });
+        toast.show(
+          'Erro ao tentar converter a imagem. Contate o administrador',
+          {
+            type: 'danger',
+            placement: 'top',
+            duration: 4000,
+            animationType: 'slide-in',
+          }
+        );
       }
     }
     api
       .put('api/products/editar', formData)
       .then((response) => {
-        toast.show("Produto editado com sucesso", {
-          type: "success",
-          placement: "top",
+        toast.show('Produto editado com sucesso', {
+          type: 'success',
+          placement: 'top',
           duration: 4000,
-          animationType: "slide-in",
+          animationType: 'slide-in',
         });
       })
       .catch((error) => {
-        toast.show("Falha ao tentar editar o produto.", {
-          type: "danger",
-          placement: "top",
+        toast.show('Falha ao tentar editar o produto.', {
+          type: 'danger',
+          placement: 'top',
           duration: 4000,
-          animationType: "slide-in",
+          animationType: 'slide-in',
         });
       });
   }
@@ -222,237 +220,433 @@ const MenuEditarProduto = ({
   };
 
   const renderCategories = () => {
-    return (
-      <Dropdown
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholder}
-        selectedTextStyle={styles.selectedText}
-        inputSearchStyle={styles.inputSearch}
-        iconStyle={styles.icon}
-        data={categorias}
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder="Escolha uma categoria"
-        value={categoriaProd}
-        onChange={(item) => {
-          setCategoriaProd(item.label);
-        }}
-      />
-    );
+    if (categorias && categorias.length > 0) {
+        const dropdownData = categorias.map(categoria => ({
+            label: categoria, 
+            value: categoria  
+        }));
+
+        return (
+            <View>
+                <Dropdown
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholder}
+                    selectedTextStyle={styles.selectedText}
+                    inputSearchStyle={styles.inputSearch}
+                    iconStyle={styles.icon}
+                    data={dropdownData} 
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Escolha uma categoria"
+                    value={categoriaProd}
+                    onChange={(item) => {
+                        setCategoriaProd(item.value);
+                    }}
+                />
+            </View>
+        );
+    } else {
+        return (
+            <Text>As categorias não foram carregadas corretamente, tente novamente mais tarde.</Text>
+        );
+    }
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.container}>
-        <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
-          <Icon name='circle-arrow-left' color={colors['bright-blue']} size={15} onPress={onClose}></Icon>
-          <Text style={styles.title}>Editar Produto</Text>
-        </View>
-        <TextInput
-          placeholder="Nome do produto"
-          value={nomeProduto}
-          onChangeText={setNomeProduto}
-          style={styles.input}
-        />
-        <TextInput
-          keyboardType="numeric"
-          placeholder="Preço do produto"
-          value={precoProd}
-          onChangeText={setPrecoProd}
-          style={styles.input}
-          maxLength={15}
-        />
-        <Text>Promoção</Text>
-        <Switch
-          value={promoProd}
-          onValueChange={setPromoProd}
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={promoProd ? '#f5dd4b' : '#f4f3f4'}
-        />
-        {promoProd && (
-          <TextInput
-            keyboardType="numeric"
-            placeholder="Preço na promoção"
-            value={precoPromocao}
-            onChangeText={setPrecoPromocao}
-            style={styles.input}
-            maxLength={15}
-          />
-        )}
-        <Text>Produto visível</Text>
-        <Switch
-          value={visible}
-          onValueChange={setVisible}
-          trackColor={{ false: '#767577', true: '#81b0ff' }}
-          thumbColor={visible ? '#f5dd4b' : '#f4f3f4'}
-        />
-        {renderCategories()}
-        <View style={styles.imageContainer}>
+      
+      <View style={styles.header}>
+        <Text style={styles.title}>Editar Produto</Text>
+      </View>
+
+      <View style={styles.productContainer}>
+        <View style={styles.imageSection}>
           {imagemProduto ? (
             <>
-              <Image source={{ uri: `data:image/png;base64,${imagemProduto}`}} style={styles.image} />
+              <Image
+                source={{ uri: `data:image/png;base64,${imagemProduto}` }}
+                style={styles.image}
+              />
               <Pressable onPress={handleImagePick} style={styles.imageButton}>
-                <Text>Alterar Imagem</Text>
+                <Text style={styles.imageButtonText}>Alterar Imagem</Text>
               </Pressable>
             </>
           ) : (
             <Pressable onPress={handleImagePick} style={styles.imageButton}>
-              <Text>Adicionar Imagem</Text>
+              <Text style={styles.imageButtonText}>Escolher Imagem</Text>
             </Pressable>
           )}
         </View>
-        <Pressable style={styles.submitButton} onPress={() => handleSubmit()}>
+
+        <View style={styles.detailsSection}>
+          <TextInput
+            placeholder="Nome do produto"
+            value={nomeProduto}
+            onChangeText={setNomeProduto}
+            style={styles.input}
+          />
+          <TextInput
+            keyboardType="numeric"
+            placeholder="Preço do produto"
+            value={precoProd}
+            onChangeText={setPrecoProd}
+            style={styles.input}
+            maxLength={15}
+          />
+
+          <View style={styles.promoContainer}>
+            <Text style={styles.label}>Promoção</Text>
+            <Switch
+              value={promoProd}
+              onValueChange={setPromoProd}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              thumbColor={promoProd ? '#f5dd4b' : '#f4f3f4'}
+            />
+          </View>
+
+          {promoProd && (
+            <TextInput
+              keyboardType="numeric"
+              placeholder="Preço na promoção"
+              value={precoPromocao}
+              onChangeText={setPrecoPromocao}
+              style={styles.input}
+              maxLength={15}
+            />
+          )}
+
+          <Text style={styles.label}>Produto visível</Text>
+          <Switch
+            value={visible}
+            onValueChange={setVisible}
+            trackColor={{ false: '#767577', true: '#81b0ff' }}
+            thumbColor={visible ? '#f5dd4b' : '#f4f3f4'}
+          />
+        </View>
+      </View>
+
+      {renderCategories()}
+
+      <View style={styles.buttonContainer}>
+        <Pressable style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Salvar Alterações</Text>
         </Pressable>
+
         <Pressable
           style={styles.deleteButton}
           onPress={() => setModalDeleteVisible(true)}
         >
           <Text style={styles.deleteButtonText}>Deletar Produto</Text>
         </Pressable>
-        <Modal
-          visible={modalDeleteVisible}
-          transparent={true}
-          animationType="slide"
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text>Tem certeza que deseja deletar {nomeProduto}?</Text>
-              <View style={styles.modalButtonContainer}>
-                <Pressable
-                  onPress={() => setModalDeleteVisible(false)}
-                  style={styles.modalButton}
-                >
-                  <Text>Cancelar</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => deletarProduto()}
-                  style={styles.modalButtonDelete}
-                >
-                  <Text>Deletar</Text>
-                </Pressable>
-              </View>
+      </View>
+    </ScrollView>
+
+      {/* Delete confirmation modal */}
+      <Modal
+        visible={modalDeleteVisible}
+        transparent
+        onRequestClose={() => setModalDeleteVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>
+              Tem certeza que deseja deletar o produto?
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <Pressable
+                style={styles.modalButton}
+                onPress={() => setModalDeleteVisible(false)}
+              >
+                <Text>Cancelar</Text>
+              </Pressable>
+              <Pressable
+                style={styles.modalButtonDelete}
+                onPress={deletarProduto}
+              >
+                <Text style={{ color: 'white' }}>Deletar</Text>
+              </Pressable>
             </View>
           </View>
-        </Modal>
-      </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
-export default MenuEditarProduto;
-
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 32, // Extra padding at the bottom
+    padding: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   title: {
-    color: colors['dim-gray'],
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
-  placeholder: {
+  productContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  imageSection: {
+    flex: 1,
+    marginRight: 20,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  imageButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  imageButtonText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
+  },
+  detailsSection: {
+    flex: 2,
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+    width: '100%',
+  },
+  label: {
     fontSize: 16,
-    color: '#999',
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  promoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  buttonContainer: {
+    marginTop: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  submitButton: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: 'green',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  deleteButton: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: 'red',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  dropdown: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: colors.cinza,
+    borderRadius: 5,
+  },
+  placeholder: {
+    color: '#333',
+    fontSize: 16,
   },
   selectedText: {
+    color: '#333',
     fontSize: 16,
   },
   inputSearch: {
-    height: 40,
+    color: '#333',
     fontSize: 16,
   },
   icon: {
     width: 20,
     height: 20,
   },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  modalButton: {
+    padding: 12,
+    backgroundColor: '#DDD',
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '45%',
+  },
+  modalButtonDelete: {
+    padding: 12,
+    backgroundColor: '#FF5722',
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '45%',
+  },
+});
+
+/*
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: colors.branco,
+    padding: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   input: {
-    backgroundColor: '#fff',
-    marginVertical: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: colors.cinza,
     borderRadius: 5,
   },
+  label: {
+    fontSize: 16,
+    marginTop: 10,
+    fontWeight: 'bold',
+  },
   submitButton: {
-    marginVertical: 8,
-    padding: 16,
-    backgroundColor: '#4CAF50',
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: colors.verdeEscuro,
     borderRadius: 5,
     alignItems: 'center',
   },
   submitButtonText: {
-    color: '#fff',
+    color: colors.branco,
     fontWeight: 'bold',
+    fontSize: 16,
   },
   deleteButton: {
-    marginVertical: 8,
-    padding: 16,
-    backgroundColor: '#FF5722',
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: colors.vermelho,
     borderRadius: 5,
     alignItems: 'center',
   },
   deleteButtonText: {
-    color: '#fff',
+    color: colors.branco,
     fontWeight: 'bold',
+    fontSize: 16,
   },
   dropdown: {
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
+    marginTop: 10,
     padding: 12,
+    backgroundColor: colors.cinza,
+    borderRadius: 5,
+  },
+  placeholder: {
+    color: '#333',
+    fontSize: 16,
+  },
+  selectedText: {
+    color: '#333',
+    fontSize: 16,
+  },
+  inputSearch: {
+    color: '#333',
+    fontSize: 16,
+  },
+  icon: {
+    width: 20,
+    height: 20,
   },
   imageContainer: {
+    marginTop: 10,
     alignItems: 'center',
-    marginVertical: 16,
   },
   image: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+    width: 100,
+    height: 100,
+    borderRadius: 5,
   },
   imageButton: {
-    marginTop: 8,
-    padding: 10,
+    marginTop: 10,
+    padding: 12,
     backgroundColor: '#DDD',
     borderRadius: 5,
     alignItems: 'center',
+  },
+  imageButtonText: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: 300,
+    backgroundColor: 'white',
     padding: 20,
-    backgroundColor: '#fff',
     borderRadius: 10,
-    alignItems: 'center',
+    width: '80%',
+  },
+  modalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   modalButtonContainer: {
     flexDirection: 'row',
-    marginTop: 16,
+    justifyContent: 'space-between',
+    marginTop: 20,
   },
   modalButton: {
-    flex: 1,
-    padding: 10,
+    padding: 12,
     backgroundColor: '#DDD',
     borderRadius: 5,
     alignItems: 'center',
-    marginHorizontal: 5,
+    width: '45%',
   },
   modalButtonDelete: {
-    flex: 1,
-    padding: 10,
+    padding: 12,
     backgroundColor: '#FF5722',
     borderRadius: 5,
     alignItems: 'center',
-    marginHorizontal: 5,
+    width: '45%',
   },
 });
+*/
+export default MenuEditarProduto;

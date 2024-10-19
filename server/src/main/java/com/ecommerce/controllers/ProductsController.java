@@ -37,8 +37,8 @@ public class ProductsController {
 
 	//ESTA FUNCAO E NECESSARIA POIS AQUI PUXA TODOS OS PRODUTOS MESMO QUE SEJAM VISIBLE == FALSE
 	@PostMapping("/search/balcao")
-	public List<Products> searchBalcao(@RequestParam PesquisaProdutoDTO pesquisa){
-		return service.searchProductBalcao(pesquisa);
+	public List<Products> searchBalcao(@RequestBody PesquisaProdutoDTO dto){
+		return service.searchProductBalcao(dto);
 	}
 
 	@PostMapping("/get-by-id")

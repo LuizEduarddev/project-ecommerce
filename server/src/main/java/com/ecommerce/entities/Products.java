@@ -20,7 +20,7 @@ public class Products {
 	@Column(name = "promo_prod")
 	private boolean promoProd;
 
-	@OneToOne
+	@ManyToOne
 	@JoinColumn(nullable = false)
 	private CategoriasEmpresas categoriaProd;
 
