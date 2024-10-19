@@ -11,17 +11,16 @@ public class Products {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private String idProd;
 
-	@Column(name = "nome_prod", unique = true, nullable = false)
+	@Column(name = "nome_prod", unique = true)
 	private String nomeProd;
 
-	@Column(name = "preco_prod", nullable = false)
+	@Column(name = "preco_prod")
 	private double precoProd;
 
 	@Column(name = "promo_prod")
 	private boolean promoProd;
 
 	@OneToOne
-	@JoinColumn(nullable = false)
 	private CategoriasEmpresas categoriaProd;
 
 	@Column(name = "preco_promocao")
@@ -31,7 +30,7 @@ public class Products {
 	@Column(name = "imagem_produto")
 	private byte[] imagemProduto;
 
-	@Column(name = "visible", nullable = false)
+	@Column(name = "visible")
 	private boolean visible;
 
 	@ManyToOne
@@ -52,14 +51,13 @@ public class Products {
 		this.visible = visible;
 	}
 
-	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd, double precoPromocao, boolean visible, Empresas empresa) {
+	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd, double precoPromocao, boolean visible) {
 		this.nomeProd = nomeProd;
 		this.precoProd = precoProd;
 		this.promoProd = promoProd;
 		this.categoriaProd = categoriaProd;
 		this.precoPromocao = precoPromocao;
 		this.visible = visible;
-		this.empresa = empresa;
 	}
 
 	public Products(String nomeProd, double precoProd, boolean promoProd, CategoriasEmpresas categoriaProd, double precoPromocao, byte[] imagemProduto, boolean visible, Empresas empresa) {

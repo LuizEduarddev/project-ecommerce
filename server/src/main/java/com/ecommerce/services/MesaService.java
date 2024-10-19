@@ -126,9 +126,9 @@ public class MesaService {
 
      */
 
-    public Mesa getMesaFullByIdAndEmpresa(String idMesa, Empresas empresa)
+    public Mesa getMesaFullById(String idMesa)
     {
-       return repository.findByIdMesaAndEmpresas(idMesa, empresa).orElseThrow();
+       return repository.findById(idMesa).orElseThrow();
     }
 
     /*
@@ -218,17 +218,6 @@ public class MesaService {
 
     public void saveMesa(Mesa mesa) {
         repository.saveAndFlush(mesa);
-    }
-
-    public List<MesaBalcaoDTO> getMesaByEmpresa(String token) {
-        Empresas empresa = authenticationService.getEmpresaByToken(token);
-        if (empresa != null)
-        {
-            return repository.findByEmpresas(empresa);
-        }
-        else{
-            throw new MesaException("Falha na autenticação.");
-        }
     }
 
     /*

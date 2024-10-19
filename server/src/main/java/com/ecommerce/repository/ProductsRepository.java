@@ -11,8 +11,6 @@ import java.util.List;
 
 public interface ProductsRepository extends JpaRepository<Products, String> {
     List<Products> findByEmpresaAndNomeProdContaining(Empresas empresa, String query);
-    List<Products> findByEmpresaAndPromoProdTrue(Empresas empresa);
+
     List<Products> findByCategoriaProd(CategoriasEmpresas categoriaProd);
-    List<Products> findByEmpresa(Empresas empresa);
-    Products findByIdProdAndEmpresa(String idProd, Empresas empresa);
 }

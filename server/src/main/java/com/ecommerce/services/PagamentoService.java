@@ -50,8 +50,8 @@ public class PagamentoService {
         return repository.findAll();
     }
 
-    private void checkMesaVazia(Mesa mesa, String token) {
-        boolean allPedidosPaid = pedidosService.getAllByMesa(mesa, token)
+    private void checkMesaVazia(Mesa mesa) {
+        boolean allPedidosPaid = pedidosService.getAllByMesa(mesa)
                 .stream()
                 .allMatch(Pedidos::isPedidoPago);
 
@@ -106,7 +106,6 @@ public class PagamentoService {
 
      */
 
-    /*
     private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento) {
         try {
             Pagamentos pagamento = new Pagamentos();
@@ -130,8 +129,6 @@ public class PagamentoService {
             throw new RuntimeException("Falha ao gerar o método de pagamento.\n" + e);
         }
     }
-
-     */
 
 
 }

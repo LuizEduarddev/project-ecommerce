@@ -3,7 +3,6 @@ package com.ecommerce.services;
 import com.ecommerce.entities.Empresas;
 import com.ecommerce.entities.UserRole;
 import com.ecommerce.entities.dto.*;
-import com.ecommerce.entities.errors.AuthenticationException;
 import com.ecommerce.entities.errors.EmpresasException;
 import com.ecommerce.infra.security.SecurityFilter;
 import jakarta.transaction.Transactional;
@@ -320,10 +319,5 @@ public class AuthenticationService {
 				}
 			}
 		}
-	}
-
-	public void autorizeUserSession(String token) {
-		Empresas empresa = getEmpresaByToken(token);
-		if (empresa == null) throw new AuthenticationException("Erro na autenticação.");
 	}
 }

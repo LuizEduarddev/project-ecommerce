@@ -47,12 +47,6 @@ public class AuthenticationController {
 		return ResponseEntity.ok(new AuthLoginDTO(token, service.getPermission(token)));
 	}
 
-	@GetMapping("/autorization")
-	public void autorizeSession(@RequestParam String token)
-	{
-		service.autorizeUserSession(token);
-	}
-
 	@PostMapping("/get-by-cpf")
 	public UserDTO getByCpf(@RequestBody String cpf) {
 		return service.getByCpf(cpf);

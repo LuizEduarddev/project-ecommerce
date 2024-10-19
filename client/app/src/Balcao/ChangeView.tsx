@@ -13,40 +13,41 @@ import MenuAdministrador from './MenuAdministrador/MenuAdministrador';
 const ChangeView = ({ navigation }) => {
     const toast = useToast();
     const [view, setView] = useState('Mesas');
+    const [loading, setLoading] = useState(true);
 
+    /*
     useEffect(() => {
         async function initialization() {
             const token = await localStorage.getItem('session-token'); 
             if (token == null) {
                 navigation.navigate('Login');
             } else {
-                api.get('api/auth/autorization',{
-                    params: {
-                        token: token,
-                    },
-                })
-                .then(response => {
-                    toast.show("Login efetuado com sucesso.", {
-                        type: "success",
-                        placement: "top",
-                        duration: 2000,
-                        animationType: "slide-in",
+                try {
+                    const response = await api.post('api/auth/get-authorities', null, {
+                        params: {
+                            token: token,
+                        },
                     });
-                })
-                .catch (error => {
+                    const authorities:string[] = response.data;
+                    if (!authorities.filter((item) => item === 'ROLE_BALCAO' )) {
+                        navigation.navigate('Login');
+                    } else {
+                        setLoading(false);
+                    }
+                } catch (error) {
                     toast.show("Erro ao checar o token.", {
                         type: "danger",
                         placement: "top",
-                        duration: 2000,
+                        duration: 4000,
                         animationType: "slide-in",
-                        });
+                      });
                     navigation.navigate('Login'); 
-                }) 
+                }
             }
         }
         initialization();
-    }, []);
-
+    }, [navigation]); // Depend on navigation to trigger useEffect when the component mounts
+    */
     return (
         <View style={styles.container}>
             <View style={styles.menu}>
