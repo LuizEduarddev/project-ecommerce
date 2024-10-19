@@ -20,26 +20,29 @@ const MenuCadastraProduto = () => {
   const toggleSwitchVisible = () => setVisible(previousState => !previousState);
 
   useEffect(() => {
-    async function getCategorias() {
-      api.get('api/products/get-categories')
-        .then(response => {
-          const formattedCategories = response.data.map((category, index) => ({
-            label: category,
-            value: index,
-          }));
-          setCategorias(formattedCategories);
-        })
-        .catch(error => {
-          toast.show("Erro ao tentar buscar as categorias.", {
-            type: "warning",
-            placement: "top",
-            duration: 4000,
-            animationType: "slide-in",
-          });
+    const token = localStorage.getItem('session-token');
+    if (token !== null)
+    {
+      api.get('api/empresas/categorias/get-by-empresa', {
+        params:{
+          token:token
+        }
+      })
+      .then(response => {
+        setCategorias(response.data);
+      })
+      .catch(error => {
+        toast.show("Erro ao tentar buscar as categorias.", {
+          type: "warning",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
         });
+      });
     }
-
-    getCategorias();
+    else{
+      window.location.reload();
+    }
   }, []);
 
 
@@ -138,33 +141,39 @@ const MenuCadastraProduto = () => {
   };
 
   const renderCategories = () => {
-    if (categorias) {
-      return (
-        <View>
-          <Dropdown
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholder}
-            selectedTextStyle={styles.selectedText}
-            inputSearchStyle={styles.inputSearch}
-            iconStyle={styles.icon}
-            data={categorias}
-            maxHeight={300}
-            labelField="label"
-            valueField="label"
-            placeholder="Escolha uma categoria"
-            value={categoriaProd}
-            onChange={(item) => {
-              setCategoriaProd(item.label);
-            }}
-          />
-        </View>
-      );
+    if (categorias && categorias.length > 0) {
+        const dropdownData = categorias.map(categoria => ({
+            label: categoria, 
+            value: categoria  
+        }));
+
+        return (
+            <View>
+                <Dropdown
+                    style={styles.dropdown}
+                    placeholderStyle={styles.placeholder}
+                    selectedTextStyle={styles.selectedText}
+                    inputSearchStyle={styles.inputSearch}
+                    iconStyle={styles.icon}
+                    data={dropdownData} 
+                    maxHeight={300}
+                    labelField="label"
+                    valueField="value"
+                    placeholder="Escolha uma categoria"
+                    value={categoriaProd}
+                    onChange={(item) => {
+                        setCategoriaProd(item.value);
+                    }}
+                />
+            </View>
+        );
     } else {
-      return (
-        <Text>As categorias não foram carregadas corretamente, tente novamente mais tarde.</Text>
-      );
+        return (
+            <Text>As categorias não foram carregadas corretamente, tente novamente mais tarde.</Text>
+        );
     }
-  };
+};
+
 
   return (
     <View style={{padding: 16}}>

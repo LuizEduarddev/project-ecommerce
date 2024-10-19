@@ -1,6 +1,7 @@
 package com.ecommerce.services;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.ecommerce.entities.CategoriasEmpresas;
 import com.ecommerce.entities.Empresas;
@@ -271,20 +272,26 @@ public class ProductsService {
 	}
 
 	@Transactional
-	public List<Products> getProductByEmpresa(String token) {
+	public List<ProductsEmpresaDTO> getProductByEmpresa(String token) {
 		Empresas empresa = authenticationService.getEmpresaByToken(token);
-		if (empresa != null)
-		{
-			try
-			{
-				return repository.findByEmpresa(empresa);
-			}
-			catch (Exception e)
-			{
+		if (empresa != null) {
+			try {
+
+				List<Products> productsList = repository.findByEmpresa(empresa);
+ 				return productsList.stream().map(product -> new ProductsEmpresaDTO(
+						product.getIdProd(),
+						product.getNomeProd(),
+						product.getPrecoProd(),
+						product.isPromoProd(),
+						product.getCategoriaProd().getNomeCategoriaEmpresa(),
+						product.getPrecoPromocao(),
+						product.getImagemProduto(),
+						product.isVisible()
+				)).collect(Collectors.toList());
+			} catch (Exception e) {
 				throw new ProductsException("Falha ao tentar buscar o produto.");
 			}
-		}
-		else{
+		} else {
 			throw new ProductsException("Falha ao tentar autenticar.");
 		}
 	}

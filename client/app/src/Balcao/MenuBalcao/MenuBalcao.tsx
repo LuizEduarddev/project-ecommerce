@@ -48,14 +48,16 @@ const MenuBalcao = () => {
     }, [])
 
     async function findProduto(query: string) {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         if (query === "") {
             return;
         } else {
-            api.post('api/products/search', null , {
-                params:{
-                    pesquisa:query
-                }
-            })
+            const dto = {
+                pesquisa:query,
+                token:token
+            }
+            api.post('api/products/search', dto)
             .then(response => {
                 setProdutoResponse(response.data);
             })

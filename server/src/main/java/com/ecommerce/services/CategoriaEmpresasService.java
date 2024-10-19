@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.xml.catalog.CatalogException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoriaEmpresasService {
@@ -49,14 +51,18 @@ public class CategoriaEmpresasService {
         }
     }
 
-    public List<CategoriasEmpresas> getCategoriaByEmpresa(String token)
+    public List<String> getCategoriaByEmpresa(String token)
     {
         Empresas empresa = authenticationService.getEmpresaByToken(token);
         if (empresa != null)
         {
             try
             {
-                return repository.findByEmpresa(empresa);
+                List<CategoriasEmpresas> categoriasEmpresas = repository.findByEmpresa(empresa);
+
+                return categoriasEmpresas.stream()
+                        .map(CategoriasEmpresas::getNomeCategoriaEmpresa)
+                        .collect(Collectors.toList());
             }
             catch (Exception e)
             {

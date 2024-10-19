@@ -94,9 +94,6 @@ const MenuPesquisaProduto = () => {
 
   return (
     <>
-      {viewMenuEditarProduto === true ? (
-        <MenuEditarProduto id={produtoEditar.idProd} onClose={handleClose}/>
-      ) : (
       <View style={styles.container}>
         <TextInput
           style={styles.input}
@@ -113,7 +110,6 @@ const MenuPesquisaProduto = () => {
           />
         }
       </View>
-      )}
     </>
   );
 };

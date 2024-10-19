@@ -2,7 +2,6 @@ import {StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import MenuBalcao from './MenuBalcao/MenuBalcao';
 import MenuMesa from './MenuMesas/MenuMesa';
-import MenuUsuario from './MenuUsuario/MenuUsuario';
 import MenuProdutos from './MenuProdutos/MenuProdutos';
 import api from '../../ApiConfigs/ApiRoute';
 import { colors } from '../assets/colors';
@@ -58,9 +57,6 @@ const ChangeView = ({ navigation }) => {
                 <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Balcão')}>
                     <Icon name="cash-register" color="white" size={40}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Usuário')}>
-                    <Icon name="account-plus" color="white" size={40}/>
-                </TouchableOpacity>
                 <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Produtos')}>
                     <Icon name="dropbox" color="white" size={40}/>
                 </TouchableOpacity>
@@ -75,8 +71,6 @@ const ChangeView = ({ navigation }) => {
                         <MenuMesa/>
                     ) : view === 'Balcão' ? (
                         <MenuBalcao/> 
-                    ) : view === 'Menu Usuário' ? (
-                        <MenuUsuario/>
                     ) : view === 'Menu Produtos' ? (
                         <MenuProdutos/>
                     ) : view === 'Menu Administrador' ? (

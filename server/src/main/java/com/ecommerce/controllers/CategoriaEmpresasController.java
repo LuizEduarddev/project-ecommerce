@@ -28,8 +28,8 @@ public class CategoriaEmpresasController {
         return service.addCategoria(dto);
     }
 
-    @PostMapping("/get-by-empresa")
-    public List<CategoriasEmpresas> getByEmpresa(@RequestParam String token)
+    @GetMapping("/get-by-empresa")
+    public List<String> getByEmpresa(@RequestParam String token)
     {
         return service.getCategoriaByEmpresa(token);
     }

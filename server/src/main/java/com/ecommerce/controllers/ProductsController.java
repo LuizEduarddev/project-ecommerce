@@ -31,7 +31,7 @@ public class ProductsController {
 	}
 
 	@PostMapping("/search")
-	public List<Products> search(@RequestParam PesquisaProdutoDTO dto){
+	public List<Products> search(@RequestBody PesquisaProdutoDTO dto){
 		return service.searchProduct(dto);
 	}
 
@@ -54,7 +54,7 @@ public class ProductsController {
 	}
 
 	@PostMapping("/get-by-empresa")
-	public List<Products> getByEmpresa(@RequestParam String token)
+	public List<ProductsEmpresaDTO> getByEmpresa(@RequestParam String token)
 	{
 		return service.getProductByEmpresa(token);
 	}
