@@ -43,14 +43,14 @@ public class ProductsService {
 		Empresas empresa = authenticationService.getEmpresaByToken(novoProduto.getToken());
 		if (empresa != null)
 		{
-			CategoriasEmpresas categoriasEmpresas = categoriaEmpresasService.isValidCategoria(novoProduto.getToken(), empresa);
+			CategoriasEmpresas categoriasEmpresas = categoriaEmpresasService.isValidCategoria(novoProduto.getCategoriaProd(), empresa);
 			if (categoriasEmpresas != null)
 			{
 				if (novoProduto.isPromoProd() && (novoProduto.getPrecoProd() <= novoProduto.getPrecoPromocao() || novoProduto.getPrecoPromocao() == 0))
 				{
 					throw new ProductsException("Promoção inválida");
 				}
-				if (!novoProduto.getFile().isEmpty())
+				if (novoProduto.getFile() != null && !novoProduto.getFile().isEmpty())
 				{
 					try {
 						MultipartFile file = novoProduto.getFile();
@@ -62,16 +62,17 @@ public class ProductsService {
 								categoriasEmpresas,
 								novoProduto.getPrecoPromocao(),
 								imageData,
-								novoProduto.isVisible()
+								novoProduto.isVisible(),
+								empresa
 						);
 						repository.saveAndFlush(product);
 						return new ResponseEntity<>("Produto cadastrado com sucesso.", HttpStatus.CREATED);
 					} catch (Exception e) {
-						return new ResponseEntity<>("Falha ao tentar cadastrar o produto.", HttpStatus.FAILED_DEPENDENCY);
+						return new ResponseEntity<>("Falha ao tentar cadastrar o produto." + "\nError: " + e, HttpStatus.FAILED_DEPENDENCY);
 					}
 				}
 				else{
-					return addProductWithoutFoto(novoProduto, categoriasEmpresas);
+					return addProductWithoutFoto(novoProduto, categoriasEmpresas, empresa);
 				}
 			}
 			else{
@@ -83,7 +84,7 @@ public class ProductsService {
 		}
     }
 
-	private ResponseEntity<String> addProductWithoutFoto(CreateProductDTO novoProduto, CategoriasEmpresas categoriasEmpresas) {
+	private ResponseEntity<String> addProductWithoutFoto(CreateProductDTO novoProduto, CategoriasEmpresas categoriasEmpresas, Empresas empresa) {
 		try {
 			Products product = new Products(
 					novoProduto.getNomeProd(),
@@ -91,12 +92,13 @@ public class ProductsService {
 					novoProduto.isPromoProd(),
 					categoriasEmpresas,
 					novoProduto.getPrecoPromocao(),
-					novoProduto.isVisible()
+					novoProduto.isVisible(),
+					empresa
 			);
 			repository.saveAndFlush(product);
 			return new ResponseEntity<>("Produto cadastrado com sucesso.", HttpStatus.CREATED);
 		} catch (Exception e) {
-			throw new ProductsException("Falha ao tentar cadastrar o produto.");
+			throw new ProductsException("Falha ao tentar cadastrar o produto." + "\nError: " + e);
 		}
 	}
 
@@ -108,7 +110,7 @@ public class ProductsService {
 			if (categoriasEmpresas != null)
 			{
 				Products produto = repository.findById(dto.getIdProduto())
-						.orElseThrow(() -> new ProductsException("Produto com id '" + dto.getIdProduto() + "' nao encontrado."));
+						.orElseThrow(() -> new ProductsException("Produto não encontrado."));
 				if (dto.isPromoProd() && (dto.getPrecoProd() <= dto.getPrecoPromocao() || dto.getPrecoPromocao() == 0))
 				{
 					throw new ProductsException("Promoção inválida.");
@@ -118,7 +120,7 @@ public class ProductsService {
 					produto.setNomeProd(dto.getNomeProd());
 					produto.setPrecoProd(dto.getPrecoProd());
 					produto.setPromoProd(dto.isPromoProd());
-					produto.setCategoriaProd(dto.getCategoriaProd());
+					produto.setCategoriaProd(categoriasEmpresas);
 					produto.setPrecoPromocao(dto.getPrecoPromocao());
 					produto.setVisible(dto.isVisible());
 					repository.saveAndFlush(produto);
@@ -132,7 +134,7 @@ public class ProductsService {
 						produto.setNomeProd(dto.getNomeProd());
 						produto.setPrecoProd(dto.getPrecoProd());
 						produto.setPromoProd(dto.isPromoProd());
-						produto.setCategoriaProd(dto.getCategoriaProd());
+						produto.setCategoriaProd(categoriasEmpresas);
 						produto.setPrecoPromocao(dto.getPrecoPromocao());
 						produto.setImagemProduto(imageData);
 						produto.setVisible(dto.isVisible());
@@ -164,15 +166,22 @@ public class ProductsService {
 		return new ResponseEntity<>("Produto '" + nomeProduto + "' deletado com sucesso.", HttpStatus.ACCEPTED);
 	}
 
-    public List<Products> getProductsPromotion() {
-		List<Products> products = repository.findAll();
-		List<Products> promocao = new ArrayList<>();
-        for (Products produto : products) {
-            if (produto.isPromoProd()) {
-                promocao.add(produto);
-            }
-        }
-        return promocao;
+    public List<Products> getProductsPromotion(String token) {
+		Empresas empresa = authenticationService.getEmpresaByToken(token);
+		if (empresa != null)
+		{
+			try
+			{
+				return repository.findByEmpresaAndPromoProdTrue(empresa);
+			}
+			catch (Exception e)
+			{
+				throw new ProductsException("Falha ao tentar buscar os produtos em promoção.");
+			}
+		}
+		else{
+			throw new ProductsException("Falha ao autenticar.");
+		}
     }
 
 	@Transactional
@@ -258,6 +267,25 @@ public class ProductsService {
 		}
 		else{
 			throw new RuntimeException("Falha na autenticação.");
+		}
+	}
+
+	@Transactional
+	public List<Products> getProductByEmpresa(String token) {
+		Empresas empresa = authenticationService.getEmpresaByToken(token);
+		if (empresa != null)
+		{
+			try
+			{
+				return repository.findByEmpresa(empresa);
+			}
+			catch (Exception e)
+			{
+				throw new ProductsException("Falha ao tentar buscar o produto.");
+			}
+		}
+		else{
+			throw new ProductsException("Falha ao tentar autenticar.");
 		}
 	}
 }

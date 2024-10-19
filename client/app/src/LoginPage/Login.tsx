@@ -3,14 +3,6 @@ import { useState } from "react";
 import api from "../../ApiConfigs/ApiRoute";
 import { useToast } from "react-native-toast-notifications";
 
-interface GrantedAuthority {
-    authority: string;
-}
-
-type Authorities = GrantedAuthority[];
-
-
-
 export default function Login({ navigation }) {
     const toast = useToast();
     const [username, setUsername] = useState('');
@@ -29,32 +21,13 @@ export default function Login({ navigation }) {
         }
     }
 
-    async function directUser(authorities:Authorities)
-    {
-        if (authorities.some((item) => item.authority === 'ROLE_BALCAO')) {
-            navigation.navigate('ChangeView');
-        } 
-        else if (authorities.some((item) => item.authority === 'ROLE_GARCOM')) {
-            navigation.navigate('MenuGarcom');
-        } 
-        else if (authorities.some((item) => item.authority === 'ROLE_BALCAOPREPARO')) {
-            navigation.navigate('MenuBalcaoDePreparo');
-        } 
-        else if (authorities.some((item) => item.authority === 'ROLE_COZINHA')) {
-            navigation.navigate('MenuCozinha');
-        } 
-        else {
-            console.log("erro, tente novamente");
-        }
-    }
-
     async function tryLogin() {
         if ((username === null || username === '')|| (password === null || password === ''))
         {
             toast.show("Preencha todos os campos", {
                 type: "warning",
                 placement: "top",
-                duration: 4000,
+                duration: 2000,
                 animationType: "slide-in",
               });
         }
@@ -69,7 +42,7 @@ export default function Login({ navigation }) {
                 api.post('/api/auth/login', dataLogin)
                 .then(response => {
                     storeData(response.data.token);
-                    //directUser(response.data.authorities);
+                    navigation.navigate("ChangeView");
                 })
                 .catch(error => {
                     if (!error.response) {
@@ -125,31 +98,36 @@ export default function Login({ navigation }) {
                     >
                         <Text style={styles.textButtonLogin}>Entrar</Text>
                     </TouchableOpacity>
-
-                    <TouchableOpacity
+                    
+                    {
+                        /*
+                        <TouchableOpacity
                         style={styles.buttonLogin}
                         onPress={() => navigation.navigate('ChangeView')}
-                    >
-                        <Text style={styles.textButtonLogin}>ChangeView</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate('MenuGarcom')}
-                    >
-                        <Text style={styles.textButtonLogin}>MenuGarcom</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate('MenuBalcaoDePreparo')}
-                    >
-                        <Text style={styles.textButtonLogin}>MenuBalcaoDePreparo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.buttonLogin}
-                        onPress={() => navigation.navigate('MenuCozinha')}
-                    >
-                        <Text style={styles.textButtonLogin}>MenuCozinha</Text>
-                    </TouchableOpacity>
+                        >
+                            <Text style={styles.textButtonLogin}>ChangeView</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.buttonLogin}
+                            onPress={() => navigation.navigate('MenuGarcom')}
+                        >
+                            <Text style={styles.textButtonLogin}>MenuGarcom</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.buttonLogin}
+                            onPress={() => navigation.navigate('MenuBalcaoDePreparo')}
+                        >
+                            <Text style={styles.textButtonLogin}>MenuBalcaoDePreparo</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.buttonLogin}
+                            onPress={() => navigation.navigate('MenuCozinha')}
+                        >
+                            <Text style={styles.textButtonLogin}>MenuCozinha</Text>
+                        </TouchableOpacity>
+                        */
+                    }
+                    
                 </View>
             </View>
             <View style={styles.bottomWhite} />
