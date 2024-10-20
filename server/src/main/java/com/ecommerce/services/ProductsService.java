@@ -33,11 +33,39 @@ public class ProductsService {
 	{
 		return repository.findAll();
 	}
-	
-	public Products getProductById(String id) throws Exception
+
+	@Transactional
+	public ProductsEmpresaDTO getProductById(String id, String token) throws Exception
 	{
-		return repository.findById(id)
-				.orElseThrow(() -> new ProductsException("Produto com id '" + id + "' nao encontrado"));
+		Empresas empresa = authenticationService.getEmpresaByToken(token);
+		if (empresa != null)
+		{
+			try
+			{
+				Products produto = repository.findByIdProdAndEmpresa(id, empresa);
+				if (produto != null)
+				{
+					return new ProductsEmpresaDTO(
+						produto.getIdProd(),
+						produto.getNomeProd(),
+						produto.getPrecoProd(),
+						produto.isPromoProd(),
+						produto.getCategoriaProd().getNomeCategoriaEmpresa(),
+						produto.getPrecoPromocao(),
+						produto.getImagemProduto(),
+						produto.isVisible()
+					);
+				}
+				else throw new ProductsException("Produto não encontrado");
+			}
+			catch (Exception e)
+			{
+				throw new ProductsException("Falha ao tentar resgatar o produto.");
+			}
+		}
+		else{
+			throw new ProductsException("Necessita da autenticação.");
+		}
 	}
 
 	public ResponseEntity<String> addProduct(CreateProductDTO novoProduto) {
@@ -107,7 +135,7 @@ public class ProductsService {
 		Empresas empresa = authenticationService.getEmpresaByToken(dto.getToken());
 		if (empresa != null)
 		{
-			CategoriasEmpresas categoriasEmpresas = categoriaEmpresasService.isValidCategoria(dto.getToken(), empresa);
+			CategoriasEmpresas categoriasEmpresas = categoriaEmpresasService.isValidCategoria(dto.getCategoriaProd(), empresa);
 			if (categoriasEmpresas != null)
 			{
 				Products produto = repository.findById(dto.getIdProduto())

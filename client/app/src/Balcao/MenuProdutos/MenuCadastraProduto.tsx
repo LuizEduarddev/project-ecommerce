@@ -95,8 +95,16 @@ const MenuCadastraProduto = () => {
       try {
         const response = await fetch(imagemProduto);
         const blob = await response.blob();
-  
-        formData.append('file', blob, nomeProduto + '.png');
+    
+        const mimeType = blob.type;
+    
+        const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : '';
+    
+        if (extension) {
+          formData.append('file', blob, `${nomeProduto}.${extension}`);
+        } else {
+          throw new Error('Unsupported image type');
+        }
       } catch (error) {
         toast.show("Erro ao tentar converter a imagem", {
           type: "danger",
@@ -106,6 +114,7 @@ const MenuCadastraProduto = () => {
         });
       }
     }
+    
     api
       .post('api/products/add', formData)
       .then(response => {

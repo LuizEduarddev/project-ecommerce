@@ -30,22 +30,47 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
   const [categorias, setCategorias] = useState<string[]>();
   const [modalDeleteVisible, setModalDeleteVisible] = useState(false);
 
+  const convertImage = (imagemProduto) => {
+    const base64ImageString = imagemProduto;
+    let imageType = '';
+    if (base64ImageString.startsWith('/9j/')) {
+      imageType = 'jpeg';
+    } else if (base64ImageString.startsWith('iVBORw0KGgo')) {
+      imageType = 'png';
+    } else if (base64ImageString.startsWith('R0lGOD')) {
+      imageType = 'gif';
+    } else if (base64ImageString.startsWith('Qk')) {
+      imageType = 'bmp';
+    } else if (base64ImageString.startsWith('UklGR')) {
+      imageType = 'webp';
+    } else {
+      throw new Error('Unknown image format');
+    }
+
+    const base64Image = `data:image/${imageType};base64,${base64ImageString}`;
+    return base64Image;
+  }
+
   useEffect(() => {
+    const token = localStorage.getItem('session-token');
+    if (token === null) window.location.reload();
     async function fetchProductData() {
       try {
         const response = await api.post('api/products/get-by-id', null, {
           params: {
             idProduto: id,
+            token:token
           },
         });
         const product = response.data;
         setNomeProduto(product.nomeProd);
         setPrecoProd(product.precoProd.toString());
         setPromoProd(product.promoProd);
-        setCategoriaProd(product.categoriaProd);
+        setCategoriaProd(product.categoria);
         setPrecoPromocao(product.precoPromocao.toString());
         setVisible(product.visible);
-        setImagemProduto(product.imagemProduto);
+
+        setImagemProduto(convertImage(product.imagemProduto));
       } catch (error) {
         toast.show('Erro ao tentar buscar o produto', {
           type: 'danger',
@@ -86,19 +111,19 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
   }, []);
 
   const handleImagePick = () => {
-    launchImageLibrary({ mediaType: 'photo', quality: 1 }, (response) => {
+    launchImageLibrary({ mediaType: 'photo', quality: 1 }, response => {
       if (response.didCancel) {
         return;
       } else if (response.errorCode) {
-        toast.show('Erro ao tentar carregar a imagem', {
-          type: 'warning',
-          placement: 'top',
+        console.log(response.assets[0].uri);
+        toast.show("Erro ao tentar pegar a imagem.", {
+          type: "warning",
+          placement: "top",
           duration: 4000,
-          animationType: 'slide-in',
+          animationType: "slide-in",
         });
       } else {
-        const base64Image = response?.assets?.[0]?.uri?.split(',')[1];
-        setImagemProduto(base64Image);
+        setImagemProduto(response.assets[0].uri);
       }
     });
   };
@@ -166,6 +191,8 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
   }
 
   async function apiEditarProduto() {
+    const token = localStorage.getItem('session-token');
+    if (token === null) window.location.reload();
     const formData = new FormData();
     formData.append('idProd', id);
     formData.append('nomeProd', nomeProduto);
@@ -174,24 +201,31 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
     formData.append('categoriaProd', categoriaProd.toString());
     formData.append('precoPromocao', precoPromocao.toString());
     formData.append('visible', visible.toString());
+    formData.append('token', token);
     if (imagemProduto) {
       try {
         const response = await fetch(imagemProduto);
         const blob = await response.blob();
-
-        formData.append('file', blob, nomeProduto + '.png');
+    
+        const mimeType = blob.type;
+    
+        const extension = mimeType === 'image/png' ? 'png' : mimeType === 'image/jpeg' ? 'jpg' : '';
+    
+        if (extension) {
+          formData.append('file', blob, `${nomeProduto}.${extension}`);
+        } else {
+          throw new Error('Unsupported image type');
+        }
       } catch (error) {
-        toast.show(
-          'Erro ao tentar converter a imagem. Contate o administrador',
-          {
-            type: 'danger',
-            placement: 'top',
-            duration: 4000,
-            animationType: 'slide-in',
-          }
-        );
+        toast.show("Erro ao tentar converter a imagem", {
+          type: "danger",
+          placement: "top",
+          duration: 4000,
+          animationType: "slide-in",
+        });
       }
     }
+  
     api
       .put('api/products/editar', formData)
       .then((response) => {
@@ -266,7 +300,7 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
           {imagemProduto ? (
             <>
               <Image
-                source={{ uri: `data:image/png;base64,${imagemProduto}` }}
+                source={{ uri: imagemProduto }}
                 style={styles.image}
               />
               <Pressable onPress={handleImagePick} style={styles.imageButton}>

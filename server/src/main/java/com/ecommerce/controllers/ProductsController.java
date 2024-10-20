@@ -42,9 +42,9 @@ public class ProductsController {
 	}
 
 	@PostMapping("/get-by-id")
-	public Products getById(@RequestParam	 String idProduto) throws Exception
+	public ProductsEmpresaDTO getById(@RequestParam  String idProduto, @RequestParam String token) throws Exception
 	{
-		return service.getProductById(idProduto);
+		return service.getProductById(idProduto, token);
 	}
 
 	@PostMapping("/get-by-categoria")

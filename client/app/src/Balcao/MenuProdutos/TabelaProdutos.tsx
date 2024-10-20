@@ -30,7 +30,6 @@ const TabelaProdutos = () => {
         })
         .then(response => {
             setProdutosEmpresa(response.data);
-            console.log(response.data);
         })
         .catch(error => {
             toast.show("Erro ao tentar buscar os produtos.", {
