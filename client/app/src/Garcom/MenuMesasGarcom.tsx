@@ -45,8 +45,14 @@ const MenuMesasGarcom = () => {
     const [modalVisualizarMesa, setModalVisualizarMesa] = useState(false);
 
     useEffect(() => {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         const fetchMesas = async () => {
-            api.get('api/mesa/get-all')
+            api.get('api/mesa/get', {
+                params:{
+                    token:token
+                }
+            })
             .then(response => {
                 setMesas(response.data);
             })
@@ -87,9 +93,11 @@ const MenuMesasGarcom = () => {
     };
 
     async function getMesaInformation(idMesa: string) {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         const dataToSend = {
             idMesa: idMesa,
-            token: ''
+            token: token
         };
         api.post('api/pedidos/get-by-mesa', dataToSend)
         .then(response => {

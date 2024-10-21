@@ -2,6 +2,7 @@ package com.ecommerce.services;
 
 import com.ecommerce.entities.*;
 import com.ecommerce.entities.dto.*;
+import com.ecommerce.entities.errors.PagamentosException;
 import com.ecommerce.repository.PagamentosRepository;
 import com.ecommerce.repository.PedidosRepository;
 import com.ecommerce.repository.UsersRepository;
@@ -46,6 +47,9 @@ public class PagamentoService {
     @Autowired
     private MesaService mesaService;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     public List<Pagamentos> getAllPagamentos() {
         return repository.findAll();
     }
@@ -55,7 +59,6 @@ public class PagamentoService {
                 .stream()
                 .allMatch(Pedidos::isPedidoPago);
 
-        // If all pedidos are paid, set mesaEmUso to false
         if (allPedidosPaid) {
             mesa.setEmUso(false);
             mesa.setMesaSuja(true);
@@ -63,9 +66,22 @@ public class PagamentoService {
         }
     }
 
+    public List<Pagamentos> getPagamentosByEmpresa(String token) {
+        try {
+            Empresas empresa = authenticationService.getEmpresaByToken(token);
+            if (empresa == null) throw new PagamentosException("Erro na autenticação.");
+            return repository.findByEmpresa(empresa);
+        }
+        catch (Exception e)
+        {
+            throw new PagamentosException("Falha ao tentar buscar os pagamentos");
+        }
+    }
 
-    /*
     public ResponseEntity<String> addPagamento(addPagamentoDTO dto) {
+        Empresas empresa = authenticationService.getEmpresaByToken(dto.token());
+        if (empresa == null) throw new PagamentosException("Falha ao buscar a empresa");
+
         if (dto.idPedidos() == null && dto.pedido() == null) {
             throw new RuntimeException("Campos necessários não válidados.");
         }
@@ -76,13 +92,13 @@ public class PagamentoService {
 
             try {
                 if (dto.idPedidos() == null && dto.pedido().produtos() != null) {
-                    Pedidos pedido = pedidosService.addPedidoAvulso(dto.pedido());
-                    return generatePagamento(pedido, dto.metodoPagamento());
-                } else {
-                    List<Pedidos> pedidos = pedidosService.getPedidoById(dto.idPedidos());
+                    Pedidos pedido = pedidosService.addPedidoAvulso(dto.pedido(), dto.token());
+                    return generatePagamento(pedido, dto.metodoPagamento(), dto.token(), empresa);
+                } else if (dto.idPedidos() != null) {
+                    List<Pedidos> pedidos = pedidosService.getPedidoByListIdAndEmpresa(dto.idPedidos(), dto.token());
                     pedidos.forEach(pedido -> {
                         try {
-                            generatePagamento(pedido, dto.metodoPagamento());
+                            generatePagamento(pedido, dto.metodoPagamento(), dto.token(), empresa);
                         } catch (Exception e) {
                             issues.add("Falha ao gerar pagamento para o pedido ID: " + pedido.getIdPedido() + ". Erro: " + e.getMessage());
                         }
@@ -104,10 +120,7 @@ public class PagamentoService {
 
     }
 
-     */
-
-    /*
-    private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento) {
+    private ResponseEntity<String> generatePagamento(Pedidos pedido, MetodoPagamento metodoPagamento, String token, Empresas empresa) {
         try {
             Pagamentos pagamento = new Pagamentos();
             LocalTime currentTime = LocalTime.now();
@@ -118,20 +131,19 @@ public class PagamentoService {
             pagamento.setMetodoPagamento(metodoPagamento);
             pagamento.setPedido(pedido);
             pagamento.setCpfUserPagamento(pedido.getCpfClientePedido());
+            pagamento.setEmpresa(empresa);
             repository.saveAndFlush(pagamento);
-            pedido.setPedidoPago(true);
+
+            pedidosService.setPedidoPago(pedido);
 
             if (pedido.getMesa() != null) {
-                checkMesaVazia(pedido.getMesa());
+                checkMesaVazia(pedido.getMesa(), token);
             }
 
             return ResponseEntity.ok("Pagamento efetuado com sucesso.");
         } catch (Exception e) {
-            throw new RuntimeException("Falha ao gerar o método de pagamento.\n" + e);
+            throw new PagamentosException("Falha ao gerar o método de pagamento.");
         }
     }
-
-     */
-
 
 }

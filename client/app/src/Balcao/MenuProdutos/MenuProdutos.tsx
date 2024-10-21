@@ -1,9 +1,7 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import MenuCadastraProduto from './MenuCadastraProduto';
 import MenuPesquisaProduto from './MenuPesquisaProduto';
-import api from '../../../ApiConfigs/ApiRoute';
-import { useToast } from 'react-native-toast-notifications';
 import TabelaProdutos from './TabelaProdutos';
 import { colors } from '../../assets/colors';
 

@@ -20,12 +20,12 @@ type ProductsMesaDTO = {
 const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
     
     const toast = useToast();
-        const [modalPedidosLancar, setModalPedidosLancar] = useState<boolean>(false);
+    const [modalPedidosLancar, setModalPedidosLancar] = useState<boolean>(false);
     const [produtosLancar, setProdutosLancar] = useState<ProductsMesaDTO[]>([]);
     const [userCpf, setUserCpf] = useState<string>('');
     const [produtosCategorias, setProdutosCategorias] = useState<ProductsMesaDTO[] | null>(null);
     const [produtoResponse, setProdutoResponse] = useState<ProductsMesaDTO[] | null>(null);
-    const [categorias, setCategorias] = useState<{ label: string, value: number }[] | null>(null);
+    const [categorias, setCategorias] = useState<string[]>();
     const [buscaProduto, setBuscaProduto] = useState<string>('');
     const [modalLancarPedido, setModalLancarPedido] = useState(modalTela);
     const [modalProdutosCategoria, setModalProdutosCategoria] = useState<boolean>(false);
@@ -33,9 +33,13 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
 
     async function getProdutos(categoria: string) 
     {
-        api.post('api/products/get-by-categoria', null, {
-            params: { categoria: categoria } 
-        })
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
+        const dto = {
+            categoria: categoria,
+            token:token
+        }
+        api.post('api/products/get-by-categoria', dto)
         .then(response => {
             setProdutosCategorias(response.data);
             setModalProdutosCategoria(true);
@@ -51,14 +55,16 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
     }
 
     useEffect(() => {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         async function getCategorias() {
-            api.get('api/products/get-categories')
+            api.get('api/empresas/categorias/get-by-empresa', {
+                params:{
+                    token:token
+                }
+            })
             .then(response => {
-                const formattedCategories = response.data.map((category, index) => ({
-                    label: category,
-                    value: index,
-                }));
-                setCategorias(formattedCategories);
+                setCategorias(response.data);
             })
             .catch(error => {
                 toast.show("Falha ao tentar capturar as categorias", {
@@ -281,22 +287,36 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
         }
     }
 
-    const renderCategories = ({ item }: { item: { label: string, value: number } }) => {
-        return (
-            <View style={{margin: 5}}>
-                <Pressable style={styles.categoria} onPress={() => openProdutosCategoria(item.label)}>
-                    <Text style={{ color: '#18acd9' }}>{item.label}</Text>
-                </Pressable>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalProdutosCategoria}
-                    onRequestClose={() => setModalProdutosCategoria(false)}
-                >
-                    {renderModalProdutosCategoria()}
-                </Modal>
-            </View>
-        );
+    const renderCategories = () => {
+        if (categorias && categorias.length > 0)
+        {
+            return (
+                <View style={{margin: 5}}>
+                    {categorias.map((categoria) => {
+                        return(
+                            <View>
+                                <Pressable style={styles.categoria} onPress={() => openProdutosCategoria(categoria)}>
+                                    <Text style={{ color: '#18acd9' }}>{categoria}</Text>
+                                </Pressable>
+                                <Modal
+                                    animationType="slide"
+                                    transparent={true}
+                                    visible={modalProdutosCategoria}
+                                    onRequestClose={() => setModalProdutosCategoria(false)}
+                                >
+                                    {renderModalProdutosCategoria()}
+                                </Modal>
+                            </View>
+                        );
+                    })}
+                </View>
+            );
+        }
+        else{
+            return(
+                <Text>Falha ao tentar renderizar as categorias.</Text>
+            );
+        }
     };
 
     const deleteProduto = (id: string) => {
@@ -400,42 +420,25 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
     }
 
     const renderModalLancarPedido = () => {
-        if (categorias && categorias.length > 0) {
-            return (
-                <View style={styles.modalPesquisarProduto}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder='Busque por um produto'
-                        onChangeText={handleSearchInputChange}
-                        value={buscaProduto}
-                    />
-                    {renderPesquisa()}
-                    <FlatList
-                        data={categorias}
-                        key={'_categorias'}
-                        renderItem={renderCategories}
-                        keyExtractor={(item, index) => index.toString()}
-                        numColumns={2}
-                    />
-                    <Pressable onPress={() => setModalLancarPedido(false)} style={{ position: 'absolute', top: 15, right: 15 }}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
-                    <Pressable onPress={() => setModalPedidosLancar(true)} style={styles.botaoConferirPedido}>
-                        <Text style={{ color: 'white' }}>Conferir Pedido</Text>
-                    </Pressable>
-                    {renderModalConferirPedido()}
-                </View>
-            );
-        } else {
-            return (
-                <View style={styles.modalView}>
-                    <Text>Ocorreu um erro ao tentar renderizar as categorias.</Text>
-                    <Pressable onPress={() => setModalLancarPedido(false)} style={{ position: 'absolute', top: 15, right: 15 }}>
-                        <Icon name='x' size={15}></Icon>
-                    </Pressable>
-                </View>
-            );
-        }
+        return (
+            <View style={styles.modalPesquisarProduto}>
+                <TextInput
+                    style={styles.input}
+                    placeholder='Busque por um produto'
+                    onChangeText={handleSearchInputChange}
+                    value={buscaProduto}
+                />
+                {renderPesquisa()}
+                {renderCategories()}
+                <Pressable onPress={() => setModalLancarPedido(false)} style={{ position: 'absolute', top: 15, right: 15 }}>
+                    <Icon name='x' size={15}></Icon>
+                </Pressable>
+                <Pressable onPress={() => setModalPedidosLancar(true)} style={styles.botaoConferirPedido}>
+                    <Text style={{ color: 'white' }}>Conferir Pedido</Text>
+                </Pressable>
+                {renderModalConferirPedido()}
+            </View>
+        );
     };
 
     return (

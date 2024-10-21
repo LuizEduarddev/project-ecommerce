@@ -27,7 +27,7 @@ const PesquisarPedidoCpf = () => {
   
     const toast = useToast();
     const [buscaPorCpf, setBuscaPorCpf] = useState('');
-    const [pedidoCpf, setPedidoCpf] = useState<Pedidos | null>(null);
+    const [pedidoCpf, setPedidoCpf] = useState<Pedidos>();
     const [modalPedidoCliente, setModalPedidoCliente] = useState(false);
     
     const getUnformattedCpf = (userCpf: string) => userCpf.replace(/\D/g, '');
@@ -37,14 +37,16 @@ const PesquisarPedidoCpf = () => {
     };
     
     async function findPedido(query: string) {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         if (query === "") {
             return;
         } else {
-            api.post('api/pedidos/get-by-cpf', null, {
-                params: {
-                    cpf: query
-                }
-            })
+            const dto = {
+                token:token,
+                cpf: query
+            }
+            api.post('api/pedidos/get-by-cpf', dto)
             .then(response => {
                 setPedidoCpf(response.data);
                 setModalPedidoCliente(true);
@@ -72,7 +74,7 @@ const PesquisarPedidoCpf = () => {
     };
 
     const renderModalPedidosCpf = () => {
-        if (pedidoCpf?.pedidosMesa.length > 0) {
+        if (pedidoCpf && pedidoCpf.pedidosMesa.length > 0) {
             return (
                 <View style={styles.modalView}>
                     <FlatList

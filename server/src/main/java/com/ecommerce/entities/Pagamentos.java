@@ -26,14 +26,19 @@ public class Pagamentos {
     @ManyToOne
     private Pedidos pedido;
 
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Empresas empresa;
+
     public Pagamentos() {
     }
 
-    public Pagamentos(String cpfUserPagamento, String dataPagamento, MetodoPagamento metodoPagamento, Pedidos pedido) {
+    public Pagamentos(String cpfUserPagamento, String dataPagamento, MetodoPagamento metodoPagamento, Pedidos pedido, Empresas empresa) {
         this.cpfUserPagamento = cpfUserPagamento;
         this.dataPagamento = dataPagamento;
         this.metodoPagamento = metodoPagamento;
         this.pedido = pedido;
+        this.empresa = empresa;
     }
 
     public String getIdPagamento() {
@@ -74,5 +79,13 @@ public class Pagamentos {
 
     public void setPedido(Pedidos pedido) {
         this.pedido = pedido;
+    }
+
+    public Empresas getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Empresas empresa) {
+        this.empresa = empresa;
     }
 }

@@ -168,10 +168,13 @@ const MenuEditarProduto = ({ id }: { id: string }) => {
 
   async function deletarProduto() {
     setModalDeleteVisible(false);
+    const token = localStorage.getItem('session-token');
+    if (token === null) window.location.reload();
     try {
       await api.delete('api/products/delete', {
         params: {
           idProduto: id,
+          token:token
         },
       });
       toast.show('Produto deletado com sucesso', {

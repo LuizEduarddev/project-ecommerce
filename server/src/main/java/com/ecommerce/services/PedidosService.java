@@ -52,15 +52,24 @@ public class PedidosService {
     }
 
     @Transactional
-    public List<Pedidos> getPedidoById(List<String> listId)
+    public List<Pedidos> getPedidoByListIdAndEmpresa(List<String> listId, String token)
     {
-        List<Pedidos> retorno = new ArrayList<>();
-        listId.forEach(pedido -> {
-            Pedidos pedido1 = repository.findById(pedido)
-                    .orElseThrow(() -> new RuntimeException("Pedido com id " + pedido + " não encontrado"));
-            retorno.add(pedido1);
-        });
-        return retorno;
+        Empresas empresa = authenticationService.getEmpresaByToken(token);
+        if (empresa == null) throw new PedidoException("Falha na autenticação");
+        try
+        {
+            List<Pedidos> retorno = new ArrayList<>();
+            listId.forEach(pedido -> {
+                Pedidos pedido1 = repository.findByIdPedidoAndEmpresa(pedido, empresa);
+                if (pedido1 == null) throw new PedidoException("Falha ao tentar buscar o pedido");
+                retorno.add(pedido1);
+            });
+            return retorno;
+        }
+        catch (Exception e)
+        {
+            throw new PedidoException("Falha ao tentar buscar os pedidos.");
+        }
     }
 
     public Pedidos addPedidoAvulso(addPedidoPagamentoDTO dto, String token)
@@ -591,5 +600,17 @@ public class PedidosService {
         int numeroMesa = pedido.getMesa().getNumeroMesa();
 
         return new PedidosProntoGarcomDTO(pedido.getIdPedido(), produtoDTOs, numeroMesa);
+    }
+
+    public void setPedidoPago(Pedidos pedido) {
+        try
+        {
+            pedido.setPedidoPago(true);
+            repository.saveAndFlush(pedido);
+        }
+        catch (Exception e)
+        {
+            throw new PedidoException("Falha ao tentar alterar o estado do pedido.");
+        }
     }
 }

@@ -62,7 +62,7 @@ public class PedidosController {
     {
         List<String> list = new ArrayList<>();
         list.add(data.idPedido());
-        return service.getPedidoById(list);
+        return service.getPedidoByListIdAndEmpresa(list, data.token());
     }
 
     @PostMapping("/get-by-mesa")
@@ -87,7 +87,7 @@ public class PedidosController {
      */
 
     @PostMapping("/get-by-cpf")
-    public MesaDTO getByCpf(@RequestParam GetByCpfDTO dto)
+    public MesaDTO getByCpf(@RequestBody GetByCpfDTO dto)
     {
         return service.getPedidoByCpf(dto);
     }

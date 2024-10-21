@@ -17,4 +17,6 @@ public interface PedidosRepository extends JpaRepository<Pedidos, String> {
     List<Pedidos> findByCpfClientePedidoAndEmpresa(String cpfClientePedido, Empresas empresa);
     List<Pedidos> findByDataPedido(String dataPedido);
     List<Pedidos> findByEmpresa(Empresas empresa);
+    Pedidos findByIdPedidoAndEmpresa(String idPedido, Empresas empresa);
+
 }

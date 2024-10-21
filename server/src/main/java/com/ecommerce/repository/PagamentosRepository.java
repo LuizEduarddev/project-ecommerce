@@ -1,5 +1,6 @@
 package com.ecommerce.repository;
 
+import com.ecommerce.entities.Empresas;
 import com.ecommerce.entities.Pagamentos;
 import com.ecommerce.entities.Pedidos;
 import com.ecommerce.entities.Users;
@@ -12,4 +13,5 @@ import java.util.Optional;
 @Repository
 public interface PagamentosRepository extends JpaRepository<Pagamentos, String> {
     Pagamentos findByPedido(Pedidos pedido);
+    List<Pagamentos> findByEmpresa(Empresas empresa);
 }

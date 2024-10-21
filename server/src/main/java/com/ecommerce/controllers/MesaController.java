@@ -23,11 +23,14 @@ public class MesaController {
         return service.getMesaByEmpresa(token);
     }
 
+    /*
     @GetMapping("/get-all")
     public List<MesaBalcaoDTO> getAll()
     {
         return service.getAllMesa();
     }
+
+     */
 
     /*
     @PostMapping("/get-by-id")

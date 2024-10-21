@@ -100,18 +100,18 @@ export default function Login({ navigation }) {
                     </TouchableOpacity>
                     
                     {
+                        <TouchableOpacity
+                            style={styles.buttonLogin}
+                            onPress={() => navigation.navigate('MenuGarcom')}
+                        >
+                            <Text style={styles.textButtonLogin}>MenuGarcom</Text>
+                        </TouchableOpacity>
                         /*
                         <TouchableOpacity
                         style={styles.buttonLogin}
                         onPress={() => navigation.navigate('ChangeView')}
                         >
                             <Text style={styles.textButtonLogin}>ChangeView</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.buttonLogin}
-                            onPress={() => navigation.navigate('MenuGarcom')}
-                        >
-                            <Text style={styles.textButtonLogin}>MenuGarcom</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.buttonLogin}

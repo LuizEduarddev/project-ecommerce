@@ -184,15 +184,27 @@ public class ProductsService {
 			throw new ProductsException("Erro na autenticação.");
 		}
 	}
-	
-	public ResponseEntity<String> deleteProduto(String id) throws Exception
+
+	@Transactional
+	public ResponseEntity<String> deleteProduto(String id, String token) throws Exception
 	{
-		Products produto = repository.findById(id)
-				.orElseThrow(() -> new ProductsException("Falha ao deletar o produto.\nProduto com id nao encontrado"));
-		String nomeProduto = produto.getNomeProd();
-		
-		repository.deleteById(id);
-		return new ResponseEntity<>("Produto '" + nomeProduto + "' deletado com sucesso.", HttpStatus.ACCEPTED);
+		try
+		{
+			Empresas empresa = authenticationService.getEmpresaByToken(token);
+			if (empresa == null) throw new ProductsException("Falha na autenticação.");
+
+			Products produto = repository.findByIdProdAndEmpresa(id, empresa);
+			if (produto == null) throw new ProductsException("Produto não existe..");
+
+			String nomeProduto = produto.getNomeProd();
+
+			repository.delete(produto);
+			return new ResponseEntity<>("Produto '" + nomeProduto + "' deletado com sucesso.", HttpStatus.ACCEPTED);
+		}
+		catch(Exception e)
+		{
+			throw new ProductsException("Falha ao tentar deletar o produto.");
+		}
 	}
 
     public List<Products> getProductsPromotion(String token) {

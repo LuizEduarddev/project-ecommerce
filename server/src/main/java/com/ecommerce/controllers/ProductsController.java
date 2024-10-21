@@ -90,8 +90,8 @@ public class ProductsController {
 	}
 	
 	@DeleteMapping("/delete")
-	public ResponseEntity<String> delete(@RequestParam String idProduto) throws Exception
+	public ResponseEntity<String> delete(@RequestParam String idProduto, @RequestParam String token) throws Exception
 	{
-		return service.deleteProduto(idProduto);
+		return service.deleteProduto(idProduto, token);
 	}
 }

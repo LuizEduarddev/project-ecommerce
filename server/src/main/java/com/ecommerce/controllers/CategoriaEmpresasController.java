@@ -28,7 +28,7 @@ public class CategoriaEmpresasController {
         return service.addCategoria(dto);
     }
 
-    @GetMapping("/get-by-empresa")
+    @GetMapping("   ")
     public List<String> getByEmpresa(@RequestParam String token)
     {
         return service.getCategoriaByEmpresa(token);

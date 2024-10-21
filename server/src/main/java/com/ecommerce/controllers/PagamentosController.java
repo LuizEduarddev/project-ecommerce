@@ -36,6 +36,12 @@ public class PagamentosController {
         return MetodoPagamento.allCategorias();
     }
 
+    @GetMapping("/get-by-empresa")
+    public List<Pagamentos> getByEmpresa(@RequestParam String token)
+    {
+        return service.getPagamentosByEmpresa(token);
+    }
+
     /*
     @PostMapping("/add")
     public Object add(@RequestBody addPagamentoDTO dto){
