@@ -49,7 +49,7 @@ public class Users implements UserDetails {
 	@Column(name = "imagem_usuario")
 	private byte[] imagemUsuario;
 
-	@OneToOne
+	@ManyToOne
 	private Empresas empresa;
 
 	public Users() {
@@ -173,6 +173,11 @@ public class Users implements UserDetails {
 	@Override
 	public String getPassword() {
 		return passwordUser;
+	}
+
+	public void setPasswordUser(String passwordUser)
+	{
+		this.passwordUser = passwordUser;
 	}
 
 	@Override

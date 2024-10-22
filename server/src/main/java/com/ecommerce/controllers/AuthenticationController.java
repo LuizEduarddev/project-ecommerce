@@ -1,5 +1,6 @@
 package com.ecommerce.controllers;
 
+import com.ecommerce.entities.UserRole;
 import com.ecommerce.entities.Users;
 import com.ecommerce.entities.dto.*;
 import com.ecommerce.services.MesaService;
@@ -53,6 +54,12 @@ public class AuthenticationController {
 		service.autorizeUserSession(token);
 	}
 
+	@GetMapping("/get-roles")
+	public List<String> getAuthoritiesAlterData(@RequestParam String token)
+	{
+		return service.getUserRolesAuthorities(token);
+	}
+
 	@GetMapping("/get-by-empresa")
 	public List<EmpregadosDTO> getByEmpresa(@RequestParam String token)
 	{
@@ -63,6 +70,12 @@ public class AuthenticationController {
 	public List<EmpregadosDTO> searchFuncionario(@RequestBody FuncionarioSearchDTO dto)
 	{
 		return service.searchFuncionario(dto.token(), dto.query());
+	}
+
+	@PostMapping("/empresa/get-by-id")
+	public EmpregadosDTO getByIdEmpresa(@RequestBody FuncionarioIdDTO dto)
+	{
+		return service.getUsuarioByIdEmpresa(dto);
 	}
 
 	@PostMapping("/get-by-cpf")
@@ -91,6 +104,12 @@ public class AuthenticationController {
 	public ResponseEntity<String> alterUserAvulso(@RequestBody UserDTO dto)
 	{
 		return service.alterUserAvulsoData(dto);
+	}
+
+	@PostMapping("/funcionario/adicionar")
+	public ResponseEntity<String> adicionarFuncionario(@RequestBody CriarFuncionarioDTO dto)
+	{
+		return service.adicionarNovoFuncionario(dto);
 	}
 
 	@PostMapping("/get-by-id")
@@ -135,6 +154,13 @@ public class AuthenticationController {
 	{
 		return service.alterProfileData(dto);
 	}
+
+	@PostMapping("/funcionario/alter-profile")
+	public ResponseEntity<String> alterProfileFuncionario(@RequestBody UpdateProfileFuncionarioDTO dto)
+	{
+		return service.alterProfileFuncionarioData(dto);
+	}
+
 
 	@GetMapping("/get-all")
 	public List<Users> getAll()

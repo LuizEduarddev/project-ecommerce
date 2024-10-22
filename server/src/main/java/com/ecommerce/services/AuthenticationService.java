@@ -164,6 +164,18 @@ public class AuthenticationService {
 		}
 	}
 
+	private String getSinglePermission(String token) {
+		Users user = repository.findByLoginUser(getUserName(token));
+		if (user == null)
+		{
+			throw  new RuntimeException("Usuário não encontrado");
+		}
+		else
+		{
+			return user.getUserRole().toString();
+		}
+	}
+
 	public String getById(String id, String token) {
 		Users user = repository.findByLoginUser(getUserName(token));
 		if (user != null)
@@ -203,7 +215,7 @@ public class AuthenticationService {
 			Users user = repository.findByLoginUser(getUserName(updateProfileDTO.getToken()));
 			if (user == null)
 			{
-				throw new RuntimeException("Usuário não encontrado");
+				throw new AuthenticationException("Usuário não encontrado");
 			}
 			if (updateProfileDTO.getCpf() != null)
 			{
@@ -345,7 +357,7 @@ public class AuthenticationService {
 		}
 		catch (Exception e)
 		{
-			throw new AuthenticationException("Falha ao tentar resgatar o usuário");
+			throw new AuthenticationException("Falha ao tentar resgatar o usuário" + e);
 		}
 	}
 
@@ -369,6 +381,108 @@ public class AuthenticationService {
 		catch (Exception e)
 		{
 			throw new AuthenticationException("Falha ao tentar buscar o funcionário");
+		}
+	}
+
+	@Transactional
+	public EmpregadosDTO getUsuarioByIdEmpresa(FuncionarioIdDTO dto) {
+		try
+		{
+			Empresas empresa = getEmpresaByToken(dto.token());
+			if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+			Users funcionario = repository.findByIdUserAndEmpresa(dto.idFuncionario(), empresa);
+			if (funcionario == null) throw new AuthenticationException("Falha ao tentar buscar o funcionário");
+
+			return new EmpregadosDTO(
+					funcionario.getIdUser(),
+					funcionario.getUserRole().toString(),
+					funcionario.getUserFullName(),
+					funcionario.getUserTelefone(),
+					funcionario.getUserCpf(),
+					funcionario.getUserEndereco(),
+					funcionario.getUserEmail());
+		}
+		catch (Exception e)
+		{
+			throw new AuthenticationException("Falha ao tentar resgatar o usuário" + e);
+		}
+	}
+
+	public ResponseEntity<String> alterProfileFuncionarioData(UpdateProfileFuncionarioDTO dto) {
+		try
+		{
+			Empresas empresa = getEmpresaByToken(dto.getToken());
+			if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+			Users user = repository.findByIdUserAndEmpresa(dto.getIdFuncionario(), empresa);
+			if (user == null) throw new AuthenticationException("Usuário não encontrado");
+			if (dto.getAutoritie() != null) {
+				if (!getSinglePermission(dto.getToken()).equals("ADMIN")) {
+					throw new AuthenticationException("É necessária uma permissão maior");
+				}
+				if (UserRole.isValidRole(dto.getAutoritie())) {
+					user.setUserRole(UserRole.fromString(dto.getAutoritie())); // Use the new method
+				} else {
+					throw new AuthenticationException("Categoria inválida");
+				}
+			}
+
+			if (dto.getCpf() != null) user.setUserCpf(dto.getCpf());
+			if (dto.getEmail() != null) user.setUserEmail(dto.getEmail());
+			if (dto.getEndereco() != null) user.setUserEndereco(dto.getEndereco());
+			if (dto.getNomeCompleto() != null) user.setUserFullName(dto.getNomeCompleto());
+			if (dto.getTelefone() != null) user.setUserTelefone(dto.getTelefone());
+
+			repository.saveAndFlush(user);
+			return ResponseEntity.ok("Usuário alterado com sucesso.");
+		}
+		catch (Exception e)
+		{
+			throw new AuthenticationException("Falha ao tentar alterar os dados do funcionário" + e);
+		}
+	}
+
+	public List<String> getUserRolesAuthorities(String token) {
+		Empresas empresa = getEmpresaByToken(token);
+		if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+		if (getSinglePermission(token).equals("ADMIN")) return UserRole.getAllRoles();
+		else throw new AuthenticationException("Hierarquia baixa");
+	}
+
+	public ResponseEntity<String> adicionarNovoFuncionario(CriarFuncionarioDTO dto) {
+		try
+		{
+			Empresas empresa = getEmpresaByToken(dto.getToken());
+			if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+			Users user = new Users();
+
+			if (dto.getAutoritie() != null) {
+				if (!getSinglePermission(dto.getToken()).equals("ADMIN")) {
+					throw new AuthenticationException("É necessária uma permissão maior");
+				}
+				if (UserRole.isValidRole(dto.getAutoritie())) {
+					user.setUserRole(UserRole.fromString(dto.getAutoritie()));
+				} else {
+					throw new AuthenticationException("Categoria inválida");
+				}
+			}
+			if (dto.getCpf() != null) user.setUserCpf(dto.getCpf());
+			if (dto.getEmail() != null) user.setUserEmail(dto.getEmail());
+			if (dto.getEndereco() != null) user.setUserEndereco(dto.getEndereco());
+			if (dto.getNomeCompleto() != null) user.setUserFullName(dto.getNomeCompleto());
+			if (dto.getTelefone() != null) user.setUserTelefone(dto.getTelefone());
+
+			user.setPontosCupcake(0);
+			user.setEmpresa(empresa);
+			repository.saveAndFlush(user);
+			return ResponseEntity.ok("Funcionário criado com sucesso.");
+		}
+		catch (Exception e)
+		{
+			throw new AuthenticationException("Falha ao tentar criar o funcionário");
 		}
 	}
 }

@@ -15,7 +15,6 @@ import { Dropdown } from 'react-native-element-dropdown';
 import api from '../../../ApiConfigs/ApiRoute';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../../assets/colors';
-import Icon from 'react-native-vector-icons/FontAwesome6';
 import { useToast } from 'react-native-toast-notifications';
 
 const MenuEditarProduto = ({ id }: { id: string }) => {

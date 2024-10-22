@@ -1,8 +1,10 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useToast } from 'react-native-toast-notifications';
 import api from '../../ApiConfigs/ApiRoute';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import VisualizarFuncionario from './EditarFuncionario';
+import { colors } from '../assets/colors';
 
 type Props = {
     id: string,
@@ -32,7 +34,6 @@ const TabelaEmpregados = () => {
         })
         .then(response => {
             setFuncionarios(response.data);
-            console.log(response.data)
         })
         .catch(error => {
             toast.show("Falha ao tentar buscar os funcionários.", {
@@ -88,6 +89,21 @@ const TabelaEmpregados = () => {
         <SafeAreaView>
             <View>
                 {renderTabelaFuncionarios()}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisualizarFuncionario}
+                    onRequestClose={() => setModalVisualizarFuncionario(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <VisualizarFuncionario id={idFuncionario}/>
+                            <Pressable onPress={() => setModalVisualizarFuncionario(false)} style={styles.closeButton}>
+                                <Text style={styles.closeButtonText}>Fechar</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </SafeAreaView>
   )
@@ -116,4 +132,34 @@ const styles = StyleSheet.create({
         backgroundColor: '#f4f4f4',
         fontWeight: 'bold',
     },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+      },
+      modalContent: {
+          width: '90%',
+          backgroundColor: 'white',
+          borderRadius: 10,
+          padding: 20,
+          shadowColor: '#000',
+          shadowOffset: {
+              width: 0,
+              height: 2,
+          },
+          shadowOpacity: 0.25,
+          shadowRadius: 4,
+          elevation: 5,
+      },
+      closeButton: {
+          marginTop: 20,
+          backgroundColor: colors['bright-blue'],
+          padding: 10,
+          borderRadius: 5,
+          alignItems: 'center',
+      },
+      closeButtonText: {
+          color: colors['white'],
+      },
 })

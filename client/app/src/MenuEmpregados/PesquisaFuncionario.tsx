@@ -1,8 +1,10 @@
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useToast } from 'react-native-toast-notifications';
 import api from '../../ApiConfigs/ApiRoute';
 import debounce from 'lodash.debounce'
+import { colors } from '../assets/colors';
+import EditarFuncionario from './EditarFuncionario';
 
 type EmpregadosDTO = {
     id: string,
@@ -18,7 +20,8 @@ const PesquisaFuncionario = () => {
   const toast = useToast();
   const [buscaFuncionario, setBuscaFuncionario] = useState<string>('');
   const [funcionarioResponse, setFuncionarioResponse] = useState<EmpregadosDTO[]>([]);
-  const [funcionarioEditar, setFuncionarioEditar] = useState<EmpregadosDTO>();
+  const [modalVisualizaFuncionario, setModalVisualizaFuncionario] = useState(false);
+  const [idFuncionario, setIdFuncionario] = useState('');
 
   async function findFuncionario(query: string) {
     const token = localStorage.getItem('session-token');
@@ -73,7 +76,7 @@ const PesquisaFuncionario = () => {
   }, [buscaFuncionario]);
 
   const renderFuncionario = ({ item }: {item: EmpregadosDTO}) => (
-      <Pressable onPress={() => console.log('pressionado')} style={styles.item}>
+      <Pressable onPress={() => {setIdFuncionario(item.id), setModalVisualizaFuncionario(true)}} style={styles.item}>
           <Text>{item.email}</Text>
           <Text>{item.nome}</Text>
       </Pressable>
@@ -96,6 +99,21 @@ const PesquisaFuncionario = () => {
             style={styles.dropdown}
           />
         }
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisualizaFuncionario}
+            onRequestClose={() => setModalVisualizaFuncionario(false)}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContent}>
+                    <EditarFuncionario id={idFuncionario}/>
+                    <Pressable onPress={() => setModalVisualizaFuncionario(false)} style={styles.closeButton}>
+                        <Text style={styles.closeButtonText}>Fechar</Text>
+                    </Pressable>
+                </View>
+            </View>
+        </Modal>
       </View>
     </>
   );
@@ -127,5 +145,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
 
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+  },
+  modalContent: {
+      width: '90%',
+      backgroundColor: 'white',
+      borderRadius: 10,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: {
+          width: 0,
+          height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+  },
+  closeButton: {
+      marginTop: 20,
+      backgroundColor: colors['bright-blue'],
+      padding: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+  },
+  closeButtonText: {
+      color: colors['white'],
   },
 });
