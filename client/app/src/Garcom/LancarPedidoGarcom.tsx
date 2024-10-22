@@ -81,6 +81,8 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
 
     async function tryLancarPedido()
     {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         if (getUnformattedCpf(userCpf).length < 11)
         {
             toast.show("Cpf precisa ter 11 caracteres.", {
@@ -97,7 +99,7 @@ const LancarPedidoGarcom = ({idMesa, modalTela} :LancarPedidoGarcomProps) => {
               }));
             const dataToSend = {
                 produtos: produtos,
-                token: "",
+                token: token,
                 idMesa: idMesa,
                 cpfClientePedido: getUnformattedCpf(userCpf)
             }

@@ -2,9 +2,7 @@ package com.ecommerce.controllers;
 
 import com.ecommerce.entities.MetodoPagamento;
 import com.ecommerce.entities.Pedidos;
-import com.ecommerce.entities.dto.addPagamentoDTO;
-import com.ecommerce.entities.dto.pagamentoAvulsoDTO;
-import com.ecommerce.entities.dto.pagamentoDTO;
+import com.ecommerce.entities.dto.*;
 import com.ecommerce.services.AuthenticationService;
 import com.ecommerce.services.PagamentoService;
 import com.ecommerce.entities.Pagamentos;
@@ -30,6 +28,12 @@ public class PagamentosController {
         return service.getAllPagamentos();
     }
 
+    @PostMapping("/get-by-id")
+    public PagamentoAdminDTO getById(@RequestBody PagamentoByIdDTO dto)
+    {
+        return service.getPagamentoById(dto);
+    }
+
     @GetMapping("/get-metodos")
     public List<String> getMetodosPagamento()
     {
@@ -37,15 +41,13 @@ public class PagamentosController {
     }
 
     @GetMapping("/get-by-empresa")
-    public List<Pagamentos> getByEmpresa(@RequestParam String token)
+    public List<PagamentosDTO> getByEmpresa(@RequestParam String token)
     {
         return service.getPagamentosByEmpresa(token);
     }
 
-    /*
     @PostMapping("/add")
     public Object add(@RequestBody addPagamentoDTO dto){
         return service.addPagamento(dto);
     }
-     */
 }

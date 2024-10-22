@@ -1,9 +1,11 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Dimensions, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
 import { useToast } from 'react-native-toast-notifications';
 import MenuEditarProduto from './MenuEditarProduto';
 import { colors } from '../../assets/colors';
+
+const { width, height } = Dimensions.get('window');
 
 type Products = {
     idProduto: string,
@@ -128,10 +130,12 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
     },
     modalContent: {
-        width: '90%',
+        width: '80%', 
+        height: 'auto',
+        maxHeight: height * 0.75, 
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 20,

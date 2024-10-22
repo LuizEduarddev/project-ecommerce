@@ -59,9 +59,12 @@ const MenuMesa = () => {
 
     async function tryEfetuarPagamento()
     {
+        const token = localStorage.getItem('session-token');
+        if (token === null) window.location.reload();
         const dataToSend = {
             idPedidos: pedidosSelecionadosFechamento.map(pedido => pedido.idPedido),
-            metodoPagamento: formaDePagamentoEscolhida
+            metodoPagamento: formaDePagamentoEscolhida,
+            token:token
         }
         api.post('api/pagamentos/add', dataToSend)
         .then(response => {

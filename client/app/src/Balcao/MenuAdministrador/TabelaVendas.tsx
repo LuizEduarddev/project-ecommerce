@@ -1,15 +1,22 @@
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import api from '../../../ApiConfigs/ApiRoute';
 import { useToast } from 'react-native-toast-notifications';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ModalVisualizarVenda from './ModalVisualizarVenda';
+import { colors } from '../../assets/colors';
 
 type Vendas = {
-    id: string,
+    idPedido: string,
     cpf: string,
     dataPagamento: string,
-    metodoPagamento: string
+    metodoPagamento: string,
+    totalPagamento: number
 }
+
+const formatToReais = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+};
 
 const TabelaVendas = () => {
     const toast = useToast();
@@ -48,16 +55,20 @@ const TabelaVendas = () => {
                             <Text style={[styles.cell, styles.header]}>CPF Cliente</Text>
                             <Text style={[styles.cell, styles.header]}>Método pagamento</Text>
                             <Text style={[styles.cell, styles.header]}>Data pagamento</Text>
+                            <Text style={[styles.cell, styles.header]}>Valor pagamento</Text>
                         </View>
     
                         {vendas.map((venda) => (
-                            <Pressable key={venda.id} style={styles.row} onPress={() => {
-                                setIdVenda(venda.id), setModalVisualizarVenda(true)
-                                }}>
-                                <Text style={styles.cell}>{venda.cpf}</Text>
-                                <Text style={styles.cell}>{venda.dataPagamento}</Text>
-                                <Text style={styles.cell}>{venda.metodoPagamento}</Text>
-                            </Pressable>
+                            <li key={venda.idPedido}>
+                                <Pressable key={venda.idPedido} style={styles.row} onPress={() => {
+                                    setIdVenda(venda.idPedido), setModalVisualizarVenda(true)
+                                    }}>
+                                    <Text style={styles.cell}>{venda.cpf}</Text>
+                                    <Text style={styles.cell}>{venda.metodoPagamento}</Text>
+                                    <Text style={styles.cell}>{venda.dataPagamento}</Text>
+                                    <Text style={styles.cell}>{formatToReais(venda.totalPagamento)}</Text>
+                                </Pressable>
+                            </li>
                         ))}
                     </View>
                 </ScrollView>
@@ -76,6 +87,21 @@ const TabelaVendas = () => {
         <SafeAreaView>
             <View>
                 {renderVendas()}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisualizarVenda}
+                    onRequestClose={() => setModalVisualizarVenda(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <ModalVisualizarVenda id={idVenda}/>
+                            <Pressable onPress={() => setModalVisualizarVenda(false)} style={styles.closeButton}>
+                                <Text style={styles.closeButtonText}>Fechar</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </Modal>
             </View>
         </SafeAreaView>
   )
@@ -103,5 +129,35 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: '#f4f4f4',
         fontWeight: 'bold',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    },
+    modalContent: {
+        width: '90%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    closeButton: {
+        marginTop: 20,
+        backgroundColor: colors['bright-blue'],
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: colors['white'],
     },
 })

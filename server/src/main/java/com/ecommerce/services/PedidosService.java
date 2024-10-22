@@ -613,4 +613,15 @@ public class PedidosService {
             throw new PedidoException("Falha ao tentar alterar o estado do pedido.");
         }
     }
+
+    public Pedidos getPedidoByEmpresaAndId(String idPedido, Empresas empresa, String token) {
+        try
+        {
+            return repository.findByIdPedidoAndEmpresa(idPedido, empresa);
+        }
+        catch (Exception e)
+        {
+            throw new PedidoException("Falha ao tentar buscar o pedido");
+        }
+    }
 }

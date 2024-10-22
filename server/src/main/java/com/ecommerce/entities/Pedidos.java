@@ -54,7 +54,7 @@ public class Pedidos {
     @ManyToOne
     private Mesa mesa;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Empresas empresa;
 

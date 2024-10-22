@@ -1,5 +1,7 @@
 package com.ecommerce.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mercadopago.resources.payment.PaymentMethod;
 import jakarta.persistence.*;
 
@@ -23,6 +25,9 @@ public class Pagamentos {
     @Enumerated(EnumType.STRING)
     private MetodoPagamento metodoPagamento;
 
+    @Column(name = "total_pagamento")
+    private double totalPagamento;
+
     @ManyToOne
     private Pedidos pedido;
 
@@ -33,12 +38,13 @@ public class Pagamentos {
     public Pagamentos() {
     }
 
-    public Pagamentos(String cpfUserPagamento, String dataPagamento, MetodoPagamento metodoPagamento, Pedidos pedido, Empresas empresa) {
+    public Pagamentos(String cpfUserPagamento, String dataPagamento, MetodoPagamento metodoPagamento, Pedidos pedido, Empresas empresa, double totalPagamento) {
         this.cpfUserPagamento = cpfUserPagamento;
         this.dataPagamento = dataPagamento;
         this.metodoPagamento = metodoPagamento;
         this.pedido = pedido;
         this.empresa = empresa;
+        this.totalPagamento = totalPagamento;
     }
 
     public String getIdPagamento() {
@@ -87,5 +93,13 @@ public class Pagamentos {
 
     public void setEmpresa(Empresas empresa) {
         this.empresa = empresa;
+    }
+
+    public double getTotalPagamento() {
+        return totalPagamento;
+    }
+
+    public void setTotalPagamento(double totalPagamento) {
+        this.totalPagamento = totalPagamento;
     }
 }

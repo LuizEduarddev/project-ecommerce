@@ -6,6 +6,7 @@ import MenuProdutos from './MenuProdutos/MenuProdutos';
 import api from '../../ApiConfigs/ApiRoute';
 import { colors } from '../assets/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useToast } from 'react-native-toast-notifications';
 import MenuAdministrador from './MenuAdministrador/MenuAdministrador';
 
@@ -63,6 +64,9 @@ const ChangeView = ({ navigation }) => {
                 <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Administrador')}>
                     <Icon name="store" color="white" size={40}/>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.itemMenu} onPress={() => setView('Menu Empregados')}>
+                    <IconMaterialIcons name="person" color="white" size={40}/>
+                </TouchableOpacity>
             </View>
             <View style={{flex: 1, padding: 30, paddingTop: 10, overflow: 'scroll'}}>
                 <Text style={styles.tituloPagina}>{view}</Text>
@@ -75,6 +79,8 @@ const ChangeView = ({ navigation }) => {
                         <MenuProdutos/>
                     ) : view === 'Menu Administrador' ? (
                         <MenuAdministrador/>
+                    ) : view === 'Menu Administrador' ? (
+                        <MenuEmpregados/>
                     ) :
                     (<Text>Nada para mostrar no momento.</Text>)
                 }

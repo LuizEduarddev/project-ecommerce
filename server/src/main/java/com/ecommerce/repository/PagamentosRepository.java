@@ -14,4 +14,6 @@ import java.util.Optional;
 public interface PagamentosRepository extends JpaRepository<Pagamentos, String> {
     Pagamentos findByPedido(Pedidos pedido);
     List<Pagamentos> findByEmpresa(Empresas empresa);
+
+    Pagamentos findByIdPagamentoAndEmpresa(String id, Empresas empresa);
 }
