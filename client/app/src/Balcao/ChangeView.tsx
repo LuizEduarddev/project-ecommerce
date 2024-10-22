@@ -9,6 +9,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useToast } from 'react-native-toast-notifications';
 import MenuAdministrador from './MenuAdministrador/MenuAdministrador';
+import Empregados from '../MenuEmpregados/Empregados';
 
 const ChangeView = ({ navigation }) => {
     const toast = useToast();
@@ -79,8 +80,8 @@ const ChangeView = ({ navigation }) => {
                         <MenuProdutos/>
                     ) : view === 'Menu Administrador' ? (
                         <MenuAdministrador/>
-                    ) : view === 'Menu Administrador' ? (
-                        <MenuEmpregados/>
+                    ) : view === 'Menu Empregados' ? (
+                        <Empregados/>
                     ) :
                     (<Text>Nada para mostrar no momento.</Text>)
                 }

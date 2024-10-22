@@ -326,4 +326,49 @@ public class AuthenticationService {
 		Empresas empresa = getEmpresaByToken(token);
 		if (empresa == null) throw new AuthenticationException("Erro na autenticação.");
 	}
+
+    public List<EmpregadosDTO> getEmpregadosByEmpresa(String token) {
+    	try
+		{
+			Empresas empresa = getEmpresaByToken(token);
+			if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+			return repository.findByEmpresa(empresa).stream().map(user ->
+					new EmpregadosDTO(
+							user.getIdUser(),
+							user.getUserRole().toString(),
+							user.getUserFullName(),
+							user.getUserTelefone(),
+							user.getUserCpf(),
+							user.getUserEndereco(),
+							user.getUserEmail())).toList();
+		}
+		catch (Exception e)
+		{
+			throw new AuthenticationException("Falha ao tentar resgatar o usuário");
+		}
+	}
+
+	public List<EmpregadosDTO> searchFuncionario(String token, String query) {
+		try {
+			Empresas empresa = getEmpresaByToken(token);
+			if (empresa == null) throw new AuthenticationException("Falha na autenticação");
+
+			return repository.searchByCpfOrNomeAndEmpresa(query, empresa)
+					.stream().map(user ->
+							new EmpregadosDTO(
+									user.getIdUser(),
+									user.getUserRole().toString(),
+									user.getUserFullName(),
+									user.getUserTelefone(),
+									user.getUserCpf(),
+									user.getUserEndereco(),
+									user.getUserEmail()))
+					.toList();
+		}
+		catch (Exception e)
+		{
+			throw new AuthenticationException("Falha ao tentar buscar o funcionário");
+		}
+	}
 }

@@ -53,6 +53,18 @@ public class AuthenticationController {
 		service.autorizeUserSession(token);
 	}
 
+	@GetMapping("/get-by-empresa")
+	public List<EmpregadosDTO> getByEmpresa(@RequestParam String token)
+	{
+		return service.getEmpregadosByEmpresa(token);
+	}
+
+	@PostMapping("/search")
+	public List<EmpregadosDTO> searchFuncionario(@RequestBody FuncionarioSearchDTO dto)
+	{
+		return service.searchFuncionario(dto.token(), dto.query());
+	}
+
 	@PostMapping("/get-by-cpf")
 	public UserDTO getByCpf(@RequestBody String cpf) {
 		return service.getByCpf(cpf);
