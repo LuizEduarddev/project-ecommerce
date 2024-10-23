@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import TabelaVendas from './TabelaVendas'
+import GraficoVendas from './GraficoVendas'
 
 const MenuAdministrador = () => {
   
@@ -17,8 +18,13 @@ const MenuAdministrador = () => {
 
   return (
     <SafeAreaView>
-      <Text>{formattedDate}  {formattedHour}</Text>
-      <TabelaVendas/>
+      <ScrollView>
+        <View>  
+          <Text>{formattedDate}  {formattedHour}</Text>
+          <GraficoVendas/>
+          <TabelaVendas/>
+        </View>  
+      </ScrollView>
     </SafeAreaView>
   )
 }

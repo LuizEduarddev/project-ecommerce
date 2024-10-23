@@ -34,6 +34,7 @@ const TabelaVendas = () => {
         })
         .then(response => {
             setVendas(response.data);
+            console.log(response.data);
         })
         .catch(error => {
             toast.show("Erro ao tentar buscar os dados da empresa", {
